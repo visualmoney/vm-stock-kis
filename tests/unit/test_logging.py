@@ -6,6 +6,7 @@ from io import StringIO
 
 import pytest
 
+from pykis import logging as pykis_logging
 from pykis.logging import (
     JsonFormatter,
     disable_json_logging,
@@ -220,6 +221,19 @@ class TestLoggingIntegration:
         assert "Debug message" not in captured.out
         assert "Info message" not in captured.out
         assert "Warning message" in captured.out
+
+
+@pytest.mark.parametrize(
+    ("level_input", "expected_level"),
+    [
+        ("DEBUG", logging.DEBUG),
+        ("INFO", logging.INFO),
+        ("WARNING", logging.WARNING),
+        ("ERROR", logging.ERROR),
+        ("CRITICAL", logging.CRITICAL),
+        (logging.DEBUG, logging.DEBUG),
+        (logging.INFO, logging.INFO),
+        (logging.WARNING, logging.WARNING),
         (logging.ERROR, logging.ERROR),
         (logging.CRITICAL, logging.CRITICAL),
     ],
