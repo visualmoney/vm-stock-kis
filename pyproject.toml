@@ -1,14 +1,23 @@
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling>=1.27", "hatch-vcs>=0.5"]
+build-backend = "hatchling.build"
 
+# =============================================================== project ====
 [project]
 name = "python-kis"
+dynamic = ["version"]
 description = "파이썬 한국투자증권 REST 기반 Trading API 라이브러리"
 readme = "README.md"
-license = { text = "MIT" }
+requires-python = ">=3.10"
+# PEP 639. LICENCE는 영국식 철자라 기본 glob(LICENSE*)에 잡히지 않으므로 명시합니다.
+license = "MIT"
+license-files = ["LICENCE"]
 authors = [
-    { name = "Soju06", email = "qlskssk@gmail.com" }
+    { name = "Soju06", email = "qlskssk@gmail.com" },
+    { name = "visualmoney", email = "visualmoney2@gmail.com" },
+]
+maintainers = [
+    { name = "visualmoney", email = "visualmoney2@gmail.com" },
 ]
 keywords = [
     "python",
@@ -21,15 +30,19 @@ keywords = [
     "korean",
     "investment",
     "autotrading",
-    "koreainvestment"
+    "koreainvestment",
 ]
+# NOTE: "License :: OSI Approved :: MIT License" classifier는 의도적으로 없습니다.
+# PEP 639의 license SPDX 표현식과 license classifier를 함께 쓰면 PyPI가 업로드를 거부합니다.
 classifiers = [
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Financial and Insurance Industry",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python :: 3",
+    "Natural Language :: Korean",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -38,78 +51,154 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Office/Business :: Financial",
     "Topic :: Office/Business :: Financial :: Investment",
-    "Typing :: Typed"
+    "Typing :: Typed",
 ]
-requires-python = ">=3.10"
 dependencies = [
-    "requests>=2.32.3",
-    "websocket-client>=1.8.0",
-    "cryptography>=43.0.0",
     "colorlog>=6.8.2",
-    "tzdata",
-    "typing-extensions",
-    "python-dotenv (>=1.2.1,<2.0.0)"
+    "cryptography>=43.0.0",
+    "python-dotenv>=1.2.1,<2",
+    "requests>=2.32.3",
+    "typing-extensions>=4.12",
+    "tzdata>=2024.1",
+    "websocket-client>=1.8.0",
 ]
-dynamic = []
 
 [project.urls]
-"Bug Tracker" = "https://github.com/Soju06/python-kis/issues"
-"Documentation" = "https://github.com/Soju06/python-kis/wiki/Tutorial"
-"Source Code" = "https://github.com/Soju06/python-kis"
+Homepage = "https://github.com/visualmoney/vm-stock-kis"
+Repository = "https://github.com/visualmoney/vm-stock-kis"
+Documentation = "https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial"
+Issues = "https://github.com/visualmoney/vm-stock-kis/issues"
+"Original Project" = "https://github.com/Soju06/python-kis"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["pykis"]
-exclude = ["tests"]
-
-[tool.poetry]
-version = "2.1.6"  # placeholder, 실제 버전은 태그에서 주입
-
-packages = [
-    { include = "pykis", from = "." },
+# ====================================================== dependency groups ====
+# PEP 735. [tool.uv.dev-dependencies]는 uv 공식 문서에서 "not recommend anymore"로
+# 안내하므로 사용하지 않습니다. pip 25.1+의 `pip install --group`으로도 읽힙니다.
+[dependency-groups]
+test = [
+    "pytest>=9.0.1",
+    "pytest-cov>=7.0.0",
+    "pytest-asyncio>=1.3.0",
+    "pytest-benchmark>=4.0.0",
+    "pytest-html>=4.1.1",
+    "requests-mock>=1.12.1",
+]
+lint = [
+    # .pre-commit-config.yaml이 ruff v0.14.10을 고정하고 있어 하한을 맞춥니다.
+    "ruff>=0.14.10",
+    "pre-commit>=3.7.1",
+]
+docs = [
+    "plantuml>=0.3.0",
+]
+dev = [
+    { include-group = "test" },
+    { include-group = "lint" },
 ]
 
-[tool.poetry-dynamic-versioning]
-enable = true
-vcs = "git"
-style = "pep440"
-strict = true
-tagged-metadata = true
+# ==================================================================== uv ====
+[tool.uv]
+required-version = ">=0.9"
 
-[tool.poetry.dependencies]
-python = "^3.11"
+# hatch-vcs 필수 설정. uv 기본 cache-keys는
+#   [{file="pyproject.toml"}, {file="setup.py"}, {file="setup.cfg"}, {dir="src"}]
+# 로 git 상태를 포함하지 않아, 태그를 만들어도 editable 설치의 버전이 갱신되지 않습니다.
+# cache-keys를 지정하면 기본값을 "대체"하므로 pyproject.toml을 다시 나열합니다.
+cache-keys = [
+    { file = "pyproject.toml" },
+    { dir = "pykis" },
+    { git = { commit = true, tags = true } },
+]
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^9.0.1"
-pytest-cov = "^7.0.0"
-pytest-html = "^4.1.1"
-pytest-asyncio = "^1.3.0"
-python-dotenv = "^1.2.1"
-requests-mock = "^1.12.1"
-plantuml = "^0.3.0"
-pre-commit = "^3.7.1"
-ruff = "^0.6.9"
-pytest-benchmark = "^4.0.0"
+# ================================================================= hatch ====
+[tool.hatch.version]
+source = "vcs"
+# git 메타데이터가 없을 때만 사용됩니다(shallow clone, tarball export 등).
+# "2.1.6+dev" 같은 그럴듯한 거짓값 대신 명백히 틀린 값을 씁니다.
+fallback-version = "0.0.0"
 
+[tool.hatch.version.raw-options]
+# 태그가 없는 커밋은 다음 버전을 추측하지 않고 "2.1.7.dev4+g<sha>" 형태로 표기합니다.
+version_scheme = "no-guess-dev"
+
+[tool.hatch.build.targets.wheel]
+# 필수: 프로젝트명 python-kis는 python_kis로 정규화되어 모듈명 pykis와 다르므로
+# hatchling의 자동 탐지가 실패합니다.
+packages = ["pykis"]
+# hatchling 1.32.0이 기본 core metadata를 2.5(PEP 794)로 올렸으나 PyPI 수용 여부가
+# 확인되지 않았습니다. 2.4는 PEP 639 License-Expression을 지원하는 최소 버전입니다.
+# TestPyPI에서 2.5가 통과하는 것을 확인하면 이 두 줄을 삭제하세요.
+core-metadata-version = "2.4"
+
+[tool.hatch.build.targets.sdist]
+core-metadata-version = "2.4"
+# hatchling 기본값은 gitignore되지 않은 모든 것을 담아 docs/ 전체가 포함됩니다.
+include = [
+    "/pykis",
+    "/tests",
+    "/examples",
+    "/README.md",
+    "/QUICKSTART.md",
+    "/CONTRIBUTING.md",
+    "/LICENCE",
+    "/pyproject.toml",
+]
+
+# ================================================================== ruff ====
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+src = ["pykis", "tests"]
+extend-exclude = ["docs/generated", "docs/diagrams"]
+
+# ================================================================ pytest ====
 [tool.pytest.ini_options]
 minversion = "9.0"
-pythonpath = ["."]
 testpaths = ["tests"]
+# 유지 필수: tests/에 __init__.py도 conftest.py도 없어서
+# `from tests.env import load_pykis`가 이 설정에 의존합니다.
+pythonpath = ["."]
 addopts = [
-    "--cov=pykis",
-    "--cov-report=term-missing",
-    "--cov-report=html:reports/coverage_html",
-    "--cov-report=xml:reports/coverage.xml",    
-    "--html=reports/test_report.html",
-    "--junitxml=reports/junit_report.xml",
-    "--self-contained-html",
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
     "--import-mode=importlib",
-    "--strict-markers"
 ]
+# --cov / --html / --junitxml은 의도적으로 addopts에서 제외했습니다.
+#   * addopts의 --cov는 breakpoint()/pdb/debugpy를 망가뜨리고(coverage의 trace
+#     함수가 디버거와 충돌) 모든 `pytest -k` 실행을 느리게 만듭니다.
+#   * --html/--junitxml은 로컬 실행마다 reports/를 씁니다.
+# CI에서만 명시적으로 전달합니다.
 markers = [
     "unit: Unit tests - fast, isolated tests without external dependencies",
     "integration: Integration tests - tests with mocked API calls",
     "performance: Performance tests - benchmark and stress tests",
     "slow: Slow running tests",
-    "requires_api: Tests that require real API credentials"
+    "requires_api: Tests that require real API credentials",
+]
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
+
+# ============================================================== coverage ====
+# .coveragerc를 대체합니다. 그 파일이 남아 있으면 이 설정보다 우선하므로 삭제해야 합니다.
+[tool.coverage.run]
+branch = true
+# source가 아니라 source_pkgs: editable 설치에서도 import 가능한 패키지로 해석됩니다.
+source_pkgs = ["pykis"]
+omit = ["*/__init__.py"]
+
+[tool.coverage.paths]
+source = ["pykis", "*/site-packages/pykis"]
+
+[tool.coverage.report]
+# 한시적 인하 (원래 90). tests/unit/test_logging.py의 구문 오류로 약 8개월간
+# 테스트 수집 자체가 실패하고 있었고, 복구 후 실측 커버리지가 89.01%로 확인됐습니다.
+# 부채 정리 후 90으로 복원할 것: https://github.com/visualmoney/vm-stock-kis/issues/3
+fail_under = 70
+show_missing = true
+skip_covered = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "@(typing\\.)?overload",
+    "class .*\\(Protocol\\):",
 ]
