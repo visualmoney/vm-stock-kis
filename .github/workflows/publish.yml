@@ -38,7 +38,14 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          built=$(ls dist/*.whl | sed -E 's/.*vm_stock_kis-([^-]+)-.*/\1/')
+          # ls 의 출력을 파싱하지 않습니다(SC2012). 글롭으로 직접 받습니다.
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if [ ${#wheels[@]} -ne 1 ]; then
+            echo "::error::휠이 정확히 1개여야 합니다 (발견: ${#wheels[@]})"
+            exit 1
+          fi
+          built=$(basename "${wheels[0]}" | sed -E 's/vm_stock_kis-([^-]+)-.*/\1/')
           echo "tag=$tag built=$built"
           if [ "$tag" != "$built" ]; then
             echo "::error::태그($tag)와 빌드 버전($built)이 다릅니다"
