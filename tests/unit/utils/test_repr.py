@@ -1,10 +1,8 @@
-import builtins
 from datetime import date, datetime, time
 from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pytest
-
 from pykis.utils import repr as kisrepr
 
 
@@ -35,7 +33,9 @@ def test_iterable_single_and_multiple_lines_and_ellipsis():
     assert kisrepr.list_repr([1, 2, 3]) == "[1, 2, 3]"
 
     # small tuple -> single line
-    assert kisrepr.tuple_repr((1,)) == "(1,)".replace(",)", ")") or kisrepr.tuple_repr((1,)) == "(1,)"  # tolerate tuple formatting
+    assert (
+        kisrepr.tuple_repr((1,)) == "(1,)".replace(",)", ")") or kisrepr.tuple_repr((1,)) == "(1,)"
+    )  # tolerate tuple formatting
 
     # long list -> multiple lines
     big = list(range(10))
@@ -97,6 +97,7 @@ def test_object_repr_single_multiple_unbounded_and_depth_cutoff():
 
     assert kisrepr.object_repr(C(), _depth=2, max_depth=0) == "C(...)"
 
+
 def test__repr_uses_custom_reprs_and_default_fallback_and_max_depth():
     class Custom:
         def __repr__(self):
@@ -117,8 +118,9 @@ def test__repr_uses_custom_reprs_and_default_fallback_and_max_depth():
     assert kisrepr._repr(val) == repr(val)
 
     # max depth stops recursion
-    nested = [ [ [1] ] ]
+    nested = [[[1]]]
     assert kisrepr._repr(nested, max_depth=1, _depth=1) == "..."
+
 
 def test_kis_repr_decorator_sets_repr_and_metadata():
     @kisrepr.kis_repr("x", "y", lines="single")
@@ -149,3 +151,97 @@ def test_custom_repr_management():
 
     kisrepr.remove_custom_repr(Tmp)
     assert Tmp not in kisrepr.custom_reprs
+
+
+# ---------------------------------------------------------------------------
+# 여러 줄 모드 / 생략(ellipsis) / 빈 컨테이너 / 깊이 컷오프
+#
+# 기존 테스트는 주로 한 줄 모드를 확인한다. 여러 줄 분기와 생략 표기, 빈 컨테이너
+# 단축 경로는 실제 객체 repr에서 자주 타는데도 검증이 없었다.
+# ---------------------------------------------------------------------------
+
+
+class TestDictReprMultipleLines:
+    """`dict_repr`의 여러 줄 모드."""
+
+    def test_multiple_lines_indents_each_entry(self):
+        out = kisrepr.dict_repr({"a": 1, "b": 2}, lines="multiple", indent="  ")
+
+        assert out.startswith("{\n")
+        assert out.endswith("}")
+        assert "  'a': 1" in out
+        assert "  'b': 2" in out
+        # 마지막 항목 뒤에는 쉼표가 붙지 않는다.
+        assert ",\n" in out
+        assert not out.rstrip("}").rstrip().endswith(",")
+
+    def test_multiple_lines_appends_ellipsis(self):
+        """생략된 항목이 있으면 마지막 줄에 '...'을 들여써 붙인다."""
+        out = kisrepr.dict_repr({"a": 1, "b": 2, "c": 3}, lines="multiple", indent="  ", ellipsis=1)
+
+        assert "'a': 1" in out
+        assert "'b'" not in out
+        assert "\n  ...\n" in out
+
+    def test_single_line_appends_ellipsis(self):
+        """한 줄 모드에서는 ', ...'로 붙인다."""
+        out = kisrepr.dict_repr({"a": 1, "b": 2, "c": 3}, lines="single", ellipsis=1)
+
+        assert out == "{'a': 1, ...}"
+
+    def test_depth_cutoff(self):
+        assert kisrepr.dict_repr({"a": 1}, max_depth=3, _depth=3) == "{:...}"
+
+
+class TestIterableReprEdgeCases:
+    """`_iterable_repr` 경계 동작."""
+
+    def test_empty_container_is_shortened(self):
+        assert kisrepr.list_repr([]) == "[]"
+        assert kisrepr.set_repr(set()) == "{}"
+        assert kisrepr.tuple_repr(()) == "()"
+
+    def test_depth_cutoff_keeps_tie(self):
+        assert kisrepr.list_repr([1, 2], max_depth=2, _depth=2) == "[...]"
+
+    def test_multiple_lines_appends_ellipsis(self):
+        out = kisrepr.list_repr([1, 2, 3], lines="multiple", indent="  ", ellipsis=1)
+
+        assert out.startswith("[\n")
+        assert "\n  ...\n" in out
+        assert out.endswith("]")
+
+    def test_accepts_non_sequence_iterable(self):
+        """리스트/튜플/셋이 아닌 이터러블도 받아 처리한다."""
+        assert kisrepr.list_repr(iter([1, 2, 3]), lines="single") == "[1, 2, 3]"
+
+
+class TestReprDispatch:
+    """`_repr`의 타입별 분기."""
+
+    def test_dispatches_tuple_to_tuple_repr(self):
+        assert kisrepr._repr((1, 2)) == kisrepr.tuple_repr((1, 2))
+
+    def test_dispatches_set_to_set_repr(self):
+        assert kisrepr._repr({1}) == kisrepr.set_repr({1})
+
+    def test_dispatches_frozenset_to_set_repr(self):
+        assert kisrepr._repr(frozenset({1})) == kisrepr.set_repr(frozenset({1}))
+
+    def test_dispatches_to_kis_repr_decorated_object(self):
+        """@kis_repr가 붙은 객체는 그 __repr__로 위임하며 깊이를 전달한다"""
+
+        @kisrepr.kis_repr("value", lines="single")
+        class Sample:
+            def __init__(self):
+                self.value = 1
+
+        sample = Sample()
+
+        assert kisrepr._repr(sample) == repr(sample)
+
+
+def test_unbounded_type_equality():
+    """`UnboundedType`은 같은 타입끼리만 동등하다."""
+    assert kisrepr.UnboundedType() == kisrepr.UnboundedType()
+    assert kisrepr.UnboundedType() != object()

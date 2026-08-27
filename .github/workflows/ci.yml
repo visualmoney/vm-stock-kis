@@ -2,90 +2,67 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
-    tags: [ 'v*' ]
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
-    name: Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.11', '3.12']
+        # requires-python = ">=3.10" 의 양 끝단만 검증합니다.
+        # 1인 프로젝트에서 중간 버전과 OS 매트릭스는 한계효용이 낮고 피드백만 느려집니다.
+        python-version: ['3.10', '3.13']
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - uses: astral-sh/setup-uv@v6
         with:
+          enable-cache: true
           python-version: ${{ matrix.python-version }}
-      - name: Install Poetry
-        run: pipx install poetry
+
       - name: Install dependencies
-        run: poetry install --no-interaction --with=dev
-      - name: Run unit + integration tests
-        env:
-          PYTEST_ADDOPTS: "-m 'not requires_api'"
+        run: uv sync --locked --group dev
+
+      # 수집 단계 실패(구문 오류 등)를 테스트 실패와 구분해 표면화합니다.
+      # pytest는 수집 오류 시 exit 2로 죽지만, 스텝을 나눠 두면 어느 단계에서
+      # 터졌는지가 실행 목록에서 바로 보입니다.
+      - name: Collect tests
+        run: uv run pytest --collect-only -q
+
+      # --maxfail 은 두지 않습니다. 1인 프로젝트에서는 한 번의 red로
+      # 전체 피해 범위를 봐야 왕복이 줄어듭니다.
+      - name: Run tests
         run: |
-          poetry run pytest \
-            --maxfail=1 -q \
-            --cov=pykis --cov-report=xml:reports/coverage.xml \
-            --cov-report=html:reports/coverage_html \
-            --html=reports/test_report.html --self-contained-html
-      - name: Check coverage threshold
-        run: |
-          poetry run coverage report --fail-under=90
-        continue-on-error: false
-      - name: Upload coverage.xml
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-xml
-          path: reports/coverage.xml
-      - name: Upload coverage html
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-html
-          path: reports/coverage_html
-      - name: Upload pytest html
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-report
-          path: reports/test_report.html
-  build:
-    if: startsWith(github.ref, 'refs/tags/v')
-    name: Build (tagged releases)
+          uv run pytest -m 'not requires_api' \
+            --cov --cov-report=xml:reports/coverage.xml \
+            --cov-report=term-missing
+
+      # 임계값은 pyproject.toml 의 [tool.coverage.report] fail_under 를 따릅니다.
+      # 여기서 --fail-under 를 다시 주면 두 곳이 갈라집니다.
+      - name: Coverage gate
+        run: uv run coverage report
+
+  # 워크플로 파일 자신의 문법 검사.
+  #
+  # CI는 자기 파일이 깨졌는지 스스로 알 수 없다. ci.yml이 YAML 파싱에 실패하면
+  # 잡이 아예 생성되지 않고 0초짜리 failure만 남는다. 실제로 이 저장소의 ci.yml은
+  # 2025-12-20부터 8개월간 그 상태였다. 그래서 이 검사는 pre-commit 훅에도 함께 둔다.
+  #
+  # NOTE: ruff는 아직 여기에 넣지 않는다. 현재 코드베이스에 ruff 오류 1003건,
+  # 미포맷 120개 파일이 남아 있어 지금 넣으면 CI가 항상 빨갛다. 일괄 포맷 정리를
+  # 별도 작업으로 끝낸 뒤 이 잡에 ruff 스텝을 추가할 것.
+  lint-workflows:
+    name: Lint workflows
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install Poetry
-        run: pipx install poetry
-      - name: Install deps
-        run: poetry install --no-interaction --with=dev
-      - name: Inject version from tag (current B-option)
-        shell: bash
-        run: |
-          tag=${GITHUB_REF_NAME#v}
-          python - <<'PY'
-from pathlib import Path
-import os
-ver=os.environ.get('TAG') or os.environ.get('GITHUB_REF_NAME','v0.0.0')[1:]
-p=Path('pykis/__env__.py')
-s=p.read_text(encoding='utf-8')
-s=s.replace('{{VERSION_PLACEHOLDER}}', ver)
-p.write_text(s, encoding='utf-8')
-print('Set version to', ver)
-PY
-        env:
-          TAG: ${{ github.ref_name }}
-      - name: Build
-        run: poetry build
-      - name: Upload dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist/*
+
+      - uses: raven-actions/actionlint@v2

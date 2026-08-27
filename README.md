@@ -1,5 +1,6 @@
-
 ![header](https://capsule-render.vercel.app/api?type=waving&color=gradient&height=260&section=header&text=%ED%8C%8C%EC%9D%B4%EC%8D%AC%20%ED%95%9C%EA%B5%AD%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C%20API&fontSize=50&animation=fadeIn&fontAlignY=38&desc=KIS%20Open%20Trading%20API%20Client&descAlignY=51&descAlign=62&customColorList=24)
+
+[![CI](https://github.com/visualmoney/vm-stock-kis/actions/workflows/ci.yml/badge.svg)](https://github.com/visualmoney/vm-stock-kis/actions/workflows/ci.yml)
 
 ## 1. 파이썬용 한국투자증권 API 소개 ✨
 
@@ -80,7 +81,7 @@ colorlog>=6.8.2
 #### 2.2.1. PyKis 객체 생성
 
 1. 시크릿 키를 파일로 관리하는 방법 (권장)
-   
+
    먼저 시크릿 키를 파일로 저장합니다.
    ```python
     from pykis import KisAuth
@@ -289,7 +290,7 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 ```
 
 ## 3. 튜토리얼 목록 📖
-   
+
 - [1. PyKis 인증 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#1-pykis-인증-관리)
   - [1.1. 시크릿 키 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#11-시크릿-키-관리)
   - [1.2. 엑세스 토큰 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#12-엑세스-토큰-관리)
