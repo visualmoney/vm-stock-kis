@@ -56,14 +56,37 @@ https://pypi.org/manage/account/publishing/ 에서 **Add a new pending publisher
 
 ### 2-2. TestPyPI 쪽
 
-https://test.pypi.org/manage/account/publishing/ 에서 동일하게 등록하되,
-Environment name은 TestPyPI용 잡에서 쓸 이름(예: `testpypi`)으로 맞춥니다.
+TestPyPI는 PyPI와 완전히 분리된 시스템입니다. 계정·2FA·게시자 등록을 모두 따로 해야 합니다.
+
+https://test.pypi.org/manage/account/publishing/ → GitHub 탭 → **Add a new pending publisher**:
+
+| 필드 | 값 |
+|------|-----|
+| PyPI Project Name | `vm-stock-kis` |
+| Owner | `visualmoney` |
+| Repository name | `vm-stock-kis` |
+| Workflow name | `publish.yml` |
+| Environment name | `testpypi` |
+
+Workflow name은 **파일명만** 넣습니다(`.github/workflows/publish.yml` 아님).
+네 값은 GitHub Actions가 OIDC 토큰에 담아 보내는 값과 글자 단위로 대조되며,
+하나라도 어긋나면 업로드 시 `403 Forbidden`이 납니다.
+
+> "대기(pending)" 등록은 **이름을 예약해 주지 않습니다.** PyPI 안내문에 명시돼 있습니다 —
+> *"Configuring a 'pending' publisher for a project name does not reserve that name."*
 
 ### 2-3. GitHub 저장소 쪽
 
-Settings → Environments → **New environment** → `pypi`
+Settings → Environments → **New environment** 로 **두 개**를 만듭니다.
+
+| 환경 이름 | 용도 | 워크플로 잡 |
+|-----------|------|-------------|
+| `testpypi` | 리허설 | `publish-testpypi` |
+| `pypi` | 실제 배포 | `publish` |
+
 - (선택) Deployment branches/tags 를 `v*` 태그로 제한
-- (선택) Required reviewers 를 지정하면 태그 push 후 수동 승인 단계가 생깁니다.
+- (선택) `pypi` 에 Required reviewers 를 지정하면 태그 push 후 수동 승인 단계가 생깁니다.
+  첫 배포라면 권장합니다. `testpypi` 는 리허설이므로 승인 없이 두는 편이 편합니다.
 
 ---
 
@@ -106,19 +129,34 @@ VIRTUAL_ENV=/tmp/vmkis-sdist uv pip install dist/vm_stock_kis-*.tar.gz
 PyPI는 **같은 버전 번호를 재업로드할 수 없고, 삭제해도 그 번호는 영구히 재사용 불가**입니다.
 그래서 실수를 여기서 다 소진합니다.
 
-```bash
-# 리허설용 태그 (예: 2.2.0rc1)
-git tag -a v2.2.0rc1 -m "TestPyPI rehearsal"
-rm -rf dist/ && uv build
-uvx twine check dist/*
+### 어떻게 갈리는가
 
-# 업로드 (토큰 방식)
-uvx twine upload --repository testpypi dist/*
-#   username: __token__
-#   password: pypi-... (TestPyPI에서 발급한 API 토큰)
+`publish.yml` 은 빌드된 버전이 PEP 440 사전 릴리스인지 보고 업로드 대상을 결정합니다.
+
+| 태그 | 판정 | 업로드 대상 | GitHub Release |
+|------|------|-------------|----------------|
+| `v2.2.0rc1`, `v2.2.0a1`, `v2.2.0b1` | 사전 릴리스 | **TestPyPI** | 생성 안 함 |
+| `v2.2.0` | 정식 | **PyPI** | 생성 |
+
+두 잡 모두 `startsWith(github.ref, 'refs/tags/')` 조건이 있습니다. 브랜치에서 빌드하면
+hatch-vcs가 로컬 버전 식별자(`+g1234abc`)를 붙이고 인덱스가 그런 파일을 거부하므로,
+**태그가 있어야만** 업로드가 일어납니다.
+
+### 실행
+
+```bash
+git tag -a v2.2.0rc1 -m "TestPyPI rehearsal"
+git push origin v2.2.0rc1
 ```
 
-설치 확인 — **의존성은 실제 PyPI에서** 받아야 합니다(TestPyPI에는 없음):
+Actions 탭에서 `Build & verify` → `Publish to TestPyPI` 가 도는 것을 확인합니다.
+실제 배포와 **완전히 같은 경로**(빌드 → 태그/버전 일치 검사 → `twine check --strict` →
+휠 내용 검사 → 격리 스모크 테스트 → OIDC 업로드)를 밟으므로, 여기서 통과하면
+정식 태그에서 새로 실패할 여지가 거의 없습니다.
+
+### 설치 확인
+
+의존성은 **실제 PyPI에서** 받아야 합니다(TestPyPI에는 없음):
 
 ```bash
 uv venv /tmp/vmkis-test
@@ -128,16 +166,20 @@ VIRTUAL_ENV=/tmp/vmkis-test uv pip install \
   vm-stock-kis
 ```
 
-프로젝트 페이지에서 README 렌더링이 깨지지 않았는지 눈으로 확인합니다:
+프로젝트 페이지에서 README 렌더링을 눈으로 확인합니다:
 https://test.pypi.org/project/vm-stock-kis/
 
-리허설 태그는 확인 후 정리합니다:
+### 정리
+
+리허설 태그는 남겨도 무해하지만, 지우려면 원격까지 지웁니다:
 
 ```bash
+git push --delete origin v2.2.0rc1
 git tag -d v2.2.0rc1
 ```
 
----
+> 태그 형식 주의: `v2.2.0-rc1` 처럼 붙임표를 쓰면 PEP 440 정규화 결과가 `2.2.0rc1` 이 되어
+> "Tag matches built version" 검사에서 문자열 비교가 실패합니다. **`v2.2.0rc1`** 형태로 쓰세요.
 
 ## 5. 실제 배포
 
@@ -152,10 +194,14 @@ git tag -a v2.2.0 -m "Release 2.2.0"
 git push origin v2.2.0
 ```
 
-이후 GitHub → Actions → "Publish Python 🐍 distributions 📦 to PyPI" 에서 진행 상황을 봅니다.
-`pypi` 환경에 승인자를 걸어 두었다면 여기서 **Approve** 를 눌러야 업로드가 진행됩니다.
+이후 GitHub → Actions → **"Publish"** 워크플로에서 진행 상황을 봅니다.
+잡은 `Build & verify` → `Publish to PyPI` → `GitHub Release` 순으로 이어집니다.
+`pypi` 환경에 승인자를 걸어 두었다면 `Publish to PyPI` 앞에서 멈추므로 **Approve** 를 눌러야 합니다.
 
-수동 업로드가 필요한 경우(워크플로 없이):
+`GitHub Release` 잡이 릴리스 노트를 자동 생성하고 sdist/wheel을 첨부하므로,
+6절의 "GitHub Releases 에 릴리스 노트 작성"은 자동으로 처리됩니다.
+
+수동 업로드가 필요한 경우(워크플로를 못 쓰는 상황):
 
 ```bash
 uvx twine upload dist/*     # username: __token__ / password: pypi-...
@@ -191,9 +237,17 @@ VIRTUAL_ENV=/tmp/vmkis-prod /tmp/vmkis-prod/bin/python -c \
 
 ---
 
-## 8. 알려진 정리 대상
+## 8. 워크플로 잡 구성 요약
 
-`.github/workflows/publish.yml` 의 "Update version in src/vmkis/\_\_env\_\_.py" 스텝은
-`{{VERSION_PLACEHOLDER}}` 를 치환하지만, 현재 `__env__.py` 는
-`importlib.metadata` 로 버전을 읽으므로 **플레이스홀더가 존재하지 않습니다**.
-동작에는 영향이 없으나(치환 대상 없음 = no-op) 혼란을 주므로 삭제 대상입니다.
+`.github/workflows/publish.yml`
+
+| 잡 | 조건 | 하는 일 |
+|----|------|---------|
+| `Build & verify` | 항상 | `uv build` → 태그/버전 일치 검사 → `twine check --strict` → 휠 내용 검사(`py.typed` 존재, 옛 `pykis/`·`tests/` 미포함) → 격리 환경 import 스모크 테스트 → 아티팩트 업로드 |
+| `Publish to TestPyPI` | 태그 **and** 사전 릴리스 | environment `testpypi`, OIDC로 TestPyPI 업로드 |
+| `Publish to PyPI` | 태그 **and** 정식 릴리스 | environment `pypi`, OIDC로 PyPI 업로드 |
+| `GitHub Release` | `Publish to PyPI` 성공 시 | 릴리스 생성 + dist 첨부 (`--generate-notes`) |
+
+사전 릴리스 판정은 `Version info` 스텝이 휠 파일명을 PEP 440으로 파싱해
+`is_prerelease or is_devrelease` 로 결정하고, 잡 출력 `prerelease` 로 전달합니다.
+문자열 매칭이 아니므로 `rc`/`a`/`b`/`dev` 표기를 모두 정확히 구분합니다.
