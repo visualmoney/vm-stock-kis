@@ -145,6 +145,8 @@ include = [
     "/README.md",
     "/QUICKSTART.md",
     "/CONTRIBUTING.md",
+    "/SECURITY.md",
+    "/SECURITY.en.md",
     "/LICENCE",
     "/pyproject.toml",
 ]

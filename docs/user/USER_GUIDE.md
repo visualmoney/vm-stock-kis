@@ -121,7 +121,7 @@ auth = KisAuth(
     account="50113500-01"
 )
 
-# 안전한 위치에 저장 (암호화됨)
+# 파일로 저장 (평문 JSON입니다. 본인만 읽도록 권한을 제한하세요)
 auth.save("secret.json")
 ```
 
