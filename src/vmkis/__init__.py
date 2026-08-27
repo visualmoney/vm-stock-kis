@@ -6,22 +6,22 @@ from vmkis.__env__ import (
     __url__,
     __version__,
 )
+
+# 핵심 인증/클래스
+from vmkis.client.auth import KisAuth
 from vmkis.exceptions import *
 from vmkis.kis import VmKis
 
 # 공개 타입은 `vmkis.public_types`에서 재export
 from vmkis.public_types import (
-    Quote,
     Balance,
-    Order,
     Chart,
-    Orderbook,
     MarketInfo,
+    Order,
+    Orderbook,
+    Quote,
     TradingHours,
 )
-
-# 핵심 인증/클래스
-from vmkis.client.auth import KisAuth
 
 # 초보자용 유틸(선택적).
 #
@@ -43,7 +43,6 @@ __all__ = [
     # 핵심
     "VmKis",
     "KisAuth",
-
     # 공개 타입
     "Quote",
     "Balance",
@@ -52,7 +51,6 @@ __all__ = [
     "Orderbook",
     "MarketInfo",
     "TradingHours",
-
     # 초보자 도구
     "SimpleKIS",
     "create_client",
@@ -65,6 +63,7 @@ from importlib import import_module
 from typing import Any
 
 _DEPRECATED_SOURCE = "vmkis.types"
+
 
 def __getattr__(name: str) -> Any:
     # v3.0.0에서 `PyKis`가 `VmKis`로 이름이 바뀌었습니다.
@@ -95,7 +94,8 @@ def __getattr__(name: str) -> Any:
     try:
         module = import_module(_DEPRECATED_SOURCE)
     except Exception:
-        raise AttributeError(f"module 'vmkis' has no attribute '{name}'")
+        # 원인 예외를 숨긴다. 호출자에게는 "그런 속성이 없다"가 정확한 설명이다.
+        raise AttributeError(f"module 'vmkis' has no attribute '{name}'") from None
 
     if hasattr(module, name):
         return getattr(module, name)

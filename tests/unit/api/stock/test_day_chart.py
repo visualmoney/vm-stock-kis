@@ -1,5 +1,6 @@
 from datetime import datetime, time, timedelta
 from decimal import Decimal
+
 import pytest
 
 from vmkis.api.stock import day_chart
@@ -56,12 +57,7 @@ def test_domestic_day_chart_time_validation():
     fake = type("K", (), {})()
 
     with pytest.raises(ValueError) as exc_info:
-        day_chart.domestic_day_chart(
-            fake,
-            "005930",
-            start=time(15, 0),
-            end=time(9, 0)
-        )
+        day_chart.domestic_day_chart(fake, "005930", start=time(15, 0), end=time(9, 0))
 
     assert "시작 시간" in str(exc_info.value) or "종료 시간" in str(exc_info.value)
 

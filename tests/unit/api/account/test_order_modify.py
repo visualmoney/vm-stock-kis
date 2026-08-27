@@ -1,10 +1,9 @@
 import types
-from types import EllipsisType
+
 import pytest
 
-from vmkis.client.exceptions import KisAPIError
-
 from vmkis.api.account import order_modify as om
+from vmkis.client.exceptions import KisAPIError
 
 
 class FakeOrder:
@@ -86,7 +85,7 @@ def test_domestic_modify_price_setting_uses_quote_and_fetch(monkeypatch):
     # quote returns object with high_limit/low_limit
     monkeypatch.setattr(om, "quote", lambda self, symbol, market: types.SimpleNamespace(high_limit=123, low_limit=1))
 
-    result = om.domestic_modify_order(kis, order, price=..., qty=..., condition=..., execution=...)
+    om.domestic_modify_order(kis, order, price=..., qty=..., condition=..., execution=...)
 
     # fetch should have been called and ORD_UNPR should equal '123' (from high_limit)
     assert kis._fetch_calls, "fetch was not called"
@@ -147,6 +146,7 @@ def test_modify_order_routes_and_handles_kisapierror(monkeypatch):
 
     def fake_foreign(*args, **kwargs):
         called["foreign"] = True
+
         # construct a minimal fake response to build a KisAPIError with msg_cd set
         class FakeResp:
             def __init__(self):
@@ -211,7 +211,10 @@ def test_foreign_modify_success_calls_get_market_code_and_fetch(monkeypatch):
     sample_info = types.SimpleNamespace(price=10, qty=5, condition=None, execution=None, branch="001", number="1")
     sample_info.type = "buy"
 
-    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr(
+        "vmkis.api.account.pending_order.pending_orders",
+        lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info),
+    )
     monkeypatch.setattr(om, "order_condition", lambda **kwargs: ("01", None, None))
     monkeypatch.setattr(om, "get_market_code", lambda market: "MK")
 
@@ -229,7 +232,10 @@ def test_foreign_modify_price_setting_uses_quote(monkeypatch):
     sample_info = types.SimpleNamespace(price=10, qty=5, condition=None, execution=None, branch="001", number="1")
     sample_info.type = "buy"
 
-    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr(
+        "vmkis.api.account.pending_order.pending_orders",
+        lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info),
+    )
     monkeypatch.setattr(om, "order_condition", lambda **kwargs: ("01", "upper", None))
     monkeypatch.setattr(om, "quote", lambda self, symbol, market: types.SimpleNamespace(high_limit=999, low_limit=1))
 
@@ -248,9 +254,14 @@ def test_foreign_daytime_modify_quote_path_and_price_selection(monkeypatch):
     sample_info = types.SimpleNamespace(price=None, qty=2, condition=None, execution=None, branch="001", number="1")
     sample_info.type = "buy"
 
-    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr(
+        "vmkis.api.account.pending_order.pending_orders",
+        lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info),
+    )
     monkeypatch.setattr(om, "ensure_price", lambda p, *args, **kwargs: p)
-    monkeypatch.setattr(om, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(high_limit=500, low_limit=10))
+    monkeypatch.setattr(
+        om, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(high_limit=500, low_limit=10)
+    )
 
     om.foreign_daytime_modify_order(kis, order, price=None, qty=None)
     called = kis._fetch_calls[-1][1]
@@ -266,7 +277,10 @@ def test_foreign_daytime_cancel_order_success_and_virtual(monkeypatch):
     sample_info = types.SimpleNamespace(qty=7)
     sample_info.type = "buy"
 
-    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr(
+        "vmkis.api.account.pending_order.pending_orders",
+        lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info),
+    )
 
     om.foreign_daytime_cancel_order(kis, order)
     called = kis._fetch_calls[-1][1]
@@ -283,6 +297,7 @@ def test_cancel_order_handles_kisapierror_and_routes_to_daytime(monkeypatch):
 
     def fake_foreign(*args, **kwargs):
         data = {"msg_cd": "APBK0918", "rt_cd": "1", "msg1": "err"}
+
         class FakeResp:
             def __init__(self):
                 self.status_code = 400

@@ -16,11 +16,9 @@ VM-Stock-KIS 사용 예제
   - json/csv: 리포팅
 """
 
-import json
 import csv
-from datetime import datetime, timedelta
-from typing import List, Dict
-import os
+import json
+from datetime import datetime
 
 
 class PerformanceAnalyzer:
@@ -28,7 +26,7 @@ class PerformanceAnalyzer:
 
     def __init__(self):
         # 시뮬레이션용 거래 데이터
-        self.trades: List[Dict] = [
+        self.trades: list[dict] = [
             {
                 "date": "2025-12-01",
                 "symbol": "005930",
@@ -63,7 +61,7 @@ class PerformanceAnalyzer:
             },
         ]
 
-    def analyze_trades(self) -> Dict:
+    def analyze_trades(self) -> dict:
         """거래를 분석합니다"""
 
         # 매수/매도 페어링
@@ -88,24 +86,26 @@ class PerformanceAnalyzer:
                     profit = sell_revenue - buy_cost
                     profit_rate = (profit / buy_cost) * 100
 
-                    pairs.append({
-                        "symbol": symbol,
-                        "buy_date": buy_trade["date"],
-                        "buy_price": buy_trade["price"],
-                        "buy_qty": buy_trade["qty"],
-                        "sell_date": trade["date"],
-                        "sell_price": trade["price"],
-                        "sell_qty": trade["qty"],
-                        "profit": profit,
-                        "profit_rate": profit_rate,
-                    })
+                    pairs.append(
+                        {
+                            "symbol": symbol,
+                            "buy_date": buy_trade["date"],
+                            "buy_price": buy_trade["price"],
+                            "buy_qty": buy_trade["qty"],
+                            "sell_date": trade["date"],
+                            "sell_price": trade["price"],
+                            "sell_qty": trade["qty"],
+                            "profit": profit,
+                            "profit_rate": profit_rate,
+                        }
+                    )
 
         return {
             "pairs": pairs,
             "open_positions": open_positions,
         }
 
-    def calculate_metrics(self, analysis: Dict) -> Dict:
+    def calculate_metrics(self, analysis: dict) -> dict:
         """성과 지표를 계산합니다"""
 
         pairs = analysis["pairs"]
@@ -134,7 +134,7 @@ class PerformanceAnalyzer:
             "max_loss": min((p["profit"] for p in pairs), default=0),
         }
 
-    def generate_report(self, analysis: Dict, metrics: Dict) -> str:
+    def generate_report(self, analysis: dict, metrics: dict) -> str:
         """리포트를 생성합니다"""
 
         report = []
@@ -183,7 +183,7 @@ class PerformanceAnalyzer:
 
         print(f"💾 리포트 저장: {filename}")
 
-    def export_to_json(self, analysis: Dict, filename: str = "trades.json") -> None:
+    def export_to_json(self, analysis: dict, filename: str = "trades.json") -> None:
         """거래 데이터를 JSON으로 내보냅니다"""
 
         with open(filename, "w", encoding="utf-8") as f:
@@ -191,7 +191,7 @@ class PerformanceAnalyzer:
 
         print(f"💾 JSON 내보내기: {filename}")
 
-    def export_to_csv(self, analysis: Dict, filename: str = "trades.csv") -> None:
+    def export_to_csv(self, analysis: dict, filename: str = "trades.csv") -> None:
         """거래 데이터를 CSV로 내보냅니다"""
 
         if not analysis["pairs"]:
@@ -256,4 +256,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

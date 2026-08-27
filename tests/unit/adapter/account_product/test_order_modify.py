@@ -1,4 +1,5 @@
 """Unit tests for vmkis.adapter.account_product.order_modify"""
+
 from types import SimpleNamespace
 
 
@@ -17,6 +18,7 @@ def test_cancelable_order_mixin_cancel():
             self.kis = SimpleNamespace()
 
     import vmkis.api.account.order_modify as mod_api
+
     original = mod_api.cancel_order
     mod_api.cancel_order = fake_cancel
 
@@ -45,6 +47,7 @@ def test_modifyable_order_mixin_modify():
             self.kis = SimpleNamespace()
 
     import vmkis.api.account.order_modify as mod_api
+
     original = mod_api.modify_order
     mod_api.modify_order = fake_modify
 
@@ -79,6 +82,7 @@ def test_orderable_order_mixin_combines_cancel_and_modify():
             self.kis = SimpleNamespace()
 
     import vmkis.api.account.order_modify as mod_api
+
     orig_cancel = mod_api.cancel_order
     orig_modify = mod_api.modify_order
     mod_api.cancel_order = fake_cancel

@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from datetime import datetime, tzinfo
 from decimal import Decimal
-from typing import TYPE_CHECKING, Callable, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from vmkis.api.account.order import ORDER_CONDITION
 from vmkis.api.base.product import KisProductBase, KisProductProtocol

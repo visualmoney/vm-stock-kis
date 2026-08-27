@@ -31,48 +31,71 @@ git clone https://github.com/visualmoney/vm-stock-kis.git
 cd vm-stock-kis
 ```
 
-### 2. Poetry 설치 및 의존성 설치
+### 2. uv 설치 및 의존성 설치
 
-Poetry가 없다면 먼저 설치:
+이 프로젝트는 [uv](https://docs.astral.sh/uv/)를 씁니다. Poetry는 더 이상
+사용하지 않습니다.
 
 ```bash
 # Windows (PowerShell)
-(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 
 # Linux/macOS
-curl -sSL https://install.python-poetry.org | python3 -
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
 프로젝트 의존성 설치:
 
 ```bash
-poetry install --with=dev
+uv sync --group dev
 ```
 
-### 3. 가상환경 활성화
+`uv sync`가 가상환경(`.venv`)을 만들고 Python 인터프리터까지 챙깁니다.
+버전은 `.python-version`(현재 `3.10`, `requires-python`의 하한)을 따릅니다.
+
+### 3. 명령 실행
+
+`uv run`이 가상환경을 자동으로 활성화하므로 별도의 `activate`가 필요 없습니다.
 
 ```bash
-poetry shell
+uv run pytest
 ```
 
-### 4. Pre-commit 훅 설정 (선택)
+셸을 직접 활성화하고 싶다면 평범한 venv와 같습니다.
 
 ```bash
-poetry run pre-commit install
+source .venv/bin/activate     # Windows: .venv\Scripts\activate
+```
+
+### 4. Pre-commit 훅 설정 (필수)
+
+**선택이 아닙니다.** 이 저장소는 구문 오류가 있는 파일과 파싱되지 않는
+워크플로가 커밋되어 CI가 8개월간 단 한 잡도 실행하지 못한 적이 있습니다.
+훅이 그것을 막습니다.
+
+```bash
+uv run pre-commit install
 ```
 
 ### 5. 테스트 실행 확인
 
 ```bash
 # 전체 테스트
-poetry run pytest
+uv run pytest
+
+# 실 API 자격증명이 필요한 테스트 제외 (CI와 동일)
+uv run pytest -m 'not requires_api'
 
 # 커버리지 포함
-poetry run pytest --cov=vmkis --cov-report=html
+uv run pytest --cov --cov-report=html
 
 # 특정 테스트만
-poetry run pytest tests/unit/test_public_api_imports.py
+uv run pytest tests/unit/test_public_api_imports.py
 ```
+
+커버리지 임계값은 `pyproject.toml`의 `[tool.coverage.report] fail_under`(90)를
+따릅니다. `--cov`는 `addopts`에 넣지 않았습니다 — 상시 켜져 있으면
+`breakpoint()`/pdb가 깨지고 모든 `pytest -k` 실행이 느려집니다.
 
 ---
 
@@ -214,7 +237,7 @@ from vmkis.types import Quote
 
 ### 1. PR 생성 전 체크리스트
 
-- [ ] 모든 테스트 통과 (`poetry run pytest`)
+- [ ] 모든 테스트 통과 (`uv run pytest -m 'not requires_api'`)
 - [ ] 타입 체크 통과 (IDE에서 확인)
 - [ ] 새로운 기능은 테스트 코드 포함
 - [ ] 공개 API는 Docstring 작성
@@ -377,16 +400,16 @@ def test_get_quote_samsung(kis_client):
 
 ```bash
 # 전체 테스트
-poetry run pytest
+uv run pytest
 
 # 특정 파일만
-poetry run pytest tests/unit/test_helpers.py
+uv run pytest tests/unit/test_helpers.py
 
 # 특정 테스트만
-poetry run pytest tests/unit/test_helpers.py::test_load_config_single_profile
+uv run pytest tests/unit/test_helpers.py::test_load_config_single_profile
 
 # 커버리지 포함
-poetry run pytest --cov=vmkis --cov-report=html
+uv run pytest --cov --cov-report=html
 ```
 
 ---
@@ -453,8 +476,8 @@ def example():
 
 ```bash
 # (향후 추가 예정)
-poetry run sphinx-apidoc -o docs/api vmkis
-poetry run sphinx-build -b html docs docs/_build
+uv run sphinx-apidoc -o docs/api vmkis
+uv run sphinx-build -b html docs docs/_build
 ```
 
 ---
@@ -487,7 +510,7 @@ poetry run sphinx-build -b html docs docs/_build
 - OS: Windows 11 / macOS 14 / Ubuntu 22.04
 - Python 버전: 3.11.5
 - vm-stock-kis 버전: 2.1.7
-- 설치 방법: pip / poetry
+- 설치 방법: pip / uv
 
 ## 에러 로그
 

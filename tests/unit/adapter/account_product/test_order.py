@@ -1,4 +1,5 @@
 """Unit tests for vmkis.adapter.account_product.order"""
+
 from decimal import Decimal
 from types import SimpleNamespace
 
@@ -103,19 +104,11 @@ def test_properties_return_expected_values(monkeypatch):
     from vmkis.adapter.account_product.order import KisOrderableAccountProductMixin
 
     # Create a fake balance with needed attributes
-    fake_stock = SimpleNamespace(
-        quantity=Decimal("100"),
-        orderable=Decimal("50"),
-        purchase_amount=Decimal("5000")
-    )
+    fake_stock = SimpleNamespace(quantity=Decimal("100"), orderable=Decimal("50"), purchase_amount=Decimal("5000"))
 
-    fake_balance = SimpleNamespace(
-        stock=lambda symbol: fake_stock
-    )
+    fake_balance = SimpleNamespace(stock=lambda symbol: fake_stock)
 
-    fake_account = SimpleNamespace(
-        balance=lambda country=None: fake_balance
-    )
+    fake_account = SimpleNamespace(balance=lambda country=None: fake_balance)
 
     class TestProduct(KisOrderableAccountProductMixin):
         symbol = "TEST"

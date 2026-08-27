@@ -7,8 +7,9 @@ import asyncio
 import logging
 import random
 import time
+from collections.abc import Awaitable, Callable
 from functools import wraps
-from typing import Any, Awaitable, Callable, TypeVar
+from typing import Any, TypeVar
 
 from vmkis.client.exceptions import (
     KisConnectionError,
@@ -65,7 +66,7 @@ class RetryConfig:
             대기 시간(초)
         """
         # exponential backoff: initial_delay * (base ^ attempt)
-        delay = self.initial_delay * (self.exponential_base ** attempt)
+        delay = self.initial_delay * (self.exponential_base**attempt)
         delay = min(delay, self.max_delay)
 
         # jitter: 대기 시간에 ±10% 무작위 값 추가
@@ -88,8 +89,8 @@ retry_config = RetryConfig(
 # 재시도 가능한 예외
 RETRYABLE_EXCEPTIONS = (
     KisRateLimitError,  # 429
-    KisServerError,     # 5xx
-    KisTimeoutError,    # 타임아웃
+    KisServerError,  # 5xx
+    KisTimeoutError,  # 타임아웃
     KisConnectionError,  # 연결 오류 (일부)
 )
 
@@ -141,9 +142,7 @@ def with_retry(
                         )
                         time.sleep(delay)
                     else:
-                        _logger.error(
-                            f"최대 재시도 횟수 초과: {type(e).__name__}"
-                        )
+                        _logger.error(f"최대 재시도 횟수 초과: {type(e).__name__}")
 
             raise last_exception or RuntimeError("Unknown error")
 
@@ -199,9 +198,7 @@ def with_async_retry(
                         )
                         await asyncio.sleep(delay)
                     else:
-                        _logger.error(
-                            f"최대 재시도 횟수 초과: {type(e).__name__}"
-                        )
+                        _logger.error(f"최대 재시도 횟수 초과: {type(e).__name__}")
 
             raise last_exception or RuntimeError("Unknown error")
 

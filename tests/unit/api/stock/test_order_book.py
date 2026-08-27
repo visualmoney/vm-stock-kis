@@ -42,19 +42,19 @@ def test_orderbook_dispatch_calls_fetch_for_domestic_and_foreign():
     calls = {}
 
     def fetch_domestic(path, api=None, params=None, response_type=None, domain=None):
-        calls['domestic'] = (path, api, params)
-        return 'domestic-result'
+        calls["domestic"] = (path, api, params)
+        return "domestic-result"
 
     def fetch_foreign(path, api=None, params=None, response_type=None, domain=None):
-        calls['foreign'] = (path, api, params)
-        return 'foreign-result'
+        calls["foreign"] = (path, api, params)
+        return "foreign-result"
 
     kis_dom = SimpleNamespace(fetch=fetch_domestic)
     res_dom = order_book.orderbook(kis_dom, "KRX", "SYM")
-    assert res_dom == 'domestic-result'
-    assert 'domestic' in calls
+    assert res_dom == "domestic-result"
+    assert "domestic" in calls
 
     kis_for = SimpleNamespace(fetch=fetch_foreign)
     res_for = order_book.orderbook(kis_for, "NASDAQ", "SYM")
-    assert res_for == 'foreign-result'
-    assert 'foreign' in calls
+    assert res_for == "foreign-result"
+    assert "foreign" in calls

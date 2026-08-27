@@ -16,11 +16,11 @@ VM-Stock-KIS 사용 예제
   - SimpleKIS: 초보자 친화 인터페이스
 """
 
+import argparse
+import os
+
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
-from typing import List, Dict
-import os
-import argparse
 
 
 def analyze_multiple_stocks(config_path: str | None = None, profile: str | None = None) -> None:
@@ -52,19 +52,21 @@ def analyze_multiple_stocks(config_path: str | None = None, profile: str | None 
 
     # 1단계: 여러 종목 정보 조회
     print("📊 단계 1: 종목 정보 조회 중...")
-    stocks_data: List[Dict] = []
+    stocks_data: list[dict] = []
 
     for symbol in symbols:
         try:
             price = simple.get_price(symbol)
-            stocks_data.append({
-                "symbol": symbol,
-                "name": price.name,
-                "price": price.price,
-                "change": price.change,
-                "change_rate": price.change_rate,
-                "volume": price.volume,
-            })
+            stocks_data.append(
+                {
+                    "symbol": symbol,
+                    "name": price.name,
+                    "price": price.price,
+                    "change": price.change,
+                    "change_rate": price.change_rate,
+                    "volume": price.volume,
+                }
+            )
             print(f"   ✓ {symbol}: {price.name}")
         except Exception as e:
             print(f"   ✗ {symbol}: {e}")
@@ -140,4 +142,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

@@ -19,9 +19,7 @@ class KisWebsocketApprovalKey(KisDynamic):
     """접속 키"""
 
 
-def websocket_approval_key(
-    self: "VmKis", domain: Literal["real", "virtual"] | None = None
-) -> KisWebsocketApprovalKey:
+def websocket_approval_key(self: "VmKis", domain: Literal["real", "virtual"] | None = None) -> KisWebsocketApprovalKey:
     """
     웹소켓 접속 키를 발급합니다.
 

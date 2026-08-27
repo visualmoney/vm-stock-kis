@@ -3,6 +3,7 @@ from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pytest
+
 from vmkis.utils import repr as kisrepr
 
 

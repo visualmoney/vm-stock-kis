@@ -1,6 +1,6 @@
+from collections.abc import Callable
 from multiprocessing import Lock
 from multiprocessing.synchronize import Lock as LockType
-from typing import Callable
 
 
 class ReferenceStore:
@@ -97,6 +97,6 @@ def release_method(func: Callable):
     if not hasattr(func, "__is_kis_reference_method__") or not hasattr(func, "__reference_ticket__"):
         return False
 
-    getattr(func.__reference_ticket__, "release")()
+    func.__reference_ticket__.release()
 
     return True

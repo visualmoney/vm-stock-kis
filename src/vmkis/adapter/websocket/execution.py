@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Callable, Literal, Protocol, runtime_checkable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 
 from vmkis.api.base.account import KisAccountProtocol
 from vmkis.event.handler import KisEventFilter, KisEventTicket, KisMultiEventFilter

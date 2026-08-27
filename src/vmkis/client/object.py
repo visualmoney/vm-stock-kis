@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, runtime_checkable
+from collections.abc import Iterable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 if TYPE_CHECKING:
     from vmkis.kis import VmKis

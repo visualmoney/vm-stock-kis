@@ -66,6 +66,7 @@ def test_on_price_dispatch_for_domestic_and_foreign():
 
 def test_on_product_price_forwarding():
     """on_product_price forwards to on_price using the product's kis.websocket."""
+
     class FakeProduct:
         pass
 

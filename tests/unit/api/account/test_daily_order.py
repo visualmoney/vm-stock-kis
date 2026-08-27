@@ -1,10 +1,10 @@
-import pytest
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from types import SimpleNamespace
 
+import pytest
+
 from vmkis.api.account import daily_order as dord
-from vmkis.client.page import KisPage
 
 
 def test_domestic_exchange_code_map_basic():
@@ -77,7 +77,9 @@ def test_domestic_daily_orders_swapped_dates_and_page_to():
 
 def test_kis_integration_daily_orders_merges_and_sorts():
     # create two small KisDailyOrders-like objects
-    o1 = SimpleNamespace(orders=[SimpleNamespace(time_kst=datetime(2021, 1, 2)), SimpleNamespace(time_kst=datetime(2021, 1, 1))])
+    o1 = SimpleNamespace(
+        orders=[SimpleNamespace(time_kst=datetime(2021, 1, 2)), SimpleNamespace(time_kst=datetime(2021, 1, 1))]
+    )
     o2 = SimpleNamespace(orders=[SimpleNamespace(time_kst=datetime(2021, 1, 3))])
 
     kd = dord.KisIntegrationDailyOrders(None, "ACC", o1, o2)
@@ -88,10 +90,7 @@ def test_kis_integration_daily_orders_merges_and_sorts():
 
 def test_kis_daily_orders_base_getitem_by_index():
     """Test __getitem__ with integer index."""
-    orders_list = [
-        SimpleNamespace(symbol="005930", order_number="1"),
-        SimpleNamespace(symbol="AAPL", order_number="2")
-    ]
+    orders_list = [SimpleNamespace(symbol="005930", order_number="1"), SimpleNamespace(symbol="AAPL", order_number="2")]
 
     daily_orders = object.__new__(dord.KisDailyOrdersBase)
     daily_orders.orders = orders_list
@@ -102,10 +101,7 @@ def test_kis_daily_orders_base_getitem_by_index():
 
 def test_kis_daily_orders_base_getitem_by_symbol():
     """Test __getitem__ with symbol string."""
-    orders_list = [
-        SimpleNamespace(symbol="005930", order_number="1"),
-        SimpleNamespace(symbol="AAPL", order_number="2")
-    ]
+    orders_list = [SimpleNamespace(symbol="005930", order_number="1"), SimpleNamespace(symbol="AAPL", order_number="2")]
 
     daily_orders = object.__new__(dord.KisDailyOrdersBase)
     daily_orders.orders = orders_list
@@ -127,10 +123,7 @@ def test_kis_daily_orders_base_getitem_keyerror():
 
 def test_kis_daily_orders_base_order_by_symbol():
     """Test order() method with symbol."""
-    orders_list = [
-        SimpleNamespace(symbol="005930", order_number="1"),
-        SimpleNamespace(symbol="AAPL", order_number="2")
-    ]
+    orders_list = [SimpleNamespace(symbol="005930", order_number="1"), SimpleNamespace(symbol="AAPL", order_number="2")]
 
     daily_orders = object.__new__(dord.KisDailyOrdersBase)
     daily_orders.orders = orders_list
@@ -146,11 +139,7 @@ def test_kis_daily_orders_base_order_by_symbol():
 
 def test_kis_daily_orders_base_len():
     """Test __len__ method."""
-    orders_list = [
-        SimpleNamespace(symbol="005930"),
-        SimpleNamespace(symbol="AAPL"),
-        SimpleNamespace(symbol="MSFT")
-    ]
+    orders_list = [SimpleNamespace(symbol="005930"), SimpleNamespace(symbol="AAPL"), SimpleNamespace(symbol="MSFT")]
 
     daily_orders = object.__new__(dord.KisDailyOrdersBase)
     daily_orders.orders = orders_list
@@ -160,10 +149,7 @@ def test_kis_daily_orders_base_len():
 
 def test_kis_daily_orders_base_iter():
     """Test __iter__ method."""
-    orders_list = [
-        SimpleNamespace(symbol="005930"),
-        SimpleNamespace(symbol="AAPL")
-    ]
+    orders_list = [SimpleNamespace(symbol="005930"), SimpleNamespace(symbol="AAPL")]
 
     daily_orders = object.__new__(dord.KisDailyOrdersBase)
     daily_orders.orders = orders_list
@@ -197,8 +183,6 @@ def test_domestic_exchange_code_map_coverage():
 
 def test_kis_domestic_daily_order_pre_init_with_market():
     """Test KisDomesticDailyOrder.__pre_init__ with market-specific exchange code."""
-    from vmkis.utils.timezone import TIMEZONE
-    from vmkis.api.stock.market import get_market_timezone
 
     order = object.__new__(dord.KisDomesticDailyOrder)
 
@@ -218,7 +202,7 @@ def test_kis_domestic_daily_order_pre_init_with_market():
         "ccld_yn": "N",
         "prdt_name": "Apple",
         "ord_gno_brno": "00001",
-        "odno": "12345"
+        "odno": "12345",
     }
 
     order.__pre_init__(data)
@@ -246,7 +230,7 @@ def test_kis_domestic_daily_order_pre_init_with_cn_market():
         "ccld_yn": "N",
         "prdt_name": "SSE Stock",
         "ord_gno_brno": "00001",
-        "odno": "12345"
+        "odno": "12345",
     }
 
     order.__pre_init__(data)
@@ -256,6 +240,7 @@ def test_kis_domestic_daily_order_pre_init_with_cn_market():
     assert order.market == "SSE"
     # Should update timezone to SSE timezone
     from vmkis.api.stock.market import get_market_timezone
+
     assert order.timezone == get_market_timezone("SSE")
 
 
@@ -278,7 +263,7 @@ def test_kis_domestic_daily_order_pre_init_with_condition():
         "ccld_yn": "N",
         "prdt_name": "Samsung",
         "ord_gno_brno": "00001",
-        "odno": "12345"
+        "odno": "12345",
     }
 
     order.__pre_init__(data)
@@ -289,8 +274,9 @@ def test_kis_domestic_daily_order_pre_init_with_condition():
 
 def test_kis_domestic_daily_order_post_init():
     """Test KisDomesticDailyOrder.__post_init__ converts timezone."""
-    from vmkis.utils.timezone import TIMEZONE
     from zoneinfo import ZoneInfo
+
+    from vmkis.utils.timezone import TIMEZONE
 
     order = object.__new__(dord.KisDomesticDailyOrder)
     order.time_kst = datetime.now(TIMEZONE)
@@ -347,8 +333,8 @@ def test_kis_domestic_daily_orders_kis_post_init(monkeypatch):
 
 def test_kis_foreign_daily_order_post_init():
     """Test KisForeignDailyOrder.__post_init__ converts timezone."""
-    from vmkis.utils.timezone import TIMEZONE
     from vmkis.api.stock.market import get_market_timezone
+    from vmkis.utils.timezone import TIMEZONE
 
     order = object.__new__(dord.KisForeignDailyOrder)
     order.time_kst = datetime.now(TIMEZONE)

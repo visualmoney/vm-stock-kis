@@ -1,8 +1,6 @@
 """Integration tests for KisObject.transform_ ignore_missing behaviors."""
 
-import pytest
-
-from vmkis.responses.dynamic import KisObject, KisDynamic, KisTransform, KisType
+from vmkis.responses.dynamic import KisDynamic, KisObject, KisTransform, KisType
 
 
 class PassThrough(KisType):
@@ -44,7 +42,5 @@ class VerboseMissing(KisDynamic):
 
 def test_transform_ignore_missing_fields_suppresses_verbose():
     """ignore_missing_fields prevents warnings for extra keys (behavioral no-op)."""
-    obj = KisObject.transform_(
-        {"a": 1, "extra": 2}, VerboseMissing, ignore_missing_fields={"extra"}
-    )
+    obj = KisObject.transform_({"a": 1, "extra": 2}, VerboseMissing, ignore_missing_fields={"extra"})
     assert obj.a == 1

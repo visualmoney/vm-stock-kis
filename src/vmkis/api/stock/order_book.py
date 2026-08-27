@@ -1,5 +1,6 @@
+from collections.abc import Iterable
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 from vmkis.api.account.order import ORDER_CONDITION
 from vmkis.api.base.product import KisProductBase, KisProductProtocol
@@ -291,17 +292,21 @@ class KisForeignOrderbook(KisAPIResponse, KisOrderbookBase):
         for i in range(1, 1 + count):
             ask_price_key, ask_volume_key = f"pask{i}", f"vask{i}"
             if ask_price_key in output2 and output2[ask_price_key]:
-                asks.append(KisForeignOrderbookItem(
-                    price=Decimal(output2[ask_price_key]),
-                    volume=int(output2[ask_volume_key]),
-                ))
+                asks.append(
+                    KisForeignOrderbookItem(
+                        price=Decimal(output2[ask_price_key]),
+                        volume=int(output2[ask_volume_key]),
+                    )
+                )
 
             bid_price_key, bid_volume_key = f"pbid{i}", f"vbid{i}"
             if bid_price_key in output2 and output2[bid_price_key]:
-                bids.append(KisForeignOrderbookItem(
-                    price=Decimal(output2[bid_price_key]),
-                    volume=int(output2[bid_volume_key]),
-                ))
+                bids.append(
+                    KisForeignOrderbookItem(
+                        price=Decimal(output2[bid_price_key]),
+                        volume=int(output2[bid_volume_key]),
+                    )
+                )
         self.asks, self.bids = asks, bids
 
 
@@ -366,7 +371,9 @@ def foreign_orderbook(
         "/uapi/overseas-price/v1/quotations/inquire-asking-price",
         api="HHDFS76200100",
         params={
-            "EXCD": (DAYTIME_MARKET_SHORT_TYPE_MAP[market] if condition == "extended" else MARKET_SHORT_TYPE_MAP[market]),
+            "EXCD": (
+                DAYTIME_MARKET_SHORT_TYPE_MAP[market] if condition == "extended" else MARKET_SHORT_TYPE_MAP[market]
+            ),
             "SYMB": symbol,
         },
         response_type=KisForeignOrderbook(

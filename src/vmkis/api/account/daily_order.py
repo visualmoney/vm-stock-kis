@@ -1,7 +1,8 @@
+from collections.abc import Iterable
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 from functools import cached_property
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 from zoneinfo import ZoneInfo
 
 from vmkis.api.account.order import (

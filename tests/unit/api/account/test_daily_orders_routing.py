@@ -1,8 +1,6 @@
+from datetime import date
 from types import SimpleNamespace
 from unittest.mock import patch
-from datetime import date
-
-import pytest
 
 from vmkis.api.account import daily_order as daily_mod
 from vmkis.client.account import KisAccountNumber
@@ -19,12 +17,14 @@ def test_daily_orders_calls_domestic_and_foreign_and_constructs_integration():
         def __init__(self, kis, account_number, dom, fori):
             created["args"] = (kis, account_number, dom, fori)
 
-    with patch.object(daily_mod, "domestic_daily_orders", return_value=fake_domestic) as pd, patch.object(
-        daily_mod, "foreign_daily_orders", return_value=fake_foreign
-    ) as pf, patch.object(daily_mod, "KisIntegrationDailyOrders", new=FakeIntegration):
+    with (
+        patch.object(daily_mod, "domestic_daily_orders", return_value=fake_domestic) as pd,
+        patch.object(daily_mod, "foreign_daily_orders", return_value=fake_foreign) as pf,
+        patch.object(daily_mod, "KisIntegrationDailyOrders", new=FakeIntegration),
+    ):
         kis = object()
         account = "12345678"
-        res = daily_mod.daily_orders(kis, account, start=date(2024, 1, 1), end=date(2024, 1, 2), country=None)
+        daily_mod.daily_orders(kis, account, start=date(2024, 1, 1), end=date(2024, 1, 2), country=None)
 
     # Assert the internal domestic/foreign were called
     assert pd.called

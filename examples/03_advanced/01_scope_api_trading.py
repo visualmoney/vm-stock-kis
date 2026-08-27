@@ -16,10 +16,10 @@ VM-Stock-KIS 사용 예제
   - VmKis: 한국투자증권 API (직접 사용)
 """
 
-from vmkis import VmKis, KisAuth, create_client
-import os
 import argparse
-from typing import Dict, List
+import os
+
+from vmkis import create_client
 
 
 def advanced_trading_with_scope(config_path: str | None = None, profile: str | None = None) -> None:
@@ -94,12 +94,14 @@ def advanced_trading_with_scope(config_path: str | None = None, profile: str | N
             try:
                 stock = kis.stock(sym)
                 quote = stock.quote()
-                results.append({
-                    "symbol": sym,
-                    "name": quote.name,
-                    "price": quote.price,
-                    "change_rate": quote.change_rate,
-                })
+                results.append(
+                    {
+                        "symbol": sym,
+                        "name": quote.name,
+                        "price": quote.price,
+                        "change_rate": quote.change_rate,
+                    }
+                )
                 print(f"✓ {sym}: {quote.name} ({quote.price:,}원)")
             except Exception as e:
                 print(f"✗ {sym}: {e}")
@@ -133,4 +135,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

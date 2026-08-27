@@ -1,9 +1,10 @@
 import hashlib
+from collections.abc import Callable, Iterable
 from datetime import timedelta
 from os import PathLike
 from pathlib import Path
 from time import sleep
-from typing import Callable, Iterable, Literal, overload
+from typing import Literal, overload
 from urllib.parse import urljoin
 
 import requests
@@ -420,7 +421,9 @@ class VmKis:
         self._virtual_token = (
             virtual_token
             if isinstance(virtual_token, KisAccessToken)
-            else KisAccessToken.load(virtual_token) if self.virtual and virtual_token else None
+            else KisAccessToken.load(virtual_token)
+            if self.virtual and virtual_token
+            else None
         )
         self._sessions = {
             "real": requests.Session(),
@@ -459,8 +462,9 @@ class VmKis:
         if virtual_token_path.exists():
             try:
                 self.token = KisAccessToken.load(virtual_token_path)
-                logging.logger.debug(f"실전도메인 API 접속 토큰을 불러왔습니다.")
-            except:
+                logging.logger.debug("실전도메인 API 접속 토큰을 불러왔습니다.")
+            except Exception:
+                # 캐시된 토큰이 손상되었거나 형식이 바뀐 경우. 새로 발급받으면 된다.
                 pass
 
         if self.virtual:
@@ -469,8 +473,9 @@ class VmKis:
             if virtual_token_path.exists():
                 try:
                     self.primary_token = KisAccessToken.load(virtual_token_path)
-                    logging.logger.debug(f"모의도메인 API 접속 토큰을 불러왔습니다.")
-                except:
+                    logging.logger.debug("모의도메인 API 접속 토큰을 불러왔습니다.")
+                except Exception:
+                    # 캐시된 토큰이 손상되었거나 형식이 바뀐 경우. 새로 발급받으면 된다.
                     pass
 
     def _save_cached_token(
@@ -490,14 +495,14 @@ class VmKis:
 
             if token is not None:
                 token.save(token_dir / self._get_hashed_token_name("real"))
-                logging.logger.debug(f"실전도메인 API 접속 토큰을 저장했습니다.")
+                logging.logger.debug("실전도메인 API 접속 토큰을 저장했습니다.")
 
         if self.virtual and (domain is None or domain == "virtual"):
             virtual_token = self.primary_token if force else self._virtual_token
 
             if virtual_token is not None:
                 virtual_token.save(token_dir / self._get_hashed_token_name("virtual"))
-                logging.logger.debug(f"모의도메인 API 접속 토큰을 저장했습니다.")
+                logging.logger.debug("모의도메인 API 접속 토큰을 저장했습니다.")
 
     def _rate_limit_exceeded(self) -> None:
         logging.logger.warning("API 호출 횟수를 초과하여 호출 유량 획득까지 대기합니다.")
@@ -641,7 +646,7 @@ class VmKis:
 
         if verbose:
             logging.logger.debug(
-                f"API [%s]: %s, %s -> %s:%s (%s)",
+                "API [%s]: %s, %s -> %s:%s (%s)",
                 api or path,
                 params or ".",
                 body or ".",
@@ -669,7 +674,7 @@ class VmKis:
             from vmkis.api.auth.token import token_issue
 
             self._token = token_issue(self, domain="real")
-            logging.logger.debug(f"실전도메인 API 접속 토큰을 발급했습니다.")
+            logging.logger.debug("실전도메인 API 접속 토큰을 발급했습니다.")
 
             if self._keep_token:
                 self._save_cached_token(self._keep_token, domain="real", force=False)
@@ -693,7 +698,7 @@ class VmKis:
             from vmkis.api.auth.token import token_issue
 
             self._virtual_token = token_issue(self, domain="virtual")
-            logging.logger.debug(f"모의도메인 API 접속 토큰을 발급했습니다.")
+            logging.logger.debug("모의도메인 API 접속 토큰을 발급했습니다.")
 
             if self._keep_token:
                 self._save_cached_token(self._keep_token, domain="virtual", force=False)

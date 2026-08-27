@@ -1,5 +1,6 @@
+from collections.abc import Iterable
 from types import NoneType
-from typing import Any, Iterable, Protocol, TypeVar, get_args, runtime_checkable
+from typing import Any, Protocol, TypeVar, get_args, runtime_checkable
 
 from vmkis import logging
 from vmkis.responses.dynamic import KisNoneValueError, KisType, empty
@@ -72,7 +73,7 @@ class KisWebsocketResponse:
             if (pre_init := getattr(response, "__pre_init__", None)) is not None:
                 pre_init(items)
 
-            setattr(response, "__data__", items)
+            response.__data__ = items
 
             if (post_init := getattr(response, "__post_init__", None)) is not None:
                 post_init()
@@ -92,18 +93,18 @@ class KisWebsocketResponse:
 
         # 각 아이템의 필드를 묶음 [A, A, B, B] -> [(A, A), (B, B)]
         try:
-            for values in zip(*[iter(items)] * len(fields)):
+            for values in zip(*[iter(items)] * len(fields), strict=False):
                 values: list[str]
                 response = response_type()
 
                 if (pre_init := getattr(response, "__pre_init__", None)) is not None:
                     pre_init(values)
 
-                setattr(response, "__data__", values)
+                response.__data__ = values
 
                 annotation = response_type.__annotations__
 
-                for i, (field, value) in enumerate(zip(fields, values)):
+                for i, (field, value) in enumerate(zip(fields, values, strict=False)):
                     if field is None:
                         continue
 
@@ -130,7 +131,11 @@ class KisWebsocketResponse:
                             default_value = default_value()
 
                         if default_value is None and not nullable:
-                            raise ValueError(f"{response_type.__name__}.{field.field} 필드가 None일 수 없습니다.")
+                            # KisNoneValueError는 "값이 비어 있다"는 신호일 뿐 오류 원인이
+                            # 아니므로 체인을 끊는다.
+                            raise ValueError(
+                                f"{response_type.__name__}.{field.field} 필드가 None일 수 없습니다."
+                            ) from None
 
                         setattr(response, field.field, default_value)
 

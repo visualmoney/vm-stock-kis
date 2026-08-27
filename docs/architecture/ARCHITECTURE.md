@@ -680,7 +680,8 @@ tests/
 ## 배포 및 버전 관리
 
 ### 빌드 도구
-- Poetry (의존성 관리)
+- uv (의존성 관리 및 빌드 프론트엔드)
+- hatchling + hatch-vcs (PEP 517 빌드 백엔드, git 태그 기반 버저닝)
 - setuptools (배포)
 - pytest (테스트)
 

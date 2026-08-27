@@ -1,12 +1,12 @@
+from collections.abc import Iterable
 from datetime import datetime
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Iterable, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 from zoneinfo import ZoneInfo
 
 from typing_extensions import deprecated
 
 from vmkis.adapter.account_product.order_modify import (
-    KisOrderableOrder,
     KisOrderableOrderMixin,
 )
 from vmkis.adapter.websocket.execution import KisRealtimeOrderableOrderMixin
@@ -17,7 +17,6 @@ from vmkis.api.account.order import (
     ORDER_TYPE,
     KisOrder,
     KisOrderNumber,
-    KisOrderNumberBase,
     KisSimpleOrder,
     KisSimpleOrderNumber,
     resolve_domestic_order_condition,
@@ -171,11 +170,9 @@ class KisPendingOrders(KisAccountProtocol, Protocol):
         """주문번호 또는 종목코드로 주문을 조회합니다."""
         ...
 
-    def __len__(self) -> int:
-        ...
+    def __len__(self) -> int: ...
 
-    def __iter__(self) -> Iterable[KisPendingOrder]:
-        ...
+    def __iter__(self) -> Iterable[KisPendingOrder]: ...
 
 
 @kis_repr(

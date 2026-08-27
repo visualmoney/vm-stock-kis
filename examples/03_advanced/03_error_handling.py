@@ -17,24 +17,25 @@ VM-Stock-KIS 사용 예제
   - logging: 로깅
 """
 
-from vmkis import create_client
 import argparse
-from vmkis.simple import SimpleKIS
-import time
-import os
 import logging
-from typing import Optional, Any, Callable
+import os
+import time
+from collections.abc import Callable
 from functools import wraps
+from typing import Any
 
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 # 로깅 설정
 logging.basicConfig(
     level=logging.INFO,
-    format='[%(asctime)s] %(levelname)s: %(message)s',
+    format="[%(asctime)s] %(levelname)s: %(message)s",
     handlers=[
         logging.FileHandler("trading.log"),
         logging.StreamHandler(),
-    ]
+    ],
 )
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,7 @@ def retry_with_backoff(
         initial_delay: 초기 지연 (초)
         backoff_factor: 지수적 증가 인수
     """
+
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         def wrapper(*args, **kwargs) -> Any:
@@ -80,6 +82,7 @@ def retry_with_backoff(
                 raise last_exception
 
         return wrapper
+
     return decorator
 
 
@@ -130,7 +133,7 @@ class ResilientTradingClient:
         symbol: str,
         side: str,
         qty: int,
-        price: Optional[int] = None,
+        price: int | None = None,
         max_retries: int = 3,
     ) -> bool:
         """
@@ -152,8 +155,7 @@ class ResilientTradingClient:
         for attempt in range(max_retries + 1):
             try:
                 self.logger.info(
-                    f"주문 시도 {attempt + 1}/{max_retries + 1}: "
-                    f"{side} {symbol} {qty}주 @ {price or '시장가'}"
+                    f"주문 시도 {attempt + 1}/{max_retries + 1}: {side} {symbol} {qty}주 @ {price or '시장가'}"
                 )
 
                 order = self.simple.place_order(
@@ -174,7 +176,7 @@ class ResilientTradingClient:
                     time.sleep(delay)
                     delay *= 2.0
                 else:
-                    self.logger.error(f"주문 최종 실패")
+                    self.logger.error("주문 최종 실패")
                     return False
 
         return False
@@ -198,10 +200,7 @@ class ResilientTradingClient:
 
         consecutive_failures = 0
 
-        self.logger.info(
-            f"모니터링 시작: {symbol} "
-            f"(최대 {max_consecutive_failures}회 연속 실패 시 중단)"
-        )
+        self.logger.info(f"모니터링 시작: {symbol} (최대 {max_consecutive_failures}회 연속 실패 시 중단)")
 
         while True:
             try:
@@ -213,16 +212,11 @@ class ResilientTradingClient:
 
             except Exception as e:
                 consecutive_failures += 1
-                self.logger.error(
-                    f"조회 실패 ({consecutive_failures}/{max_consecutive_failures}): {e}"
-                )
+                self.logger.error(f"조회 실패 ({consecutive_failures}/{max_consecutive_failures}): {e}")
 
                 # Circuit breaker 트리거
                 if consecutive_failures >= max_consecutive_failures:
-                    self.logger.critical(
-                        f"Circuit breaker 작동! "
-                        f"모니터링 중단 ({consecutive_failures} 연속 실패)"
-                    )
+                    self.logger.critical(f"Circuit breaker 작동! 모니터링 중단 ({consecutive_failures} 연속 실패)")
                     break
 
             time.sleep(check_interval)

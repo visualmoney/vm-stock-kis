@@ -1,6 +1,10 @@
+from collections.abc import Iterable
+from datetime import date, datetime, time
+from decimal import Decimal
 from functools import wraps
 from io import StringIO
-from typing import Any, Iterable, Literal, Protocol, TypeVar
+from typing import Any, Literal, Protocol, TypeVar
+from zoneinfo import ZoneInfo
 
 __all__ = [
     "SINGLE_LINE_MAX_LENGTH",
@@ -456,10 +460,6 @@ def object_repr(
 #####################################
 ## VmKis Custom Repr Functions
 #####################################
-
-from datetime import date, datetime, time
-from decimal import Decimal
-from zoneinfo import ZoneInfo
 
 
 def decimal_repr(obj: Decimal, max_depth: int = 7, depth: int = 0) -> str:

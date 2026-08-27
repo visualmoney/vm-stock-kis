@@ -3,19 +3,19 @@
 KisObject의 메모리 사용량을 추적합니다
 """
 
-import pytest
 import tracemalloc
-from typing import List
+
 from vmkis.responses.dynamic import KisObject
 
 
 class MockData(KisObject):
     """모의 데이터"""
+
     __annotations__ = {
-        'id': str,
-        'value': int,
-        'name': str,
-        'data': str,
+        "id": str,
+        "value": int,
+        "name": str,
+        "data": str,
     }
 
     @staticmethod
@@ -28,16 +28,17 @@ class MockData(KisObject):
 
 class MockNested(KisObject):
     """중첩 데이터"""
+
     __annotations__ = {
-        'id': str,
-        'items': list[MockData],
+        "id": str,
+        "items": list[MockData],
     }
 
     @staticmethod
     def __transform__(cls, data):
         obj = cls(cls)
         for key, value in data.items():
-            if key == 'items' and isinstance(value, list):
+            if key == "items" and isinstance(value, list):
                 setattr(obj, key, [MockData.__transform__(MockData, i) if isinstance(i, dict) else i for i in value])
             else:
                 setattr(obj, key, value)
@@ -61,10 +62,7 @@ class MemoryProfile:
         return 0.0
 
     def __repr__(self):
-        return (
-            f"{self.name}: {self.diff_kb:.1f}KB total, "
-            f"{self.per_item_kb:.3f}KB/item (peak: {self.peak_kb:.1f}KB)"
-        )
+        return f"{self.name}: {self.diff_kb:.1f}KB total, {self.per_item_kb:.3f}KB/item (peak: {self.peak_kb:.1f}KB)"
 
 
 class TestMemoryUsage:
@@ -80,10 +78,10 @@ class TestMemoryUsage:
         objects = []
         for i in range(1000):
             data = {
-                'id': f'test_{i}',
-                'value': i,
-                'name': f'name_{i}',
-                'data': 'x' * 100,
+                "id": f"test_{i}",
+                "value": i,
+                "name": f"name_{i}",
+                "data": "x" * 100,
             }
             obj = MockData.transform_(data, MockData)
             objects.append(obj)
@@ -94,15 +92,10 @@ class TestMemoryUsage:
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        top_stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats) / 1024  # KB
 
-        profile = MemoryProfile(
-            name='single_object',
-            peak_kb=peak / 1024,
-            diff_kb=total_diff,
-            count=1000
-        )
+        profile = MemoryProfile(name="single_object", peak_kb=peak / 1024, diff_kb=total_diff, count=1000)
 
         print(f"\n{profile}")
 
@@ -120,17 +113,17 @@ class TestMemoryUsage:
         for i in range(100):
             items = [
                 {
-                    'id': f'item_{i}_{j}',
-                    'value': j,
-                    'name': f'name_{j}',
-                    'data': 'x' * 50,
+                    "id": f"item_{i}_{j}",
+                    "value": j,
+                    "name": f"name_{j}",
+                    "data": "x" * 50,
                 }
                 for j in range(10)
             ]
 
             data = {
-                'id': f'nested_{i}',
-                'items': items,
+                "id": f"nested_{i}",
+                "items": items,
             }
             obj = MockNested.transform_(data, MockNested)
             objects.append(obj)
@@ -140,15 +133,10 @@ class TestMemoryUsage:
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        top_stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats) / 1024
 
-        profile = MemoryProfile(
-            name='nested_objects',
-            peak_kb=peak / 1024,
-            diff_kb=total_diff,
-            count=100
-        )
+        profile = MemoryProfile(name="nested_objects", peak_kb=peak / 1024, diff_kb=total_diff, count=100)
 
         print(f"\n{profile}")
         assert profile.per_item_kb < 50.0
@@ -163,10 +151,10 @@ class TestMemoryUsage:
         objects = []
         for i in range(10000):
             data = {
-                'id': f'batch_{i}',
-                'value': i % 1000,
-                'name': f'item_{i}',
-                'data': 'x' * 50,
+                "id": f"batch_{i}",
+                "value": i % 1000,
+                "name": f"item_{i}",
+                "data": "x" * 50,
             }
             obj = MockData.transform_(data, MockData)
             objects.append(obj)
@@ -176,15 +164,10 @@ class TestMemoryUsage:
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        top_stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats) / 1024
 
-        profile = MemoryProfile(
-            name='large_batch',
-            peak_kb=peak / 1024,
-            diff_kb=total_diff,
-            count=10000
-        )
+        profile = MemoryProfile(name="large_batch", peak_kb=peak / 1024, diff_kb=total_diff, count=10000)
 
         print(f"\n{profile}")
         assert profile.diff_kb < 50000  # 50MB 미만
@@ -194,32 +177,27 @@ class TestMemoryUsage:
         tracemalloc.start()
 
         data = {
-            'id': 'test',
-            'value': 100,
-            'name': 'name',
-            'data': 'x' * 100,
+            "id": "test",
+            "value": 100,
+            "name": "name",
+            "data": "x" * 100,
         }
 
         snapshot_before = tracemalloc.take_snapshot()
 
         # 같은 데이터로 1000번 변환
         for _ in range(1000):
-            obj = MockData.transform_(data, MockData)
+            MockData.transform_(data, MockData)
 
         snapshot_after = tracemalloc.take_snapshot()
 
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        top_stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats) / 1024
 
-        profile = MemoryProfile(
-            name='reuse',
-            peak_kb=peak / 1024,
-            diff_kb=total_diff,
-            count=1000
-        )
+        profile = MemoryProfile(name="reuse", peak_kb=peak / 1024, diff_kb=total_diff, count=1000)
 
         print(f"\n{profile}")
         # 재사용시 메모리가 많이 증가하지 않아야 함
@@ -235,22 +213,22 @@ class TestMemoryUsage:
         objects = []
         for i in range(1000):
             data = {
-                'id': f'cleanup_{i}',
-                'value': i,
-                'name': f'name_{i}',
-                'data': 'x' * 100,
+                "id": f"cleanup_{i}",
+                "value": i,
+                "name": f"name_{i}",
+                "data": "x" * 100,
             }
             obj = MockData.transform_(data, MockData)
             objects.append(obj)
 
-        snapshot_before = tracemalloc.take_snapshot()
+        tracemalloc.take_snapshot()
         before_mem = tracemalloc.get_traced_memory()[0]
 
         # 객체 제거
         objects.clear()
         gc.collect()
 
-        snapshot_after = tracemalloc.take_snapshot()
+        tracemalloc.take_snapshot()
         after_mem = tracemalloc.get_traced_memory()[0]
         tracemalloc.stop()
 
@@ -272,17 +250,17 @@ class TestMemoryUsage:
         for i in range(50):
             items = [
                 {
-                    'id': f'deep_{i}_{j}',
-                    'value': j,
-                    'name': f'name_{j}',
-                    'data': 'x' * 100,
+                    "id": f"deep_{i}_{j}",
+                    "value": j,
+                    "name": f"name_{j}",
+                    "data": "x" * 100,
                 }
                 for j in range(50)
             ]
 
             data = {
-                'id': f'parent_{i}',
-                'items': items,
+                "id": f"parent_{i}",
+                "items": items,
             }
             obj = MockNested.transform_(data, MockNested)
             objects.append(obj)
@@ -292,15 +270,10 @@ class TestMemoryUsage:
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        top_stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_diff = sum(stat.size_diff for stat in top_stats) / 1024
 
-        profile = MemoryProfile(
-            name='deep_nesting',
-            peak_kb=peak / 1024,
-            diff_kb=total_diff,
-            count=50
-        )
+        profile = MemoryProfile(name="deep_nesting", peak_kb=peak / 1024, diff_kb=total_diff, count=50)
 
         print(f"\n{profile}")
         assert profile.per_item_kb < 200.0
@@ -314,21 +287,21 @@ class TestMemoryUsage:
 
         # 작은 객체 (100개)
         for i in range(100):
-            data = {'id': f's_{i}', 'value': i, 'name': 'small', 'data': 'x' * 10}
+            data = {"id": f"s_{i}", "value": i, "name": "small", "data": "x" * 10}
             objects.append(MockData.transform_(data, MockData))
 
         small_mem = tracemalloc.get_traced_memory()[0]
 
         # 중간 객체 (100개)
         for i in range(100):
-            data = {'id': f'm_{i}', 'value': i, 'name': 'medium', 'data': 'x' * 100}
+            data = {"id": f"m_{i}", "value": i, "name": "medium", "data": "x" * 100}
             objects.append(MockData.transform_(data, MockData))
 
         medium_mem = tracemalloc.get_traced_memory()[0]
 
         # 큰 객체 (100개)
         for i in range(100):
-            data = {'id': f'l_{i}', 'value': i, 'name': 'large', 'data': 'x' * 1000}
+            data = {"id": f"l_{i}", "value": i, "name": "large", "data": "x" * 1000}
             objects.append(MockData.transform_(data, MockData))
 
         large_mem = tracemalloc.get_traced_memory()[0]

@@ -1,14 +1,14 @@
 from decimal import Decimal
 from unittest import TestCase
+
 import pytest
 from requests.exceptions import SSLError
+from tests.env import load_vmkis
 
 from vmkis import VmKis
 from vmkis.api.account.balance import KisBalance, KisDeposit
+from vmkis.client.exceptions import KisAPIError, KisHTTPError
 from vmkis.scope.account import KisAccount
-from vmkis.client.exceptions import KisHTTPError, KisAPIError
-from tests.env import load_vmkis
-
 
 pytestmark = pytest.mark.requires_api
 
@@ -70,8 +70,8 @@ class AccountBalanceTests(TestCase):
             for stock in balance.stocks:
                 # isinstance() 체크 시 Protocol의 모든 속성에 접근하여 API 호출이 발생하므로
                 # 필수 속성이 있는지만 확인
-                self.assertTrue(hasattr(stock, 'symbol'))
-                self.assertTrue(hasattr(stock, 'quantity'))
+                self.assertTrue(hasattr(stock, "symbol"))
+                self.assertTrue(hasattr(stock, "quantity"))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"Balance API call failed: {e}")
 
@@ -85,7 +85,7 @@ class AccountBalanceTests(TestCase):
             for stock in balance.stocks:
                 # isinstance() 체크 시 Protocol의 모든 속성에 접근하여 API 호출이 발생하므로
                 # 필수 속성이 있는지만 확인
-                self.assertTrue(hasattr(stock, 'symbol'))
-                self.assertTrue(hasattr(stock, 'quantity'))
+                self.assertTrue(hasattr(stock, "symbol"))
+                self.assertTrue(hasattr(stock, "quantity"))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"Virtual balance API call failed: {e}")

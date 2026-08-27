@@ -1,6 +1,5 @@
 import importlib
-from datetime import time, timedelta
-from types import SimpleNamespace
+from datetime import time
 from unittest.mock import Mock, patch
 
 import pytest
@@ -44,11 +43,7 @@ def test_kis_simple_trading_hours_initialization():
     open_time = time(9, 0)
     close_time = time(15, 30)
 
-    trading_hour = th.KisSimpleTradingHours(
-        market="KRX",
-        open=open_time,
-        close=close_time
-    )
+    trading_hour = th.KisSimpleTradingHours(market="KRX", open=open_time, close=close_time)
 
     assert trading_hour.market == "KRX"
     assert trading_hour.open == open_time
@@ -78,9 +73,7 @@ def test_trading_hours_krx_market():
 def test_trading_hours_with_cache():
     """Test trading_hours function with cached result."""
     cached_hours = th.KisSimpleTradingHours(
-        market="KRX",
-        open=time(9, 0, tzinfo=TIMEZONE),
-        close=time(15, 30, tzinfo=TIMEZONE)
+        market="KRX", open=time(9, 0, tzinfo=TIMEZONE), close=time(15, 30, tzinfo=TIMEZONE)
     )
 
     mock_kis = Mock()
@@ -114,13 +107,9 @@ def test_trading_hours_country_code_us():
 
     # Mock foreign_day_chart
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="NASDAQ",
-        open=time(9, 30),
-        close=time(16, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="NASDAQ", open=time(9, 30), close=time(16, 0))
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', return_value=mock_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", return_value=mock_chart):
         result = th.trading_hours(mock_kis, market="US", use_cache=True)
 
         assert result.market == "NASDAQ"
@@ -134,13 +123,9 @@ def test_trading_hours_country_code_jp():
     mock_kis.cache.set = Mock()
 
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="TYO",
-        open=time(9, 0),
-        close=time(15, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="TYO", open=time(9, 0), close=time(15, 0))
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', return_value=mock_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", return_value=mock_chart):
         result = th.trading_hours(mock_kis, market="JP", use_cache=True)
 
         assert result.market == "TYO"
@@ -154,13 +139,9 @@ def test_trading_hours_country_code_hk():
     mock_kis.cache.set = Mock()
 
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="HKEX",
-        open=time(9, 30),
-        close=time(16, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="HKEX", open=time(9, 30), close=time(16, 0))
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', return_value=mock_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", return_value=mock_chart):
         result = th.trading_hours(mock_kis, market="HK", use_cache=True)
 
         assert result.market == "HKEX"
@@ -174,13 +155,9 @@ def test_trading_hours_country_code_vn():
     mock_kis.cache.set = Mock()
 
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="HSX",
-        open=time(9, 0),
-        close=time(15, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="HSX", open=time(9, 0), close=time(15, 0))
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', return_value=mock_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", return_value=mock_chart):
         result = th.trading_hours(mock_kis, market="VN", use_cache=True)
 
         assert result.market == "HSX"
@@ -194,13 +171,9 @@ def test_trading_hours_country_code_cn():
     mock_kis.cache.set = Mock()
 
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="SSE",
-        open=time(9, 30),
-        close=time(15, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="SSE", open=time(9, 30), close=time(15, 0))
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', return_value=mock_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", return_value=mock_chart):
         result = th.trading_hours(mock_kis, market="CN", use_cache=True)
 
         assert result.market == "SSE"
@@ -214,13 +187,9 @@ def test_trading_hours_foreign_market_with_alias():
     mock_kis.cache.set = Mock()
 
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="HSX",
-        open=time(9, 0),
-        close=time(15, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="HSX", open=time(9, 0), close=time(15, 0))
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', return_value=mock_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", return_value=mock_chart):
         result = th.trading_hours(mock_kis, market="HNX", use_cache=True)
 
         # HNX should resolve to HSX
@@ -238,7 +207,7 @@ def test_trading_hours_foreign_market_not_found():
     mock_response = Mock()
 
     # Mock foreign_day_chart to always raise KisNotFoundError
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', side_effect=KisNotFoundError("Not found", mock_response)):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", side_effect=KisNotFoundError("Not found", mock_response)):
         with pytest.raises(ValueError, match="해외 주식 시장 정보를 찾을 수 없습니다"):
             th.trading_hours(mock_kis, market="NASDAQ", use_cache=True)
 
@@ -251,11 +220,7 @@ def test_trading_hours_foreign_market_retry_on_not_found():
     mock_kis.cache.set = Mock()
 
     mock_chart = Mock()
-    mock_chart.trading_hours = th.KisSimpleTradingHours(
-        market="NASDAQ",
-        open=time(9, 30),
-        close=time(16, 0)
-    )
+    mock_chart.trading_hours = th.KisSimpleTradingHours(market="NASDAQ", open=time(9, 30), close=time(16, 0))
 
     mock_response = Mock()
     call_count = [0]
@@ -268,7 +233,7 @@ def test_trading_hours_foreign_market_retry_on_not_found():
         # Second call succeeds
         return mock_chart
 
-    with patch('vmkis.api.stock.day_chart.foreign_day_chart', side_effect=mock_foreign_day_chart):
+    with patch("vmkis.api.stock.day_chart.foreign_day_chart", side_effect=mock_foreign_day_chart):
         result = th.trading_hours(mock_kis, market="NASDAQ", use_cache=True)
 
         assert result.market == "NASDAQ"

@@ -1,13 +1,11 @@
 from types import SimpleNamespace
 
-import pytest
-
 from vmkis.client.messaging import KisWebsocketTR
 from vmkis.event.handler import KisEventArgs
 from vmkis.event.subscription import (
     KisSubscribedEventArgs,
-    KisUnsubscribedEventArgs,
     KisSubscriptionEventArgs,
+    KisUnsubscribedEventArgs,
 )
 
 

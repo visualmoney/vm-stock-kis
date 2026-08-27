@@ -4,21 +4,28 @@ from unittest.mock import patch
 
 import pytest
 
-from vmkis.__env__ import (APPKEY_LENGTH, REAL_API_REQUEST_PER_SECOND,
-                           REAL_DOMAIN, SECRETKEY_LENGTH, USER_AGENT,
-                           VIRTUAL_API_REQUEST_PER_SECOND, VIRTUAL_DOMAIN,
-                           WEBSOCKET_MAX_SUBSCRIPTIONS, WEBSOCKET_REAL_DOMAIN,
-                           WEBSOCKET_VIRTUAL_DOMAIN, __author__, __license__,
-                           __version__)
+from vmkis.__env__ import (
+    APPKEY_LENGTH,
+    REAL_API_REQUEST_PER_SECOND,
+    REAL_DOMAIN,
+    SECRETKEY_LENGTH,
+    USER_AGENT,
+    VIRTUAL_API_REQUEST_PER_SECOND,
+    VIRTUAL_DOMAIN,
+    WEBSOCKET_MAX_SUBSCRIPTIONS,
+    WEBSOCKET_REAL_DOMAIN,
+    WEBSOCKET_VIRTUAL_DOMAIN,
+    __author__,
+    __license__,
+    __version__,
+)
 
 
 def test_sys_version_info():
     """Python 버전에 따른 RuntimeError 발생을 테스트합니다."""
     # Python 3.10 미만일 경우 RuntimeError 발생
     with patch.object(sys, "version_info", (3, 9, 0)):
-        with pytest.raises(
-            RuntimeError, match="VmKis에는 Python 3.10 이상이 필요합니다."
-        ):
+        with pytest.raises(RuntimeError, match="VmKis에는 Python 3.10 이상이 필요합니다."):
             importlib.reload(sys.modules["vmkis.__env__"])
 
     # Python 3.10 이상일 경우 정상 실행

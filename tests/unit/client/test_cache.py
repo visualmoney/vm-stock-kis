@@ -1,7 +1,5 @@
 from datetime import datetime, timedelta
 
-import pytest
-
 from vmkis.client.cache import KisCacheStorage
 
 

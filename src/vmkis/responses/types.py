@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from datetime import date, datetime, time, tzinfo
 from decimal import Decimal
-from typing import Any, Callable
+from typing import Any
 
 from vmkis.responses.dynamic import KisDynamic, KisNoneValueError, KisType, KisTypeMeta
 from vmkis.utils.repr import dict_repr
@@ -23,7 +24,8 @@ __all__ = [
 
 
 class KisDynamicDict(KisDynamic):
-    __transform__ = lambda type, _: type()
+    # def로 바꾸면 메서드가 되어 바인딩 의미가 달라진다. 클래스 속성이어야 한다.
+    __transform__ = lambda type, _: type()  # noqa: E731
 
     def __str__(self) -> str:
         return self.__repr__()
@@ -61,7 +63,7 @@ class KisAny(KisType[Any], metaclass=KisTypeMeta[Any]):
         transform_fn: Callable[[Any], Any] = lambda _: KisDynamicDict(),
     ):
         super().__init__()
-        setattr(self, "transform", transform_fn)
+        self.transform = transform_fn
 
 
 class KisString(KisType[str], metaclass=KisTypeMeta):

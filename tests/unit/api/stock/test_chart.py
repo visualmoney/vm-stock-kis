@@ -1,6 +1,6 @@
-from datetime import datetime, date, time
-from decimal import Decimal
 import sys
+from datetime import datetime
+from decimal import Decimal
 
 from vmkis.api.stock import chart
 
@@ -34,7 +34,10 @@ def _make_chart(bars):
 def test_index_and_getitem_order_by_len_iter():
     """Indexing, ordering, __getitem__, iteration and length behave as expected."""
     now = datetime(2020, 1, 1, 9, 0, 0)
-    bars = [_Bar(now, "1", "2", "1", "1.5", 10, "100", "0"), _Bar(now.replace(hour=10), "2", "3", "2", "2.5", 5, "200", "0")]
+    bars = [
+        _Bar(now, "1", "2", "1", "1.5", 10, "100", "0"),
+        _Bar(now.replace(hour=10), "2", "3", "2", "2.5", 5, "200", "0"),
+    ]
     c = _make_chart(bars)
 
     # index by datetime
@@ -63,7 +66,7 @@ def test_slice_getitem_by_range():
     c = _make_chart([b1, b2])
 
     # slice by datetimes
-    res = c[datetime(2020, 1, 1, 9): datetime(2020, 1, 1, 10)]
+    res = c[datetime(2020, 1, 1, 9) : datetime(2020, 1, 1, 10)]
     assert b1 in res
 
 

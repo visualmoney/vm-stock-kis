@@ -1,4 +1,5 @@
 from decimal import Decimal
+
 import pytest
 
 from vmkis.api.account import order as order_mod

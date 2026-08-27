@@ -1,40 +1,119 @@
 # 마이그레이션 가이드 (Migration Guide)
 
-VM-Stock-KIS v2.x → v3.0 마이그레이션 가이드입니다.
+`python-kis` v2.x → `vm-stock-kis` v3.0.0 마이그레이션 가이드입니다.
+
+> **먼저 읽으세요**: v3.0.0에서 **배포명·모듈명·클래스명이 모두 바뀌었습니다.**
+> `python-kis`를 쓰고 계셨다면 [1. 이름 변경](#1-이름-변경-v300)이 필수입니다.
 
 ---
 
 ## 목차
 
-1. [개요](#개요)
-2. [v2.2.0 변경사항](#v220-변경사항-202512)
-3. [v3.0.0 Breaking Changes](#v300-breaking-changes-예정-20266)
-4. [단계별 마이그레이션](#단계별-마이그레이션)
-5. [FAQ](#faq)
+1. [이름 변경 (v3.0.0)](#1-이름-변경-v300)
+2. [타임라인](#2-타임라인)
+3. [v2.2.0 변경사항](#v220-변경사항-202512)
+4. [v4.0.0 예정 Breaking Changes](#v400-예정-breaking-changes)
+5. [단계별 마이그레이션](#단계별-마이그레이션)
+6. [FAQ](#faq)
 
 ---
 
-## 개요
+## 1. 이름 변경 (v3.0.0)
 
-### 마이그레이션 타임라인
+이 라이브러리는 [Soju06/python-kis](https://github.com/Soju06/python-kis)의
+포크입니다. v3.0.0에서 포크 고유의 이름 체계로 전환했습니다.
+
+| | v2.x (`python-kis`) | v3.0.0 (`vm-stock-kis`) |
+|---|---|---|
+| PyPI 배포판 | `python-kis` | **`vm-stock-kis`** |
+| import 모듈 | `pykis` | **`vmkis`** |
+| 공개 클래스 | `PyKis` | **`VmKis`** |
+| 환경변수 | `PYKIS_PROFILE`, `PYKIS_CONFIRM_SKIP` | **`VMKIS_PROFILE`, `VMKIS_CONFIRM_SKIP`** |
+| 작업공간 | `~/.pykis` | **`~/.vmkis`** |
+| User-Agent | `PyKis/x.y.z` | **`VmKis/x.y.z`** |
+
+### 설치
+
+**`python-kis`를 먼저 제거하세요.** 둘 다 설치된 상태가 가장 흔한 실패 모드입니다.
+
+```bash
+pip uninstall python-kis
+pip install vm-stock-kis
+```
+
+### 코드 변경
+
+```python
+# v2.x
+from pykis import PyKis
+kis = PyKis("config.yaml")
+
+# v3.0.0
+from vmkis import VmKis
+kis = VmKis("config.yaml")
+```
+
+일괄 치환:
+
+```bash
+git ls-files '*.py' | xargs sed -i -e 's/PyKis/VmKis/g' -e 's/\bpykis\b/vmkis/g' -e 's/PYKIS_/VMKIS_/g'
+```
+
+> Windows PowerShell의 `-replace`는 **대소문자를 무시**하므로 `PyKis`와 `pykis`를
+> 구분하지 못합니다. Git Bash의 GNU sed를 쓰세요.
+
+### 하위 호환 (v4.0.0까지)
+
+당장 고치지 않아도 아래 셋은 `DeprecationWarning`과 함께 동작합니다.
+
+| 대상 | 동작 |
+|---|---|
+| `vmkis.PyKis` | `VmKis`와 **동일 객체**를 반환합니다. `isinstance` 검사도 그대로 동작합니다. |
+| `~/.pykis` | `~/.vmkis`가 없고 예전 경로만 있으면 계속 사용합니다 (토큰 캐시 보존). |
+| `PYKIS_*` | `VMKIS_*`가 없으면 폴백합니다. |
+
+```python
+from vmkis import PyKis   # ❌ 동작하지 않습니다 (__all__에 없음)
+
+import vmkis
+kis = vmkis.PyKis(...)    # ✅ 동작합니다 (DeprecationWarning)
+```
+
+`from vmkis import PyKis` 형태가 안 되는 것은 의도된 것입니다. `__all__`에 넣으면
+`from vmkis import *`가 옛 이름을 계속 퍼뜨립니다.
+
+### `pykis` 호환 패키지는 제공하지 않습니다
+
+`vm-stock-kis` 휠 안에 `pykis/`를 넣으면 업스트림 `python-kis` 배포판과 디스크에서
+**파일이 충돌**합니다. 둘 다 설치한 사용자가 한쪽을 uninstall하면 다른 쪽 파일이
+지워집니다. Python 패키징에는 `Conflicts:`가 없어 패키지 매니저가 해결할 수 없습니다.
+
+업스트림을 계속 쓰실 분들을 조용히 깨뜨리지 않기 위한 선택입니다.
+
+---
+
+## 2. 타임라인
 
 ```
-v2.1.7 (현재)
+v2.1.x (python-kis 포크 시점)
     ↓
-v2.2.0 (2025-12) ← Phase 1 완료 ✅
-    ↓ (하위 호환성 유지)
-v2.3.0 ~ v2.9.x (2026-01 ~ 2026-06)
-    ↓ (Deprecation 경고)
-v3.0.0 (2026-06+) ← Breaking Changes
+v2.2.0 (2025-12)  공개 API 축소 (154 → 20), deprecated 경로에 경고
+    ↓
+v3.0.0 (2026-08)  이름 변경 (배포명/모듈명/클래스명) ← 현재
+    ↓ (호환 별칭 + deprecated 경로 유지)
+v4.0.0            PyKis 별칭, ~/.pykis 폴백, PYKIS_* 폴백,
+                  deprecated import 경로 일괄 제거
 ```
-
-### 주요 변경사항 요약
 
 | 버전 | 변경 | 영향 | 대응 |
 |------|------|------|------|
 | v2.2.0 | 공개 API 축소 (154 → 20) | ⚠️ 경고만 | 선택적 업데이트 |
-| v2.3.0~v2.9.x | Deprecation 유지 | ⚠️ 경고만 | 권장 업데이트 |
-| v3.0.0 | Deprecated 경로 제거 | 🔴 Breaking | 필수 업데이트 |
+| **v3.0.0** | **이름 변경** | 🔴 **Breaking** | **필수 업데이트** |
+| v4.0.0 | 호환 별칭 및 deprecated 경로 제거 | 🔴 Breaking | 필수 업데이트 |
+
+> v3.0.0은 원래 "deprecated 경로 제거"로 예정되어 있었으나, 이름 변경에
+> 할당하고 경로 제거를 v4.0.0으로 미뤘습니다. 한 릴리스에 두 종류의 Breaking
+> Change를 겹치면 마이그레이션이 불필요하게 어려워집니다.
 
 ---
 
@@ -125,18 +204,20 @@ save_config_interactive("config.yaml")
 
 ---
 
-## v3.0.0 Breaking Changes (예정: 2026-06+)
+## v4.0.0 예정 Breaking Changes
+
+> 아래는 **v4.0.0 예정** 사항입니다. v3.0.0에서는 아직 경고만 나옵니다.
 
 ### 1. Deprecated Import 경로 제거
 
-**작동하지 않는 코드 (v3.0.0부터)**:
+**작동하지 않게 될 코드 (v4.0.0부터)**:
 ```python
 # ❌ AttributeError 발생
 from vmkis import KisObjectProtocol
 from vmkis import KisQuotableProductMixin
 ```
 
-**올바른 코드 (v3.0.0에서 동작)**:
+**올바른 코드**:
 ```python
 # ✅ 공개 타입 (일반 사용자)
 from vmkis import Quote, Balance, Order
@@ -151,9 +232,14 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 **v2.x**:
 - `vmkis.types`는 모든 타입을 포함 (공개 + 내부)
 
-**v3.0.0+**:
+**v4.0.0+**:
 - `vmkis.types`는 내부 Protocol/고급 타입만 포함
 - 공개 타입은 `vmkis.public_types` 또는 `vmkis.__init__`에서 import
+
+### 3. 이름 호환 별칭 제거
+
+`vmkis.PyKis`, `~/.pykis` 작업공간 폴백, `PYKIS_*` 환경변수 폴백이 모두
+제거됩니다. v3.0.0 사용 중 `DeprecationWarning`이 보이면 그때 고쳐 두세요.
 
 ---
 

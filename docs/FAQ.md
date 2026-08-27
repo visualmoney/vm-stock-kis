@@ -10,14 +10,16 @@ VmKis 사용 중 자주 묻는 질문과 답변입니다.
 A: 다음 명령어로 설치할 수 있습니다.
 
 ```bash
-pip install vmkis
+pip install vm-stock-kis
 ```
 
-또는 poetry를 사용하는 경우:
+또는 uv를 사용하는 경우:
 
 ```bash
-poetry add vmkis
+uv add vm-stock-kis
 ```
+
+> 배포명은 `vm-stock-kis`, 임포트명은 `vmkis`로 서로 다릅니다.
 
 ### Q2: API 키(AppKey, AppSecret)는 어디서 얻을 수 있나요?
 

@@ -3,7 +3,6 @@ from decimal import Decimal
 from typing import (
     TYPE_CHECKING,
     Any,
-    Callable,
     Literal,
     Protocol,
     get_args,
@@ -48,7 +47,6 @@ from vmkis.utils.typing import Checkable
 if TYPE_CHECKING:
     from vmkis.api.account.pending_order import KisPendingOrder
     from vmkis.api.base.account_product import KisAccountProductProtocol
-    from vmkis.client.websocket import KisWebsocketClient
     from vmkis.kis import VmKis
 
 __all__ = [
@@ -339,7 +337,9 @@ def resolve_domestic_order_condition(
 
 
 @runtime_checkable
-class KisOrderNumber(KisAccountProductProtocol, KisEventFilter["KisWebsocketClient", KisSubscriptionEventArgs], Protocol):
+class KisOrderNumber(
+    KisAccountProductProtocol, KisEventFilter["KisWebsocketClient", KisSubscriptionEventArgs], Protocol
+):
     """한국투자증권 주문번호"""
 
     @property
@@ -352,11 +352,9 @@ class KisOrderNumber(KisAccountProductProtocol, KisEventFilter["KisWebsocketClie
         """주문번호"""
         ...
 
-    def __eq__(self, value: "object | KisOrderNumber") -> bool:
-        ...
+    def __eq__(self, value: "object | KisOrderNumber") -> bool: ...
 
-    def __hash__(self) -> int:
-        ...
+    def __hash__(self) -> int: ...
 
 
 @runtime_checkable
@@ -1065,7 +1063,7 @@ def domestic_order(
     if not symbol:
         raise ValueError("종목코드를 입력해주세요.")
 
-    if qty != None and qty <= 0:
+    if qty is not None and qty <= 0:
         raise ValueError("수량은 0보다 커야합니다.")
 
     price = None if price is None else ensure_price(price, 0)
@@ -1237,7 +1235,7 @@ def foreign_order(
     if not symbol:
         raise ValueError("종목코드를 입력해주세요.")
 
-    if qty != None and qty <= 0:
+    if qty is not None and qty <= 0:
         raise ValueError("수량은 0보다 커야합니다.")
 
     price = None if price is None else ensure_price(price)
@@ -1334,7 +1332,7 @@ def foreign_daytime_order(
     if not symbol:
         raise ValueError("종목코드를 입력해주세요.")
 
-    if qty != None and qty <= 0:
+    if qty is not None and qty <= 0:
         raise ValueError("수량은 0보다 커야합니다.")
 
     price = None if price is None else ensure_price(price)

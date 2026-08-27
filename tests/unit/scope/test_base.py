@@ -1,10 +1,9 @@
-import pytest
-
 from vmkis.scope.base import KisScopeBase
 
 
 class DummyKis:
     pass
+
 
 # KisScopeBase의 생성자 동작(주입한 kis가 인스턴스에 저장되는지)은 간단한 스모크 테스트로 검증목적
 def test_kisscopebase_sets_kis_attribute():

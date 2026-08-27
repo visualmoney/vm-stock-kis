@@ -21,8 +21,11 @@ class KisNotFoundError(KisException):
         data: dict,
         response: Response,
         message: str | None = None,
-        fields: dict[str, Any] = {},
+        fields: dict[str, Any] | None = None,
     ):
+        # 가변 기본 인자({})는 호출 간에 공유되므로 None을 받고 여기서 만든다.
+        fields = fields if fields is not None else {}
+
         super().__init__(
             (message if message else "KIS API 요청한 자료가 존재하지 않습니다.")
             + f" ({', '.join(f'{k}={v!r}' for k, v in fields.items())})",

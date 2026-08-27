@@ -18,11 +18,11 @@ VM-Stock-KIS 사용 예제
   - SimpleKIS: 초보자 친화 인터페이스
 """
 
-from vmkis import create_client
 import argparse
-from vmkis.simple import SimpleKIS
 import os
-from typing import List, Tuple
+
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 
 class AdvancedOrderer:
@@ -30,11 +30,9 @@ class AdvancedOrderer:
 
     def __init__(self, simple_kis: SimpleKIS):
         self.simple = simple_kis
-        self.orders: List = []
+        self.orders: list = []
 
-    def limit_order(
-        self, symbol: str, side: str, qty: int, limit_price: int
-    ) -> Tuple[bool, str]:
+    def limit_order(self, symbol: str, side: str, qty: int, limit_price: int) -> tuple[bool, str]:
         """
         지정가 주문을 실행합니다.
 
@@ -63,28 +61,25 @@ class AdvancedOrderer:
                     print("   지정가가 낮으면 즉시 체결될 수 있습니다.")
 
             # 주문 실행
-            order = self.simple.place_order(
-                symbol=symbol,
-                side=side,
-                qty=qty,
-                price=limit_price
-            )
+            order = self.simple.place_order(symbol=symbol, side=side, qty=qty, price=limit_price)
 
-            self.orders.append({
-                "type": "limit",
-                "order_id": order.order_id,
-                "symbol": symbol,
-                "side": side,
-                "qty": qty,
-                "price": limit_price,
-            })
+            self.orders.append(
+                {
+                    "type": "limit",
+                    "order_id": order.order_id,
+                    "symbol": symbol,
+                    "side": side,
+                    "qty": qty,
+                    "price": limit_price,
+                }
+            )
 
             return True, order.order_id
 
         except Exception as e:
             return False, str(e)
 
-    def market_order(self, symbol: str, side: str, qty: int) -> Tuple[bool, str]:
+    def market_order(self, symbol: str, side: str, qty: int) -> tuple[bool, str]:
         """
         시장가 주문을 실행합니다.
 
@@ -105,26 +100,26 @@ class AdvancedOrderer:
                 symbol=symbol,
                 side=side,
                 qty=qty,
-                price=None  # price 없으면 시장가
+                price=None,  # price 없으면 시장가
             )
 
-            self.orders.append({
-                "type": "market",
-                "order_id": order.order_id,
-                "symbol": symbol,
-                "side": side,
-                "qty": qty,
-                "price": price.price,
-            })
+            self.orders.append(
+                {
+                    "type": "market",
+                    "order_id": order.order_id,
+                    "symbol": symbol,
+                    "side": side,
+                    "qty": qty,
+                    "price": price.price,
+                }
+            )
 
             return True, order.order_id
 
         except Exception as e:
             return False, str(e)
 
-    def dollar_cost_averaging(
-        self, symbol: str, total_amount: int, num_tranches: int
-    ) -> List[Tuple[bool, str]]:
+    def dollar_cost_averaging(self, symbol: str, total_amount: int, num_tranches: int) -> list[tuple[bool, str]]:
         """
         분할 매수 전략 (Dollar-Cost Averaging)을 실행합니다.
 
@@ -141,7 +136,7 @@ class AdvancedOrderer:
         results = []
         amount_per_tranche = total_amount // num_tranches
 
-        print(f"🤖 분할 매수 전략 시작")
+        print("🤖 분할 매수 전략 시작")
         print(f"   총액: {total_amount:,}원")
         print(f"   횟수: {num_tranches}회")
         print(f"   회당: {amount_per_tranche:,}원")
@@ -154,21 +149,16 @@ class AdvancedOrderer:
                 qty = amount_per_tranche // current_price
 
                 if qty < 1:
-                    print(f"⚠️ {i+1}회: 수량 부족 (금액: {amount_per_tranche:,}원 < 주가: {current_price:,}원)")
+                    print(f"⚠️ {i + 1}회: 수량 부족 (금액: {amount_per_tranche:,}원 < 주가: {current_price:,}원)")
                     results.append((False, "수량 부족"))
                     continue
 
-                print(f"📍 {i+1}/{num_tranches} 회차:")
+                print(f"📍 {i + 1}/{num_tranches} 회차:")
                 print(f"   현재가: {current_price:,}원")
                 print(f"   매수액: {amount_per_tranche:,}원")
                 print(f"   수량: {qty}주")
 
-                success, result = self.limit_order(
-                    symbol=symbol,
-                    side="buy",
-                    qty=qty,
-                    limit_price=current_price
-                )
+                success, result = self.limit_order(symbol=symbol, side="buy", qty=qty, limit_price=current_price)
 
                 if success:
                     print(f"   ✅ 주문 ID: {result}")
@@ -185,8 +175,7 @@ class AdvancedOrderer:
         return results
 
     def stop_loss_and_take_profit(
-        self, symbol: str, qty: int, buy_price: int,
-        stop_loss_price: int, take_profit_price: int
+        self, symbol: str, qty: int, buy_price: int, stop_loss_price: int, take_profit_price: int
     ) -> None:
         """
         손절/익절 설정 시뮬레이션입니다.
@@ -200,7 +189,7 @@ class AdvancedOrderer:
             stop_loss_price: 손절가 (하한)
             take_profit_price: 익절가 (상한)
         """
-        print(f"🛡️ 손절/익절 설정")
+        print("🛡️ 손절/익절 설정")
         print(f"   종목: {symbol}")
         print(f"   수량: {qty}주")
         print(f"   매수가: {buy_price:,}원")
@@ -243,12 +232,7 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
     print("-" * 70)
     limit_price = price.price - 1000  # 현재가보다 1,000원 낮은 가격
     print(f"매수 지정가: {limit_price:,}원")
-    success, order_id = orderer.limit_order(
-        symbol=symbol,
-        side="buy",
-        qty=1,
-        limit_price=limit_price
-    )
+    success, order_id = orderer.limit_order(symbol=symbol, side="buy", qty=1, limit_price=limit_price)
     if success:
         print(f"✅ 주문 완료: {order_id}")
     else:
@@ -261,7 +245,7 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
     results = orderer.dollar_cost_averaging(
         symbol=symbol,
         total_amount=1_000_000,  # 100만원
-        num_tranches=5  # 5회 분할
+        num_tranches=5,  # 5회 분할
     )
     success_count = sum(1 for success, _ in results if success)
     print(f"📊 결과: {success_count}/{len(results)} 주문 성공")
@@ -271,11 +255,7 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
     print("3️⃣ 손절/익절 설정")
     print("-" * 70)
     orderer.stop_loss_and_take_profit(
-        symbol=symbol,
-        qty=1,
-        buy_price=65000,
-        stop_loss_price=63000,
-        take_profit_price=70000
+        symbol=symbol, qty=1, buy_price=65000, stop_loss_price=63000, take_profit_price=70000
     )
     print()
 
@@ -287,8 +267,7 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
         print("-" * 70)
         for order in orderer.orders:
             print(
-                f"{order['type']:<10} {order['symbol']:<10} "
-                f"{order['side']:<6} {order['qty']:>6} {order['price']:>10,}"
+                f"{order['type']:<10} {order['symbol']:<10} {order['side']:<6} {order['qty']:>6} {order['price']:>10,}"
             )
     else:
         print("주문 내역 없음")
@@ -315,4 +294,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

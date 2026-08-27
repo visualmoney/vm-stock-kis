@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from functools import wraps
 from multiprocessing import Lock
-from typing import Any, Callable
+from typing import Any
 
 global_lock = Lock()
 

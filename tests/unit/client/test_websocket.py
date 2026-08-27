@@ -1,18 +1,16 @@
 import base64
 import json
 import threading
-import time
+from types import SimpleNamespace
 
 import pytest
 
-from types import SimpleNamespace
-
 import vmkis.client.websocket as websocket_mod
 from vmkis.client.websocket import (
-    KisWebsocketClient,
-    KisWebsocketTR,
     TR_SUBSCRIBE_TYPE,
     TR_UNSUBSCRIBE_TYPE,
+    KisWebsocketClient,
+    KisWebsocketTR,
 )
 
 
@@ -194,6 +192,7 @@ def test_reset_session_state_and_restore_subscriptions(monkeypatch):
 
 def test_run_forever_acquire_failure_and_on_open_on_close_on_error(monkeypatch):
     c = make_client(monkeypatch)
+
     # make connect_lock's acquire return False
     class LockLike:
         def acquire(self, block=False):
@@ -255,6 +254,7 @@ def test_set_encryption_key_non_special_and_handle_event_decryption(monkeypatch)
     # pad and encrypt using class cipher
     from cryptography.hazmat.primitives import padding as _padding
     from cryptography.hazmat.primitives.ciphers import algorithms as _algorithms
+
     padder = _padding.PKCS7(_algorithms.AES.block_size).padder()
     padded = padder.update(plaintext) + padder.finalize()
     encryptor = ek.cipher.encryptor()
@@ -265,6 +265,7 @@ def test_set_encryption_key_non_special_and_handle_event_decryption(monkeypatch)
 
     # monkeypatch KisWebsocketResponse.parse to a dummy that yields nothing
     from vmkis.responses.websocket import KisWebsocketResponse
+
     monkeypatch.setattr(KisWebsocketResponse, "parse", staticmethod(lambda body, count, response_type: []))
 
     # event with encrypted flag
@@ -274,6 +275,7 @@ def test_set_encryption_key_non_special_and_handle_event_decryption(monkeypatch)
 
 
 # ===== Tests for Property Methods =====
+
 
 def test_is_subscribed_with_primary_client(monkeypatch):
     """Test is_subscribed method with primary client delegation"""
@@ -330,6 +332,7 @@ def test_connected_property_checks_websocket_and_event(monkeypatch):
 
 # ===== Tests for Connection Management =====
 
+
 def test_connect_when_already_connected(monkeypatch):
     """Test connect does nothing when already connected"""
     c = make_client(monkeypatch)
@@ -347,10 +350,12 @@ def test_connect_triggers_immediate_reconnect_for_alive_thread(monkeypatch):
     c.thread = threading.Thread(target=lambda: None)
     c.thread.start()
     c.thread.join()  # finish immediately
+
     # now it's not alive, so create a fake alive thread
     class FakeThread:
         def is_alive(self):
             return True
+
     c.thread = FakeThread()
 
     c.connect()
@@ -440,6 +445,7 @@ def test_disconnect_handles_no_websocket(monkeypatch):
 
 # ===== Tests for Subscription Methods =====
 
+
 def test_subscribe_delegates_to_primary_when_requested(monkeypatch):
     """Test subscribe delegates to primary client when primary=True"""
     c = make_client(monkeypatch, virtual=False)
@@ -447,6 +453,7 @@ def test_subscribe_delegates_to_primary_when_requested(monkeypatch):
     c.kis.virtual = True
 
     called = []
+
     def fake_subscribe(id, key, primary):
         called.append((id, key, primary))
 
@@ -481,6 +488,7 @@ def test_unsubscribe_delegates_to_primary_when_requested(monkeypatch):
     primary = make_client(monkeypatch)
 
     called = []
+
     def fake_unsubscribe(id, key, primary):
         called.append((id, key, primary))
 
@@ -610,15 +618,13 @@ def test_on_method_with_primary_flag(monkeypatch):
 
 # ===== Tests for Message Handling =====
 
+
 def test_handle_control_with_opsp0002_already_subscribed(monkeypatch):
     """Test _handle_control handles OPSP0002 (already subscribed) code"""
     c = make_client(monkeypatch)
     c.websocket = DummyWS()
 
-    data = {
-        "header": {"tr_id": "TEST", "tr_key": "KEY"},
-        "body": {"msg_cd": "OPSP0002", "msg1": "already subscribed"}
-    }
+    data = {"header": {"tr_id": "TEST", "tr_key": "KEY"}, "body": {"msg_cd": "OPSP0002", "msg1": "already subscribed"}}
 
     c._handle_control(data)
     assert KisWebsocketTR("TEST", "KEY") in c._registered_subscriptions
@@ -633,10 +639,7 @@ def test_handle_control_with_opsp0003_not_subscribed(monkeypatch):
     c._registered_subscriptions.add(tr)
     c._keychain[tr] = object()
 
-    data = {
-        "header": {"tr_id": "TEST"},
-        "body": {"msg_cd": "OPSP0003", "msg1": "not subscribed"}
-    }
+    data = {"header": {"tr_id": "TEST"}, "body": {"msg_cd": "OPSP0003", "msg1": "not subscribed"}}
 
     c._handle_control(data)
     assert tr not in c._registered_subscriptions
@@ -648,10 +651,7 @@ def test_handle_control_with_opsp8996_already_in_use(monkeypatch):
     c = make_client(monkeypatch)
     c.websocket = DummyWS()
 
-    data = {
-        "header": {"tr_id": "TEST"},
-        "body": {"msg_cd": "OPSP8996", "msg1": "session already in use"}
-    }
+    data = {"header": {"tr_id": "TEST"}, "body": {"msg_cd": "OPSP8996", "msg1": "session already in use"}}
 
     # should not raise
     c._handle_control(data)
@@ -664,7 +664,7 @@ def test_handle_control_with_opsp0007_internal_error(monkeypatch):
 
     data = {
         "header": {"tr_id": "TEST", "tr_key": "KEY"},
-        "body": {"msg_cd": "OPSP0007", "msg1": "internal server error"}
+        "body": {"msg_cd": "OPSP0007", "msg1": "internal server error"},
     }
 
     # should not raise
@@ -676,10 +676,7 @@ def test_handle_control_with_unknown_code(monkeypatch):
     c = make_client(monkeypatch)
     c.websocket = DummyWS()
 
-    data = {
-        "header": {"tr_id": "TEST", "tr_key": "KEY"},
-        "body": {"msg_cd": "UNKNOWN", "msg1": "unknown message"}
-    }
+    data = {"header": {"tr_id": "TEST", "tr_key": "KEY"}, "body": {"msg_cd": "UNKNOWN", "msg1": "unknown message"}}
 
     # should not raise
     c._handle_control(data)
@@ -690,9 +687,7 @@ def test_handle_control_without_body(monkeypatch):
     c = make_client(monkeypatch)
     c.websocket = DummyWS()
 
-    data = {
-        "header": {"tr_id": "NOTPINGPONG"}
-    }
+    data = {"header": {"tr_id": "NOTPINGPONG"}}
 
     # should not raise, just log warning
     c._handle_control(data)
@@ -722,18 +717,17 @@ def test_handle_event_with_kis_object_initialization(monkeypatch):
     monkeypatch.setitem(websocket_mod.WEBSOCKET_RESPONSES_MAP, "TESTID", TestResponse)
 
     from vmkis.responses.websocket import KisWebsocketResponse
-    monkeypatch.setattr(
-        KisWebsocketResponse,
-        "parse",
-        staticmethod(lambda body, count, response_type: [test_response])
-    )
+
+    monkeypatch.setattr(KisWebsocketResponse, "parse", staticmethod(lambda body, count, response_type: [test_response]))
 
     invoked = []
+
     def capture_event(sender, args):
         invoked.append((sender, args))
 
     # Use subscribe filter to match TESTID
     from vmkis.event.filters.subscription import KisSubscriptionEventFilter
+
     ticket = c.event.on(capture_event, where=KisSubscriptionEventFilter("TESTID"))
 
     msg = "0|TESTID|1|{}"
@@ -751,11 +745,8 @@ def test_handle_event_catches_event_invoke_exceptions(monkeypatch):
     monkeypatch.setitem(websocket_mod.WEBSOCKET_RESPONSES_MAP, "TESTID", object())
 
     from vmkis.responses.websocket import KisWebsocketResponse
-    monkeypatch.setattr(
-        KisWebsocketResponse,
-        "parse",
-        staticmethod(lambda body, count, response_type: [{}])
-    )
+
+    monkeypatch.setattr(KisWebsocketResponse, "parse", staticmethod(lambda body, count, response_type: [{}]))
 
     def failing_handler(sender, args):
         raise Exception("Handler error")
@@ -774,6 +765,7 @@ def test_handle_event_catches_parse_exceptions(monkeypatch):
     monkeypatch.setitem(websocket_mod.WEBSOCKET_RESPONSES_MAP, "TESTID", object())
 
     from vmkis.responses.websocket import KisWebsocketResponse
+
     def failing_parse(body, count, response_type):
         raise Exception("Parse error")
 
@@ -798,6 +790,7 @@ def test_handle_event_with_decryption_error(monkeypatch):
 
 
 # ===== Tests for Primary Client Management =====
+
 
 def test_ensure_primary_client_returns_self_when_not_virtual(monkeypatch):
     """Test _ensure_primary_client returns self when kis is not virtual"""
@@ -826,6 +819,7 @@ def test_primary_client_event_handlers_forward_events(monkeypatch):
 
     # test subscribed event forwarding
     invoked = {"subscribed": False, "unsubscribed": False, "event": False}
+
     def capture_subscribed(sender, args):
         invoked["subscribed"] = True
 
@@ -851,6 +845,7 @@ def test_primary_client_event_handlers_forward_events(monkeypatch):
     assert invoked["unsubscribed"] is True
 
     from vmkis.event.subscription import KisSubscriptionEventArgs
+
     event_args = KisSubscriptionEventArgs(tr=tr, response={})
     c._primary_client_event(c, event_args)
     assert invoked["event"] is True
@@ -862,6 +857,7 @@ def test_primary_client_event_handlers_forward_events(monkeypatch):
 
 
 # ===== Tests for Thread and Connection Loop =====
+
 
 def test_run_forever_returns_false_when_lock_not_acquired(monkeypatch):
     """Test _run_forever returns False when cannot acquire lock"""
@@ -886,6 +882,7 @@ def test_run_forever_clears_state_on_exit(monkeypatch):
     class FakeWSApp:
         def __init__(self, *args, **kwargs):
             pass
+
         def run_forever(self):
             pass
 
@@ -905,6 +902,7 @@ def test_run_forever_breaks_on_thread_change(monkeypatch):
     class FakeWSApp:
         def __init__(self, *args, **kwargs):
             pass
+
         def run_forever(self):
             # change thread to signal exit
             c.thread = None
@@ -923,6 +921,7 @@ def test_run_forever_handles_unexpected_exceptions(monkeypatch):
     class FakeWSApp:
         def __init__(self, *args, **kwargs):
             pass
+
         def run_forever(self):
             raise RuntimeError("Unexpected error")
 
@@ -942,6 +941,7 @@ def test_run_forever_respects_immediate_reconnect_event(monkeypatch):
     class FakeWSApp:
         def __init__(self, *args, **kwargs):
             pass
+
         def run_forever(self):
             call_count["count"] += 1
             if call_count["count"] == 1:

@@ -1,9 +1,10 @@
 import threading
 import time
+
 import pytest
 
 from vmkis.utils import thread_safe as ts_mod
-from vmkis.utils.thread_safe import thread_safe, get_lock
+from vmkis.utils.thread_safe import get_lock, thread_safe
 
 
 def test_get_lock_sets_and_returns_same_lock():
@@ -82,6 +83,7 @@ def test_thread_safety_ensures_no_overlapping_starts():
     then appends 'end'. Because of the lock, each 'start' must be immediately
     followed by its 'end' (no interleaved 'start','start').
     """
+
     class S:
         def __init__(self):
             self.seq = []

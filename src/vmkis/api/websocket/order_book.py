@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from datetime import datetime, tzinfo
 from decimal import Decimal
-from typing import TYPE_CHECKING, Callable, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from vmkis.api.account.order import ORDER_CONDITION
 from vmkis.api.base.product import KisProductProtocol
@@ -78,9 +79,7 @@ class KisDomesticRealtimeOrderbook(KisRealtimeOrderbookBase):
     __fields__ = [
         KisString["symbol"],  # 0 MKSC_SHRN_ISCD 유가증권 단축 종목코드
         None,  # 1 BSOP_HOUR 영업 시간
-        KisAny(DOMESTIC_REALTIME_ORDER_BOOK_ORDER_CONDITION_MAP.get)[
-            "condition"
-        ],  # 2 HOUR_CLS_CODE 시간 구분 코드
+        KisAny(DOMESTIC_REALTIME_ORDER_BOOK_ORDER_CONDITION_MAP.get)["condition"],  # 2 HOUR_CLS_CODE 시간 구분 코드
         None,  # 3 ASKP1 매도호가1
         None,  # 4 ASKP2 매도호가2
         None,  # 5 ASKP3 매도호가3
@@ -432,11 +431,7 @@ def on_order_book(
     filter = KisProductEventFilter(symbol=symbol, market=market)
 
     return self.on(
-        id=(
-            "H0STASP0"
-            if market == "KRX"
-            else "HDFSASP0" if market in ("NYSE", "NASDAQ", "AMEX") else "HDFSASP1"
-        ),
+        id=("H0STASP0" if market == "KRX" else "HDFSASP0" if market in ("NYSE", "NASDAQ", "AMEX") else "HDFSASP1"),
         key=(
             symbol
             if market == "KRX"

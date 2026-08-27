@@ -1,7 +1,4 @@
 import importlib.metadata as real_metadata
-from types import SimpleNamespace
-
-import pytest
 
 from vmkis.utils import diagnosis
 

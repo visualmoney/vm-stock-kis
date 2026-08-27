@@ -5,6 +5,7 @@
 """
 
 import pytest
+
 from vmkis.simple import SimpleKIS
 
 

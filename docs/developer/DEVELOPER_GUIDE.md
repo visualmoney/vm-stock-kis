@@ -16,7 +16,7 @@
 
 ### 필수 요구사항
 - Python 3.10 이상
-- Poetry (의존성 관리)
+- uv (의존성 관리)
 - Git
 
 ### 초기 설정
@@ -36,7 +36,7 @@ python -m venv .venv
 source .venv/bin/activate
 
 # 의존성 설치
-poetry install --with=dev
+uv sync --group dev
 
 # 개발 모드로 설치
 pip install -e .

@@ -1,4 +1,5 @@
-from typing import Callable, Literal, Protocol, overload, runtime_checkable
+from collections.abc import Callable
+from typing import Literal, Protocol, overload, runtime_checkable
 
 from vmkis.api.base.product import KisProductProtocol
 from vmkis.api.websocket.order_book import KisRealtimeOrderbook

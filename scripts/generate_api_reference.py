@@ -6,15 +6,13 @@ and generates markdown documentation.
 """
 
 import ast
-import inspect
-import os
 from pathlib import Path
-from typing import Any, List, Dict
+from typing import Any
 
 
-def extract_module_info(module_path: Path) -> Dict[str, Any]:
+def extract_module_info(module_path: Path) -> dict[str, Any]:
     """Extract classes, functions, and their docstrings from a Python module."""
-    with open(module_path, "r", encoding="utf-8") as f:
+    with open(module_path, encoding="utf-8") as f:
         tree = ast.parse(f.read())
 
     classes = []
@@ -29,29 +27,21 @@ def extract_module_info(module_path: Path) -> Dict[str, Any]:
                 if isinstance(item, ast.FunctionDef):
                     if not item.name.startswith("_"):  # Public methods only
                         method_doc = ast.get_docstring(item) or ""
-                        methods.append({
-                            "name": item.name,
-                            "docstring": method_doc.split("\n")[0] if method_doc else ""
-                        })
+                        methods.append(
+                            {"name": item.name, "docstring": method_doc.split("\n")[0] if method_doc else ""}
+                        )
 
-            classes.append({
-                "name": node.name,
-                "docstring": docstring,
-                "methods": methods
-            })
+            classes.append({"name": node.name, "docstring": docstring, "methods": methods})
 
         elif isinstance(node, ast.FunctionDef):
             if not node.name.startswith("_"):  # Public functions only
                 docstring = ast.get_docstring(node) or "(No docstring)"
-                functions.append({
-                    "name": node.name,
-                    "docstring": docstring
-                })
+                functions.append({"name": node.name, "docstring": docstring})
 
     return {"classes": classes, "functions": functions}
 
 
-def generate_markdown(modules: Dict[str, Dict[str, Any]]) -> str:
+def generate_markdown(modules: dict[str, dict[str, Any]]) -> str:
     """Generate markdown documentation from extracted module info."""
     md = ["# API Reference\n\n"]
     md.append("자동 생성된 API 레퍼런스 문서입니다.\n\n")

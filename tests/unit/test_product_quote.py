@@ -1,19 +1,18 @@
-from datetime import date, datetime, time
+from datetime import date, datetime
+from decimal import Decimal
 from unittest import TestCase
 from unittest.mock import patch
-from types import SimpleNamespace
-from decimal import Decimal
+
 import pytest
 from requests.exceptions import SSLError
+from tests.env import load_vmkis
 
 from vmkis import VmKis
 from vmkis.adapter.product.quote import KisQuotableProduct
 from vmkis.api.stock.chart import KisChart, KisChartBar
 from vmkis.api.stock.order_book import KisOrderbook, KisOrderbookItem
 from vmkis.api.stock.quote import KisQuote
-from vmkis.client.exceptions import KisHTTPError, KisAPIError
-from tests.env import load_vmkis
-
+from vmkis.client.exceptions import KisAPIError, KisHTTPError
 
 pytestmark = pytest.mark.requires_api
 
@@ -25,6 +24,7 @@ class ProductQuoteTests(TestCase):
     def setUpClass(cls) -> None:
         """클래스 레벨에서 한 번만 실행 - 토큰 발급 횟수 제한 방지"""
         import os
+
         # Control whether to run real integration tests via environment variable.
         # Set VMKIS_RUN_REAL=1 (or true/yes) to exercise real network calls; otherwise use the mock fixture.
         run_real = os.environ.get("VMKIS_RUN_REAL", "").lower() in ("1", "true", "yes")
@@ -96,6 +96,7 @@ class ProductQuoteTests(TestCase):
         # Provide concrete classes that satisfy the runtime-checkable Protocols
         try:
             from datetime import timezone
+
             from vmkis.api.stock.chart import KisChartBase
 
             class FakeBar:
@@ -141,8 +142,28 @@ class ProductQuoteTests(TestCase):
                 def sign_name(self):
                     return ""
 
-            bar1 = FakeBar(datetime.now(), datetime.now(), Decimal("100.0"), Decimal("101.0"), Decimal("102.0"), Decimal("99.0"), 1000, Decimal("101000.0"), Decimal("1.0"))
-            bar2 = FakeBar(datetime.now(), datetime.now(), Decimal("101.0"), Decimal("102.0"), Decimal("103.0"), Decimal("100.0"), 1200, Decimal("122400.0"), Decimal("1.0"))
+            bar1 = FakeBar(
+                datetime.now(),
+                datetime.now(),
+                Decimal("100.0"),
+                Decimal("101.0"),
+                Decimal("102.0"),
+                Decimal("99.0"),
+                1000,
+                Decimal("101000.0"),
+                Decimal("1.0"),
+            )
+            bar2 = FakeBar(
+                datetime.now(),
+                datetime.now(),
+                Decimal("101.0"),
+                Decimal("102.0"),
+                Decimal("103.0"),
+                Decimal("100.0"),
+                1200,
+                Decimal("122400.0"),
+                Decimal("1.0"),
+            )
 
             class FakeChart(KisChartBase):
                 pass
@@ -186,6 +207,7 @@ class ProductQuoteTests(TestCase):
                 self.assertTrue(isinstance(bar, KisChartBar))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"KRX daily_chart API call failed: {e}")
+
     def test_nasd_daily_chart(self):
         try:
             stock = self.vmkis.stock("NVDA")
@@ -205,6 +227,7 @@ class ProductQuoteTests(TestCase):
                 self.assertTrue(isinstance(bar, KisChartBar))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"NASD daily_chart API call failed: {e}")
+
     def test_krx_chart(self):
         try:
             stock = self.vmkis.stock("005930")
@@ -217,6 +240,7 @@ class ProductQuoteTests(TestCase):
                 self.assertTrue(isinstance(bar, KisChartBar))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"KRX chart API call failed: {e}")
+
     def test_nasd_chart(self):
         try:
             stock = self.vmkis.stock("NVDA")

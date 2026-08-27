@@ -1,7 +1,7 @@
 import time
+from collections.abc import Callable
 from multiprocessing import Lock
 from multiprocessing.synchronize import Lock as LockType
-from typing import Callable
 
 __all__ = [
     "RateLimiter",

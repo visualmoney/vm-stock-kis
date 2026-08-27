@@ -1,16 +1,13 @@
 import pytest
 
-from types import SimpleNamespace
-
-import vmkis.responses.dynamic as dyn
 from vmkis.responses.dynamic import (
-    KisDynamicScopedPath,
-    KisTransform,
-    KisList,
-    KisObject,
     KisDynamic,
-    KisType,
+    KisDynamicScopedPath,
+    KisList,
     KisNoneValueError,
+    KisObject,
+    KisTransform,
+    KisType,
 )
 
 
@@ -61,7 +58,7 @@ def test_kis_object_transform_basic_and_non_dict_and_defaults():
 
     # define a dynamic class with a single field using KisTransform
     class D(KisDynamic):
-        a = KisTransform(lambda d: d["a"]) ("a")
+        a = KisTransform(lambda d: d["a"])("a")
 
     obj = KisObject.transform_({"a": 10}, D)
     assert hasattr(obj, "a") and obj.a == 10
@@ -173,6 +170,7 @@ def test_kis_type_getitem():
 
 def test_kis_type_default_type_no_default():
     """Test KisType.default_type() raises ValueError when no __default__."""
+
     class NoDefault(KisType):
         pass
 
@@ -196,6 +194,7 @@ def test_scoped_path_with_list():
 
 def test_scoped_path_get_scope_returns_none():
     """Test get_scope returns None when no __path__."""
+
     class NoPaths(KisDynamic):
         pass
 
@@ -204,6 +203,7 @@ def test_scoped_path_get_scope_returns_none():
 
 def test_kis_list_with_dynamic_type():
     """Test KisList with KisDynamic subclass."""
+
     class Item(KisDynamic):
         x = KisTransform(lambda d: d["x"])("x")
 
@@ -216,6 +216,7 @@ def test_kis_list_with_dynamic_type():
 
 def test_kis_object_with_callable_type():
     """Test KisObject with callable type."""
+
     class MyDynamic(KisDynamic):
         val = KisTransform(lambda d: d["v"])("v")
 
@@ -229,6 +230,7 @@ def test_kis_object_with_callable_type():
 
 def test_kis_dynamic_raw_method():
     """Test KisDynamic.raw() method."""
+
     class D(KisDynamic):
         x = KisTransform(lambda d: d["x"])("x")
 
@@ -248,6 +250,7 @@ def test_kis_dynamic_raw_with_none_data():
 
 def test_kis_object_with_pre_init():
     """Test KisObject.transform_ with __pre_init__."""
+
     class WithPreInit(KisDynamic):
         def __init__(self):
             self.pre_called = False
@@ -268,16 +271,14 @@ def test_kis_object_with_pre_init():
 
 def test_kis_object_with_absolute_field():
     """Test KisType with absolute=True."""
+
     class WithAbsolute(KisDynamic):
         __path__ = "nested.data"
         # absolute field should look at root data, not scoped
         root_id = KisTransform(lambda d: d["id"])("id", absolute=True)
         val = KisTransform(lambda d: d["val"])("val")
 
-    data = {
-        "id": "root_level",
-        "nested": {"data": {"val": "nested_val"}}
-    }
+    data = {"id": "root_level", "nested": {"data": {"val": "nested_val"}}}
 
     # This tests absolute flag
     obj = KisObject.transform_(data, WithAbsolute)
@@ -299,6 +300,7 @@ def test_kis_object_class_ignore_missing():
 
 def test_kis_object_verbose_missing():
     """Test KisObject.transform_ with __verbose_missing__."""
+
     class VerboseMissing(KisDynamic):
         __verbose_missing__ = True
         x = KisTransform(lambda d: d["x"])("x")
@@ -316,10 +318,9 @@ def test_kis_object_scope_filter():
 
 def test_kis_object_nullable_annotation():
     """Test KisObject.transform_ with Optional type annotation."""
-    from typing import Optional
 
     class Nullable(KisDynamic):
-        may_be_none: Optional[int] = KisTransform(lambda d: None if d.get("val") == "null" else d.get("val"))("val")
+        may_be_none: int | None = KisTransform(lambda d: None if d.get("val") == "null" else d.get("val"))("val")
 
     obj = KisObject.transform_({"val": "null"}, Nullable)
     assert obj.may_be_none is None
@@ -327,6 +328,7 @@ def test_kis_object_nullable_annotation():
 
 def test_kis_object_transform_error_handling():
     """Test KisObject.transform_ error handling during field transform."""
+
     class FailTransform(KisType):
         def transform(self, data):
             raise RuntimeError("Transform failed")
@@ -340,6 +342,7 @@ def test_kis_object_transform_error_handling():
 
 def test_kis_object_with_indirect_type():
     """Test KisObject.transform_ with indirect KisType class."""
+
     class IndirectType(KisType):
         __default__ = []
 
@@ -357,6 +360,7 @@ def test_kis_object_with_indirect_type():
 
 def test_kis_object_indirect_type_no_default():
     """Test KisObject.transform_ raises ValueError for indirect type without __default__."""
+
     class NoDefaultType(KisType):
         def transform(self, data):
             return data
@@ -370,6 +374,7 @@ def test_kis_object_indirect_type_no_default():
 
 def test_kis_object_callable_default():
     """Test KisObject.transform_ with callable default."""
+
     class SimpleType(KisType):
         def transform(self, data):
             return data
@@ -386,21 +391,19 @@ def test_kis_object_callable_default():
 
 def test_kis_object_ignore_missing_fields():
     """Test KisObject.transform_ with ignore_missing_fields parameter."""
+
     class WithExtra(KisDynamic):
         __verbose_missing__ = True
         x = KisTransform(lambda d: d["x"])("x")
 
     # y should not trigger warning
-    obj = KisObject.transform_(
-        {"x": 1, "y": 2, "z": 3},
-        WithExtra,
-        ignore_missing_fields={"y"}
-    )
+    obj = KisObject.transform_({"x": 1, "y": 2, "z": 3}, WithExtra, ignore_missing_fields={"y"})
     assert obj.x == 1
 
 
 def test_kis_object_post_init_skip():
     """Test KisObject.transform_ with post_init=False."""
+
     class WithPostInit(KisDynamic):
         def __init__(self):
             self.initialized = False
@@ -414,6 +417,7 @@ def test_kis_object_post_init_skip():
 
 def test_kis_object_pre_init_skip():
     """Test KisObject.transform_ with pre_init=False."""
+
     class WithPreInit(KisDynamic):
         def __init__(self):
             self.pre_data = None
@@ -427,6 +431,7 @@ def test_kis_object_pre_init_skip():
 
 def test_kis_object_ignore_path():
     """Test KisObject.transform_ with ignore_path=True."""
+
     class WithPath(KisDynamic):
         __path__ = "nested.data"
         val = KisTransform(lambda d: d["val"])("val")

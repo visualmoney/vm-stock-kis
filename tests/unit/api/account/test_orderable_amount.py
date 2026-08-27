@@ -1,7 +1,5 @@
-from decimal import Decimal
 import types
-
-import pytest
+from decimal import Decimal
 
 from vmkis.api.account import orderable_amount as oa
 

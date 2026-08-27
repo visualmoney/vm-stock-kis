@@ -1,6 +1,5 @@
 import importlib.metadata as metadata
 import platform
-from pathlib import Path
 
 import vmkis
 
@@ -25,11 +24,11 @@ def check():
             for package in requires:
                 package, version = package.rsplit("=", 1)
                 package, operator = package[:-1], package[-1]
-                l = (30 - len(package)) // 2
-                r = 30 - len(package) - l
+                left = (30 - len(package)) // 2
+                right = 30 - len(package) - left
 
                 print(
-                    f"{'=' * l} {package} {'=' * r}\nRequired: {version}{operator}=\nInstalled: ",
+                    f"{'=' * left} {package} {'=' * right}\nRequired: {version}{operator}=\nInstalled: ",
                     end="",
                 )
 

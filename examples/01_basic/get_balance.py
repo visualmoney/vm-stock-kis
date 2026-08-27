@@ -2,15 +2,17 @@
 
 config.yaml의 인증 정보를 사용해 계좌 잔고를 조회합니다.
 """
+
 import yaml
-from vmkis import VmKis, KisAuth
+
+from vmkis import KisAuth, VmKis
 
 
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
     import os
 
     profile = profile or os.environ.get("VMKIS_PROFILE")
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
     if isinstance(cfg, dict) and "configs" in cfg:

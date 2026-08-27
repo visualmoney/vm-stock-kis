@@ -29,8 +29,9 @@ class TestPyKisAlias:
             assert vmkis.PyKis is vmkis.VmKis
 
     def test_alias_warns_with_new_name(self):
+        alias_name = "PyKis"
         with pytest.warns(DeprecationWarning, match="VmKis"):
-            vmkis.PyKis
+            getattr(vmkis, alias_name)
 
     def test_alias_is_not_exported_by_star_import(self):
         """`__all__`에 넣으면 `from vmkis import *`가 옛 이름을 계속 퍼뜨린다"""
@@ -38,10 +39,12 @@ class TestPyKisAlias:
         assert "VmKis" in vmkis.__all__
 
     def test_unknown_attribute_still_raises(self):
+        missing_name = "NoSuchThing"
+
         with pytest.raises(AttributeError):
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore", DeprecationWarning)
-                vmkis.NoSuchThing
+                getattr(vmkis, missing_name)
 
 
 class TestEnvironmentVariableFallback:

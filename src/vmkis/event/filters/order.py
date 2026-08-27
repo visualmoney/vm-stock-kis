@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Callable, Protocol, overload, runtime_checkable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Protocol, overload, runtime_checkable
 
 from vmkis.api.stock.market import MARKET_TYPE
 from vmkis.client.account import KisAccountNumber

@@ -1,4 +1,5 @@
 """Unit tests for vmkis.adapter.account.order"""
+
 from types import SimpleNamespace
 
 
@@ -64,7 +65,9 @@ def test_order_forwards_correctly():
 
     calls = []
 
-    def fake_order(self, market, symbol, order, price=None, qty=None, condition=None, execution=None, include_foreign=False):
+    def fake_order(
+        self, market, symbol, order, price=None, qty=None, condition=None, execution=None, include_foreign=False
+    ):
         calls.append(("order", market, symbol, order))
         return "order-result"
 

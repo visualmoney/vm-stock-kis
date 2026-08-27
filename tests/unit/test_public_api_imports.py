@@ -3,13 +3,13 @@ import warnings
 
 def test_public_types_and_core_imports():
     # core class
-    from vmkis import VmKis, KisAuth
+    from vmkis import KisAuth, VmKis
 
     assert VmKis is not None
     assert KisAuth is not None
 
     # public types
-    from vmkis import Quote, Balance, Order, Chart, Orderbook
+    from vmkis import Balance, Chart, Order, Orderbook, Quote
 
     assert Quote is not None
     assert Balance is not None
@@ -23,7 +23,9 @@ def test_deprecated_import_warns():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         try:
-            from vmkis import KisObjectProtocol
+            # 이 import 자체가 테스트 대상이다. 값을 쓰지 않는다고 지우면
+            # 테스트가 아무것도 검증하지 않게 된다.
+            from vmkis import KisObjectProtocol  # noqa: F401
         except Exception:
             # if types module missing, just ensure warning was raised
             pass

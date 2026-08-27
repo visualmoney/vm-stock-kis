@@ -1,4 +1,4 @@
-name: Publish Python 🐍 distributions 📦 to PyPI
+name: Publish
 
 on:
   workflow_dispatch:
@@ -6,62 +6,136 @@ on:
     tags:
       - 'v*.*.*'
 
+permissions:
+  contents: read
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  build-test:
-    name: Build & Test (${{ matrix.os }}, Python ${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ['3.11', '3.12']
+  build:
+    name: Build & verify
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # hatch-vcs가 태그에서 버전을 읽으려면 전체 히스토리가 필요합니다.
+          # 없으면 fallback-version("0.0.0")인 아티팩트가 만들어집니다.
           fetch-depth: 0
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install setuptools==72.1.0 wheel==0.43.0 twine==5.1.1 build==1.2.2.post1
-      - name: Build
-        run: |
-          python -m build --sdist --wheel --outdir dist/ .
 
-  pypi-publish:
-    name: upload release to PyPI
+      - uses: astral-sh/setup-uv@v10.0.1
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Build
+        run: uv build
+
+      # 태그와 실제로 빌드된 버전이 일치하는지 확인합니다.
+      # hatch-vcs가 태그를 못 읽으면 여기서 멈춥니다.
+      - name: Tag matches built version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          # ls 의 출력을 파싱하지 않습니다(SC2012). 글롭으로 직접 받습니다.
+          shopt -s nullglob
+          wheels=(dist/*.whl)
+          if [ ${#wheels[@]} -ne 1 ]; then
+            echo "::error::휠이 정확히 1개여야 합니다 (발견: ${#wheels[@]})"
+            exit 1
+          fi
+          built=$(basename "${wheels[0]}" | sed -E 's/vm_stock_kis-([^-]+)-.*/\1/')
+          echo "tag=$tag built=$built"
+          if [ "$tag" != "$built" ]; then
+            echo "::error::태그($tag)와 빌드 버전($built)이 다릅니다"
+            exit 1
+          fi
+
+      - name: Metadata check
+        run: uvx --from 'twine>=6' twine check --strict dist/*
+
+      # 휠 내용 검증. 이름 변경 이후 옛 패키지가 섞여 들어가거나
+      # py.typed가 빠지는 회귀를 잡습니다.
+      - name: Wheel contents
+        run: |
+          python - <<'PY'
+          import glob, sys, zipfile
+
+          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          problems = []
+
+          if "vmkis/py.typed" not in names:
+              problems.append("vmkis/py.typed 누락 (Typing :: Typed classifier와 어긋남)")
+          if any(n.startswith("pykis/") for n in names):
+              problems.append("옛 패키지 pykis/ 가 휠에 포함됨")
+          if any(n.startswith("tests/") for n in names):
+              problems.append("tests/ 가 휠에 포함됨")
+
+          if problems:
+              for p in problems:
+                  print(f"::error::{p}")
+              sys.exit(1)
+
+          print("휠 내용 정상:", sorted({n.split("/")[0] for n in names}))
+          PY
+
+      # 격리 환경에서 실제로 import되는지 확인합니다.
+      # 런타임 의존성 누락(예: pyyaml)을 여기서 잡습니다.
+      - name: Smoke test the wheel
+        run: |
+          uv run --isolated --no-project --with dist/*.whl python - <<'PY'
+          import vmkis
+          from vmkis import VmKis
+
+          print(vmkis.__file__, vmkis.__version__)
+
+          assert not vmkis.__version__.startswith("0.0.0"), "버전이 fallback 값입니다"
+          assert vmkis.create_client is not None, "helpers import 실패 (런타임 의존성 확인)"
+          assert vmkis.SimpleKIS is not None
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    name: Publish to PyPI
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/')
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/p/vm-stock-kis
     permissions:
+      # trusted publishing (OIDC) 및 PEP 740 attestations
       id-token: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
         with:
-          # hatch-vcs가 태그에서 버전을 읽으려면 전체 히스토리가 필요합니다.
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  release:
+    name: GitHub Release
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7
+        with:
           fetch-depth: 0
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - uses: actions/download-artifact@v4
         with:
-          python-version: '3.12.6'
-      - name: Install dependencies
-        run: |
-          python -m pip install setuptools==72.1.0 wheel==0.43.0 twine==5.1.1 build==1.2.2.post1
-      - name: Extract tag name
-        id: tag
-        run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-      - name: Update version in src/vmkis/__env__.py
-        run: |
-          VERSION=${{ steps.tag.outputs.TAG_NAME }}
-          VERSION=${VERSION#v}
-          sed -i "s/{{VERSION_PLACEHOLDER}}/$VERSION/g" src/vmkis/__env__.py
-      - name: Build and publish
-        run: |
-          python -m build --sdist --wheel --outdir dist/ .
-      - name: Publish package distributions to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-            packages-dir: dist/
+          name: dist
+          path: dist/
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" dist/* --generate-notes

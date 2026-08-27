@@ -1,6 +1,7 @@
-import pytest
 from decimal import Decimal
 from types import SimpleNamespace
+
+import pytest
 
 from vmkis.api.account import balance as bal
 
@@ -125,7 +126,9 @@ def test_balance_base_aggregations_and_item_access():
 
 
 def test_integration_balance_merges_balances():
-    b1 = SimpleNamespace(stocks=[SimpleNamespace(symbol="A"), SimpleNamespace(symbol="B")], deposits={"KRW": SimpleNamespace()})
+    b1 = SimpleNamespace(
+        stocks=[SimpleNamespace(symbol="A"), SimpleNamespace(symbol="B")], deposits={"KRW": SimpleNamespace()}
+    )
     b2 = SimpleNamespace(stocks=[SimpleNamespace(symbol="C")], deposits={"USD": SimpleNamespace()})
 
     # KisIntegrationBalance expects signature (kis, account_number, *balances)
@@ -169,6 +172,7 @@ def test_balance_stock_base_currency_property():
 def test_domestic_balance_init_and_post_init(monkeypatch):
     # Test __init__ sets account_number correctly
     from vmkis.client.account import KisAccountNumber
+
     acc = KisAccountNumber("12345678-01")
 
     # Create proper mock objects with required base classes
@@ -201,7 +205,7 @@ def test_foreign_present_balance_stock_market_resolution(monkeypatch):
     stock.__post_init__()
 
     # Should set flag when market cannot be inferred
-    assert stock._needs_market_resolution == True
+    assert stock._needs_market_resolution
 
 
 def test_foreign_present_balance_stock_kis_post_init_resolves_market(monkeypatch):
@@ -247,6 +251,7 @@ def test_foreign_present_balance_stock_kis_post_init_handles_exception(monkeypat
 def test_foreign_present_balance_init_and_post_init():
     # Test initialization and post_init assignment
     from vmkis.client.account import KisAccountNumber
+
     acc = KisAccountNumber("12345678-01")
 
     stock = object.__new__(bal.KisBalanceStockBase)
@@ -284,10 +289,11 @@ def test_domestic_balance_fetch_pagination(monkeypatch):
             return result
 
     kis = FakeKis()
-    from vmkis.client.account import KisAccountNumber
 
     # Mock KisPage
-    monkeypatch.setattr(bal, "KisPage", SimpleNamespace(first=lambda: SimpleNamespace(to=lambda x: SimpleNamespace(is_first=True))))
+    monkeypatch.setattr(
+        bal, "KisPage", SimpleNamespace(first=lambda: SimpleNamespace(to=lambda x: SimpleNamespace(is_first=True)))
+    )
 
     result = bal.domestic_balance(kis, "12345678-01", continuous=True)
 

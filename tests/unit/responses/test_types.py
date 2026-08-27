@@ -2,6 +2,7 @@ from datetime import date, datetime, time
 from decimal import Decimal
 
 import pytest
+
 from vmkis.responses.dynamic import KisNoneValueError
 from vmkis.responses.types import (
     KisAny,
