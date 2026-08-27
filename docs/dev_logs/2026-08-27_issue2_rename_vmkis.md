@@ -240,16 +240,94 @@ git tag v2.1.6 ──hatch-vcs──► 2.1.6.post1.dev5+g11ea7787f
 
 ---
 
-## 남은 일 (커밋 3~6, 이번 범위 밖)
+## 커밋 3~5 (후속 작업에서 완료)
 
-* **커밋 3**: `ci.yml`/`publish.yml` 재작성, `dependabot.yml` 추가
-  (`.github` 템플릿 링크 정정은 위와 같이 이번에 완료)
-* **커밋 4**: `VERSIONING.md` 축소(500줄 → 약 60줄), `MIGRATION_GUIDE.md`에
-  v2.x ↔ v3.0.0 대조표, `CONTRIBUTING.md`의 poetry → uv, `CHANGELOG.md` 신규
-* **커밋 5**: `ruff check --fix` + `ruff format` 단독 스윕 + `.git-blame-ignore-revs`
-  (현재 ruff 오류 1003건, 미포맷 120파일. `[tool.ruff]`에 `select`가 없어 버전에
-  따라 판정이 요동친다 — 일괄 정리 시 `select`를 명시할 것)
-* **커밋 6**: `git tag -a v3.0.0`
+### 커밋 3 — 워크플로 재작성 및 dependabot
+
+`publish.yml`은 사실상 동작한 적이 없었다. `v2.1.6` 태그 실행이 실패했고 원인이
+여러 겹이었다.
+
+* `actions/checkout`이 shallow clone이라 hatch-vcs가 태그를 못 읽어 버전이 `0.0.0`
+* `{{VERSION_PLACEHOLDER}}` 치환 스텝은 해당 placeholder가 없어 조용한 no-op
+* `python -m build`를 쓰는데 저장소는 hatchling/hatch-vcs로 전환됨
+* `pypi.org/p/python-kis`를 가리킴 (이 포크에 권한이 없는 이름)
+
+`build` → `publish` → `release` 세 잡으로 재작성하고 게시 전 검증을 넣었다.
+태그/버전 일치, `twine check --strict`, 휠 내용, 격리 환경 스모크 테스트.
+마지막 스모크는 `pyyaml` 같은 런타임 의존성 누락을 잡는다.
+
+`ci.yml`에는 `permissions: contents: read`, `Version sanity` 스텝,
+`uv lock --check`, 브랜치 보호용 `ci-ok` 집계 잡을 더했다. 매트릭스 잡 이름은
+버전을 바꿀 때마다 달라져 보호 규칙이 매번 깨지므로 집계 잡이 필요하다.
+
+액션 버전을 착수 시점에 확인해 갱신했다 (`checkout` v4 → v7, `setup-uv` v6 → v10).
+
+### 커밋 4 — 문서
+
+`VERSIONING.md`를 500줄에서 90줄로 줄였다. 삭제한 "현행 설계" 절은 **애초에
+동작한 적 없는 메커니즘**을 설명하고 있었다(`poetry-dynamic-versioning`이
+`build-system requires`에도 lock에도 없었다).
+
+`MIGRATION_GUIDE.md`에 이름 변경 절을 추가했다. 스윕이 이 문서의 v2.x 표기까지
+바꿔 버려 옛 이름이 사라진 상태였다. 마이그레이션 문서는 옛 이름과 새 이름을
+모두 보여야 한다. 그리고 v3.0.0에 할당돼 있던 "deprecated 경로 제거"를
+v4.0.0으로 미뤘다 — 한 릴리스에 두 종류의 Breaking Change를 겹치면 마이그레이션이
+불필요하게 어려워진다.
+
+**Poetry 잔재를 전부 걷어냈다.** 저장소는 이미 uv로 전환됐는데 문서와 에디터
+태스크는 여전히 `poetry install`을 안내하고 있었다. 즉 문서대로 따라 하면 환경
+구축이 실패한다. `.vscode/tasks.json`의 모든 태스크도 poetry 기반이라 실행되지
+않았다.
+
+`CHANGELOG.md`를 신규 작성했다.
+
+### 커밋 5 — ruff 규칙셋 고정 및 일괄 정리
+
+`[tool.ruff.lint] select`를 명시했다. 지정하지 않으면 ruff의 기본 규칙셋을
+따르는데 그 기본이 마이너 버전마다 바뀐다(v0.14.10 228건 → v0.16.4 1003건).
+
+`--fix`로 352건을 고치고 나머지는 개별 판단했다. **자동 수정이 의미를 바꾼 두
+곳을 되돌렸다.**
+
+* `test_public_api_imports.py` — deprecated import가 경고를 내는지 검증하는
+  테스트인데 그 import 자체를 미사용으로 보고 삭제해 `pass`만 남겼다.
+  테스트가 아무것도 검증하지 않게 됐다.
+* **이벤트 티켓 바인딩 6곳** — 이 라이브러리는 구독을 GC로 관리한다. 티켓을 담은
+  변수를 "미사용"이라고 지우면 즉시 구독이 해지된다. 변수의 존재 자체가 목적이다.
+
+`src/`에서 고친 실제 문제: `qty != None` → `is not None`(5곳), bare except(2곳),
+가변 기본 인자 `dict = {}`(호출 간 공유), `raise ... from None`(3곳),
+`zip(strict=)`(2곳), `warnings.warn` stacklevel, 모호한 변수명 `l`/`r`.
+
+`public_types.py`의 모듈 docstring이 import 뒤에 있어 **docstring 역할을 하지
+못하고 있었다.** 상단으로 옮겨 복구했다.
+
+`examples/01_basic/place_order.py`에서 **안전장치가 끊겨 있는 것을 발견했다.**
+파일 docstring은 "실계좌 주문 시 `ALLOW_LIVE_TRADES=1`이 필요하다"고 하는데
+`allow_live`를 계산만 하고 쓰지 않아, 실계좌 설정으로 실행하면 아무 확인 없이
+실주문이 나갔다. 가드를 연결했다.
+
+ruff의 `extend-exclude`에 `*.md`를 넣었다. `ruff format`은 Markdown 안의 Python
+코드 블록도 재포맷하는데, 그대로 두면 문서 예제를 말없이 다시 쓰고 기록물 문서까지
+건드린다. 첫 시도에서 기록물 32개가 바뀌어 되돌렸다.
+
+정리를 마쳤으므로 ruff를 pre-commit 훅과 CI lint 잡에 다시 넣고,
+`.git-blame-ignore-revs`에 포맷 커밋을 등록했다.
+
+```text
+ruff check .        통과
+ruff format --check 통과
+959 passed, 8 skipped, 17 deselected
+Total coverage 90.69%
+```
+
+---
+
+## 남은 일 (커밋 6)
+
+* **커밋 6**: `git tag -a v3.0.0` + push.
+  **아직 하지 않았다.** 태그를 밀면 `publish.yml`이 실행되어 PyPI 게시를
+  시도하는데, 저장소 밖 준비(아래)가 끝나지 않으면 실패한다.
 
 ### 판단이 필요한 항목
 
