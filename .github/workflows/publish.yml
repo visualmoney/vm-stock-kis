@@ -16,6 +16,9 @@ jobs:
         python-version: ['3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
+        with:
+          # hatch-vcs가 태그에서 버전을 읽으려면 전체 히스토리가 필요합니다.
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -37,6 +40,9 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # hatch-vcs가 태그에서 버전을 읽으려면 전체 히스토리가 필요합니다.
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
