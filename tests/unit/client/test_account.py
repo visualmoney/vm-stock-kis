@@ -1,6 +1,6 @@
 import pytest
 
-from pykis.client.account import KisAccountNumber
+from vmkis.client.account import KisAccountNumber
 
 
 def test_valid_8_digit_account():

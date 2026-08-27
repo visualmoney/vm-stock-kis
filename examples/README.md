@@ -1,6 +1,6 @@
-# Python-KIS 예제 가이드
+# VM-Stock-KIS 예제 가이드
 
-Python-KIS는 단계별 학습이 가능하도록 초급, 중급, 고급 예제를 제공합니다.
+VM-Stock-KIS는 단계별 학습이 가능하도록 초급, 중급, 고급 예제를 제공합니다.
 
 ## 📁 폴더 구조
 
@@ -16,7 +16,7 @@ examples/
 
 ### 1️⃣ 초급 (01_basic/)
 
-**대상**: Python-KIS를 처음 사용하는 개발자
+**대상**: VM-Stock-KIS를 처음 사용하는 개발자
 
 **시간**: 1-2시간
 
@@ -72,7 +72,7 @@ examples/
 - `03_error_handling.py` - 에러 처리 및 복원력
 
 **학습 목표**:
-- PyKis 심화 API
+- VmKis 심화 API
 - 성과 분석 및 리포팅
 - 프로덕션급 에러 처리
 - 엔터프라이즈 패턴
@@ -87,8 +87,8 @@ examples/
 
 ```bash
 # 저장소 클론
-git clone https://github.com/yourusername/python-kis.git
-cd python-kis
+git clone https://github.com/yourusername/vm-stock-kis.git
+cd vm-stock-kis
 
 # 환경 활성화
 source .venv/bin/activate  # Linux/Mac
@@ -114,7 +114,7 @@ nano config.yaml
 python examples/01_basic/hello_world.py
 
 # 출력:
-# Hello from Python-KIS example!
+# Hello from VM-Stock-KIS example!
 ```
 
 ### 3단계: 인증 확인
@@ -137,7 +137,7 @@ python examples/02_intermediate/01_multiple_symbols.py --profile virtual
 python examples/02_intermediate/03_portfolio_analysis.py
 
 # Scope API 사용 (환경변수로도 프로파일 선택 가능)
-PYKIS_PROFILE=real python examples/03_advanced/01_scope_api_trading.py
+VMKIS_PROFILE=real python examples/03_advanced/01_scope_api_trading.py
 # 또는
 python examples/03_advanced/01_scope_api_trading.py --profile real
 ```
@@ -264,7 +264,7 @@ python -u examples/01_basic/hello_world.py
 
 ### 공식 문서
 
-- [Python-KIS 문서](docs/)
+- [VM-Stock-KIS 문서](docs/)
 - [QUICKSTART.md](../QUICKSTART.md)
 - [SimpleKIS 가이드](../docs/SIMPLEKIS_GUIDE.md)
 

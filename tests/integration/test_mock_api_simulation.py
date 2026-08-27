@@ -9,8 +9,8 @@ import pytest
 import requests_mock
 from decimal import Decimal
 from datetime import date
-from pykis import PyKis, KisAuth
-from pykis.client.exceptions import KisAPIError, KisHTTPError
+from vmkis import VmKis, KisAuth
+from vmkis.client.exceptions import KisAPIError, KisHTTPError
 
 
 @pytest.fixture
@@ -123,10 +123,10 @@ class TestIntegrationMockAPISimulation:
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
-            # PyKis 초기화 시 자동으로 토큰 발급 (모의도메인)
+
+            # VmKis 초기화 시 자동으로 토큰 발급 (모의도메인)
             # auth와 virtual_auth는 위치 인자로 전달
-            kis = PyKis(mock_auth, mock_virtual_auth)
+            kis = VmKis(mock_auth, mock_virtual_auth)
 
             # 토큰이 설정되었는지 확인
             assert kis.primary_token is not None
@@ -140,28 +140,28 @@ class TestIntegrationMockAPISimulation:
                 "https://openapi.koreainvestment.com:9443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 토큰 발급 - virtual 도메인
             m.post(
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 종목 기본정보 조회 API Mock - real 도메인
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/search-info",
                 json=mock_search_info_response
             )
-            
+
             # 시세 조회 API Mock - real 도메인
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price",
                 json=mock_quote_response
             )
-            
-            kis = PyKis(mock_auth, mock_virtual_auth)
+
+            kis = VmKis(mock_auth, mock_virtual_auth)
             stock = kis.stock("000660")
-            
+
             # quote = stock.quote()
             # assert quote.price == Decimal("70000")
             # assert quote.volume == 1000000
@@ -174,51 +174,51 @@ class TestIntegrationMockAPISimulation:
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 잔고 조회 API Mock
             m.get(
                 "https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/trading/inquire-balance",
                 json=mock_balance_response
             )
-            
-            kis = PyKis(mock_auth, mock_virtual_auth)
+
+            kis = VmKis(mock_auth, mock_virtual_auth)
             account = kis.account()
-            
+
             # balance = account.balance()
             # assert len(balance.stocks) == 1
             # assert balance.stocks[0].symbol == "000660"
 
     def test_api_error_handling(self, mock_auth, mock_virtual_auth, mock_token_response):
         """API 에러 응답 처리"""
-        from pykis.responses.response import KisAPIResponse
-        
+        from vmkis.responses.response import KisAPIResponse
+
         error_response = {
             "rt_cd": "1",
             "msg_cd": "EGW00123",
             "msg1": "시스템 오류가 발생했습니다."
         }
-        
+
         with requests_mock.Mocker() as m:
             # 토큰 발급 - real 도메인
             m.post(
                 "https://openapi.koreainvestment.com:9443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 토큰 발급 - virtual 도메인
             m.post(
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 에러 응답
             m.get(
                 "https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/quotations/inquire-price",
                 json=error_response,
                 status_code=200
             )
-            
-            kis = PyKis(mock_auth, mock_virtual_auth)
+
+            kis = VmKis(mock_auth, mock_virtual_auth)
 
             # API 에러 발생 확인: use `fetch` with explicit path, api id, and response_type
             with pytest.raises(KisAPIError) as exc_info:
@@ -240,21 +240,21 @@ class TestIntegrationMockAPISimulation:
                 "https://openapi.koreainvestment.com:9443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 토큰 발급 - virtual 도메인
             m.post(
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # HTTP 500 에러
             m.get(
                 "https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/quotations/inquire-price",
                 status_code=500,
                 text="Internal Server Error"
             )
-            
-            kis = PyKis(mock_auth, mock_virtual_auth)
+
+            kis = VmKis(mock_auth, mock_virtual_auth)
 
             # HTTP 에러 발생 확인
             with pytest.raises(KisHTTPError) as exc_info:
@@ -275,13 +275,13 @@ class TestIntegrationMockAPISimulation:
                 "https://openapi.koreainvestment.com:9443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 토큰 발급 - virtual 도메인
             m.post(
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 401 Unauthorized (토큰 만료)
             m.get(
                 "https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/quotations/inquire-price",
@@ -290,58 +290,58 @@ class TestIntegrationMockAPISimulation:
                     {"status_code": 200, "json": mock_token_response}
                 ]
             )
-            
-            kis = PyKis(mock_auth, mock_virtual_auth)
-            
+
+            kis = VmKis(mock_auth, mock_virtual_auth)
+
             # 첫 요청은 401, 재발급 후 성공해야 함
             # (실제 구현에서는 자동 재발급 로직 필요)
 
     def test_rate_limiting_with_mock(self, mock_auth, mock_virtual_auth, mock_token_response, mock_quote_response, mock_search_info_response):
         """Rate Limiting과 함께 Mock 테스트"""
         import time
-        
+
         with requests_mock.Mocker() as m:
             # 토큰 발급 - real 도메인
             m.post(
                 "https://openapi.koreainvestment.com:9443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 토큰 발급 - virtual 도메인
             m.post(
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 종목 기본정보 조회 API Mock - real 도메인 (any symbol)
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/search-info",
                 json=mock_search_info_response
             )
-            
+
             # quotable_market에서 사용하는 inquire-price API Mock - real 도메인
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price",
                 json=mock_quote_response
             )
-            
+
             # 시세 조회 (여러 번)
             m.get(
                 "https://openapivts.koreainvestment.com:29443/uapi/domestic-stock/v1/quotations/inquire-price",
                 json=mock_quote_response
             )
-            
-            kis = PyKis(mock_auth, mock_virtual_auth)
-            
+
+            kis = VmKis(mock_auth, mock_virtual_auth)
+
             start_time = time.time()
-            
+
             # 5번 요청 (모의투자 제한: 초당 1개)
             for i in range(5):
                 stock = kis.stock(f"00066{i}")
                 # stock.quote()
-            
+
             elapsed = time.time() - start_time
-            
+
             # 약 4초 이상 소요되어야 함
             # assert elapsed >= 4.0
 
@@ -355,7 +355,7 @@ class TestIntegrationMockAPISimulation:
             secretkey="R" * 180,
             virtual=False,
         )
-        
+
         # 모의 도메인 인증 정보 1
         auth1 = KisAuth(
             id="user1",
@@ -364,7 +364,7 @@ class TestIntegrationMockAPISimulation:
             secretkey="S" * 180,
             virtual=True,
         )
-        
+
         # 모의 도메인 인증 정보 2
         auth2 = KisAuth(
             id="user2",
@@ -373,23 +373,23 @@ class TestIntegrationMockAPISimulation:
             secretkey="T" * 180,
             virtual=True,
         )
-        
+
         with requests_mock.Mocker() as m:
             # 실전 도메인 토큰 발급
             m.post(
                 "https://openapi.koreainvestment.com:9443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
+
             # 모의 도메인 토큰 발급
             m.post(
                 "https://openapivts.koreainvestment.com:29443/oauth2/tokenP",
                 json=mock_token_response
             )
-            
-            kis1 = PyKis(real_auth, auth1)
-            kis2 = PyKis(real_auth, auth2)
-            
+
+            kis1 = VmKis(real_auth, auth1)
+            kis2 = VmKis(real_auth, auth2)
+
             assert kis1.primary_account != kis2.primary_account
 
 

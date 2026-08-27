@@ -16,6 +16,9 @@ jobs:
         python-version: ['3.11', '3.12']
     steps:
       - uses: actions/checkout@v4
+        with:
+          # hatch-vcs가 태그에서 버전을 읽으려면 전체 히스토리가 필요합니다.
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -32,11 +35,14 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: pypi
-      url: https://pypi.org/p/python-kis
+      url: https://pypi.org/p/vm-stock-kis
     permissions:
       id-token: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          # hatch-vcs가 태그에서 버전을 읽으려면 전체 히스토리가 필요합니다.
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -47,11 +53,11 @@ jobs:
       - name: Extract tag name
         id: tag
         run: echo "TAG_NAME=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
-      - name: Update version in pykis/__env__.py
+      - name: Update version in src/vmkis/__env__.py
         run: |
           VERSION=${{ steps.tag.outputs.TAG_NAME }}
           VERSION=${VERSION#v}
-          sed -i "s/{{VERSION_PLACEHOLDER}}/$VERSION/g" pykis/__env__.py
+          sed -i "s/{{VERSION_PLACEHOLDER}}/$VERSION/g" src/vmkis/__env__.py
       - name: Build and publish
         run: |
           python -m build --sdist --wheel --outdir dist/ .

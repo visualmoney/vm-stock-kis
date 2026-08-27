@@ -1,14 +1,14 @@
 # 지역별 설정 가이드 (REGIONAL_GUIDES.md)
 
-**작성일**: 2025-12-20  
-**대상**: 사용자 (한국, 글로벌)  
+**작성일**: 2025-12-20
+**대상**: 사용자 (한국, 글로벌)
 **버전**: v1.0
 
 ---
 
 ## 개요
 
-Python-KIS는 **한국 사용자**와 **글로벌 개발자**를 모두 지원합니다. 본 문서는 지역별 특수한 설정과 제약사항을 설명합니다.
+VM-Stock-KIS는 **한국 사용자**와 **글로벌 개발자**를 모두 지원합니다. 본 문서는 지역별 특수한 설정과 제약사항을 설명합니다.
 
 ---
 
@@ -32,7 +32,7 @@ kis:
   app_key: "YOUR_APP_KEY"
   app_secret: "YOUR_APP_SECRET"
   account_number: "00000000-01"  # 계좌번호 형식
-  
+
 market:
   timezone: "Asia/Seoul"         # 한국 시간대
   holidays:                       # 한국 휴장일
@@ -77,11 +77,11 @@ kis:
   app_key: "YOUR_VIRTUAL_KEY"
   app_secret: "YOUR_VIRTUAL_SECRET"
   account_number: "00000000-01"
-  
+
 market:
   timezone: "Asia/Seoul"
   initial_balance: 1000000000    # 초기 잔고: 10억
-  
+
 trading:
   allow_short_sell: true          # 공매도 허용
   allow_margin_trading: true      # 신용거래 허용
@@ -157,10 +157,10 @@ print(f"가격: {quote.price:,}원")    # 예: 60,000원
 ### 1.3 한국 거래 예제
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
 # 1. 클라이언트 초기화
-kis = PyKis(
+kis = VmKis(
     app_key="YOUR_APP_KEY",
     app_secret="YOUR_APP_SECRET",
     account_number="00000000-01",
@@ -206,11 +206,11 @@ kis:
   server: mock                   # Mock 서버 (실제 API 미호출)
   app_key: "MOCK_KEY"
   app_secret: "MOCK_SECRET"
-  
+
 mock:
   mode: offline                  # 오프라인 모드
   use_dummy_data: true           # 더미 데이터 사용
-  
+
 development:
   debug: true                    # 디버그 로깅
   log_level: DEBUG
@@ -268,7 +268,7 @@ print(f"60,000 KRW = ${price_usd:.2f}")  # 약 $50
 ```python
 # 한국 증시 거래 시간 (글로벌 사용자 기준)
 
-# 한국 09:00~15:30 = 
+# 한국 09:00~15:30 =
 # - 미국 동부: 전날 19:00 ~ 다음날 01:30 (EST)
 # - 유럽: 01:00 ~ 07:30 (CET)
 
@@ -293,8 +293,8 @@ print(f"Market opens in EST: {market_open_est}")
 
 ```python
 # Mock 환경에서 개발 및 테스트
-from pykis import PyKis
-from pykis.mock import MockKisClient
+from vmkis import VmKis
+from vmkis.mock import MockKisClient
 
 # 1. Mock 클라이언트 생성 (실제 API 미호출)
 kis = MockKisClient(
@@ -314,15 +314,15 @@ print(f"Mock order ID: {order.order_id}")
 # 4. 단위 테스트
 import unittest
 
-class TestPyKIS(unittest.TestCase):
+class TestVmKis(unittest.TestCase):
     def setUp(self):
         self.kis = MockKisClient(mode="offline")
-    
+
     def test_quote_fetch(self):
         """주가 조회 테스트"""
         quote = self.kis.stock("005930").quote()
         self.assertGreater(quote.price, 0)
-    
+
     def test_buy_order(self):
         """매수 주문 테스트"""
         order = self.kis.stock("005930").buy(10, 60000)
@@ -392,21 +392,21 @@ def is_trading_hours(local_tz: str = 'America/New_York') -> bool:
     """
     tz_korea = pytz.timezone('Asia/Seoul')
     tz_local = pytz.timezone(local_tz)
-    
+
     # 현재 한국 시간
     now_korea = datetime.now(tz_korea)
-    
+
     # 거래 시간 확인
     hour = now_korea.hour
     minute = now_korea.minute
-    
+
     # 09:00~15:30 거래
     is_trading = (
         (hour == 9 and minute >= 0) or
         (hour > 9 and hour < 15) or
         (hour == 15 and minute < 30)
     )
-    
+
     return is_trading, now_korea
 
 # 사용 예
@@ -498,6 +498,6 @@ print(f"거래 중: {'Yes' if is_trading else 'No'}")
 
 ---
 
-**마지막 업데이트**: 2025-12-20  
-**검토 주기**: 분기별 (거래 시간 변경 시 즉시)  
+**마지막 업데이트**: 2025-12-20
+**검토 주기**: 분기별 (거래 시간 변경 시 즉시)
 **다음 검토**: Q1 2026

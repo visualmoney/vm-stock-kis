@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from pykis.__env__ import (APPKEY_LENGTH, REAL_API_REQUEST_PER_SECOND,
+from vmkis.__env__ import (APPKEY_LENGTH, REAL_API_REQUEST_PER_SECOND,
                            REAL_DOMAIN, SECRETKEY_LENGTH, USER_AGENT,
                            VIRTUAL_API_REQUEST_PER_SECOND, VIRTUAL_DOMAIN,
                            WEBSOCKET_MAX_SUBSCRIPTIONS, WEBSOCKET_REAL_DOMAIN,
@@ -17,13 +17,13 @@ def test_sys_version_info():
     # Python 3.10 미만일 경우 RuntimeError 발생
     with patch.object(sys, "version_info", (3, 9, 0)):
         with pytest.raises(
-            RuntimeError, match="PyKis에는 Python 3.10 이상이 필요합니다."
+            RuntimeError, match="VmKis에는 Python 3.10 이상이 필요합니다."
         ):
-            importlib.reload(sys.modules["pykis.__env__"])
+            importlib.reload(sys.modules["vmkis.__env__"])
 
     # Python 3.10 이상일 경우 정상 실행
     with patch.object(sys, "version_info", (3, 10, 0)):
-        importlib.reload(sys.modules["pykis.__env__"])
+        importlib.reload(sys.modules["vmkis.__env__"])
 
 
 def test_version_placeholder():
@@ -42,7 +42,7 @@ def test_constants_and_metadata():
     assert REAL_API_REQUEST_PER_SECOND == 19
     assert VIRTUAL_API_REQUEST_PER_SECOND == 2
 
-    assert USER_AGENT == f"PyKis/{__version__}"
+    assert USER_AGENT == f"VmKis/{__version__}"
 
     assert __author__ == "soju06"
     assert __license__ == "MIT"

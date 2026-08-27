@@ -1,7 +1,7 @@
 # Python KIS 프로젝트 - 문서 인덱스
 
-**작성 완료**: 2024년 12월 10일  
-**최종 업데이트**: 2024년 12월 10일  
+**작성 완료**: 2024년 12월 10일
+**최종 업데이트**: 2024년 12월 10일
 **총 문서 6개**, **총 5,800+ 줄**, **38,000+ 단어**
 
 **테스트 커버리지**: ✅ **90%** (목표 80% 초과 달성)
@@ -46,7 +46,7 @@
 - IDE 설정 (VS Code)
 - 프로젝트 구조 이해 (파일 구성)
 - 핵심 모듈 상세 가이드
-  - PyKis 클래스 (4가지 초기화 패턴)
+  - VmKis 클래스 (4가지 초기화 패턴)
   - 동적 타입 시스템 사용법
   - WebSocket 클라이언트 아키텍처
   - Event 시스템
@@ -376,7 +376,7 @@ docs/
 모든 문서는 Git 저장소에 저장됩니다:
 
 ```
-https://github.com/visualmoney/python-kis
+https://github.com/visualmoney/vm-stock-kis
 └── docs/
     ├── architecture/ARCHITECTURE.md
     ├── developer/DEVELOPER_GUIDE.md
@@ -410,6 +410,6 @@ https://github.com/visualmoney/python-kis
 
 ---
 
-**문서 작성 완료**: 2024년 12월 10일  
-**검토 상태**: ✅ 완료  
+**문서 작성 완료**: 2024년 12월 10일
+**검토 상태**: ✅ 완료
 **승인 상태**: ✅ 준비 완료

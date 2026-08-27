@@ -1,7 +1,7 @@
 import pytest
 from decimal import Decimal
 
-from pykis.utils.math import safe_divide
+from vmkis.utils.math import safe_divide
 
 
 @pytest.mark.parametrize(

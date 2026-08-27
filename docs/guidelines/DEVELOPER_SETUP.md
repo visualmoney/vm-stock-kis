@@ -1,6 +1,6 @@
-# python-kis 개발환경 설정 가이드 (Windows)
+# vm-stock-kis 개발환경 설정 가이드 (Windows)
 
-본 가이드는 `python-kis` 레포지토리에서 로컬 개발을 시작하기 위한 단계입니다. 이 프로젝트는 `poetry`를 사용합니다.
+본 가이드는 `vm-stock-kis` 레포지토리에서 로컬 개발을 시작하기 위한 단계입니다. 이 프로젝트는 `poetry`를 사용합니다.
 
 ## 1. 필수 소프트웨어
 - Python 3.11 이상 (현재 테스트 환경: 3.12)
@@ -10,8 +10,8 @@
 
 ## 2. 저장소 복제
 ```powershell
-git clone <repo_url> c:\Python\github.com\python-kis
-cd c:\Python\github.com\python-kis
+git clone <repo_url> c:\Python\github.com\vm-stock-kis
+cd c:\Python\github.com\vm-stock-kis
 ```
 
 ## 3. Poetry 설치 (설치되어 있지 않은 경우)
@@ -59,7 +59,7 @@ python -m poetry run ruff check .
 python -m poetry install
 
 # 테스트 + 커버리지
-python -m poetry run pytest --cov=pykis --cov-report=html:htmlcov
+python -m poetry run pytest --cov=vmkis --cov-report=html:htmlcov
 
 # 가상환경 셸 접속
 python -m poetry shell

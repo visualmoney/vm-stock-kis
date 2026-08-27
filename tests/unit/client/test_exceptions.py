@@ -5,8 +5,8 @@ from requests import Response
 
 import pytest
 
-from pykis.client import exceptions
-from pykis.client.exceptions import KisAPIError, KisHTTPError, safe_request_data
+from vmkis.client import exceptions
+from vmkis.client.exceptions import KisAPIError, KisHTTPError, safe_request_data
 
 
 def make_response_with_request(method: str = "GET", url: str = "https://api.test/path?foo=bar", headers: dict | None = None, body=None) -> Response:

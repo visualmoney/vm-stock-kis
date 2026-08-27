@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 
 import pytest
 
-from pykis.client.messaging import (
+from vmkis.client.messaging import (
     KisWebsocketEncryptionKey,
     KisWebsocketRequest,
     KisWebsocketTR,
@@ -65,7 +65,7 @@ def test_websocket_request_build_includes_header_and_body(monkeypatch):
         return FakeApproval("APPKEY-123")
 
     # patch the function that is imported inside build()
-    monkeypatch.setattr("pykis.api.auth.websocket.websocket_approval_key", fake_websocket_approval_key)
+    monkeypatch.setattr("vmkis.api.auth.websocket.websocket_approval_key", fake_websocket_approval_key)
 
     # body that implements build()
     class SimpleBody:
@@ -94,7 +94,7 @@ def test_websocket_request_build_without_body(monkeypatch):
     def fake_websocket_approval_key(kis_obj: Any, domain=None):
         return type("A", (), {"approval_key": "K"})()
 
-    monkeypatch.setattr("pykis.api.auth.websocket.websocket_approval_key", fake_websocket_approval_key)
+    monkeypatch.setattr("vmkis.api.auth.websocket.websocket_approval_key", fake_websocket_approval_key)
 
     kis = DummyKis()
     req = KisWebsocketRequest(kis=kis, type="T2", body=None, domain=None)

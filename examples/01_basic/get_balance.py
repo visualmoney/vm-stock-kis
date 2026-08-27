@@ -3,13 +3,13 @@
 config.yaml의 인증 정보를 사용해 계좌 잔고를 조회합니다.
 """
 import yaml
-from pykis import PyKis, KisAuth
+from vmkis import VmKis, KisAuth
 
 
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
     import os
 
-    profile = profile or os.environ.get("PYKIS_PROFILE")
+    profile = profile or os.environ.get("VMKIS_PROFILE")
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
@@ -41,7 +41,7 @@ def main() -> None:
         virtual=cfg.get("virtual", False),
     )
 
-    kis = PyKis(auth, keep_token=True)
+    kis = VmKis(auth, keep_token=True)
 
     account = kis.account()
     balance = account.balance()

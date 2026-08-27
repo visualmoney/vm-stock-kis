@@ -1,14 +1,14 @@
 # API 안정성 정책 (API_STABILITY_POLICY.md)
 
-**작성일**: 2025-12-20  
-**대상**: 개발자, 사용자, 라이브러리 유지보수자  
+**작성일**: 2025-12-20
+**대상**: 개발자, 사용자, 라이브러리 유지보수자
 **버전**: v1.0
 
 ---
 
 ## 개요
 
-Python-KIS의 **API 안정성 보장 정책**을 정의합니다. 사용자는 본 정책에 따라 버전 선택 및 업그레이드 계획을 수립할 수 있습니다.
+VM-Stock-KIS의 **API 안정성 보장 정책**을 정의합니다. 사용자는 본 정책에 따라 버전 선택 및 업그레이드 계획을 수립할 수 있습니다.
 
 ---
 
@@ -16,7 +16,7 @@ Python-KIS의 **API 안정성 보장 정책**을 정의합니다. 사용자는 �
 
 ### 1.1 레벨 정의
 
-Python-KIS의 모든 공개 API는 다음 중 하나의 안정성 레벨을 갖습니다:
+VM-Stock-KIS의 모든 공개 API는 다음 중 하나의 안정성 레벨을 갖습니다:
 
 | 레벨 | 기호 | 설명 | 하위 호환성 | 지원 기간 |
 |------|------|------|-----------|---------|
@@ -101,10 +101,10 @@ Release: v2.x → v2.x~v2.9.x → v3.0 → (제거됨)
 **예시**:
 ```python
 # v2.1: 신규 기능 추가
-from pykis.types import KisObjectProtocol  # 신규 경로
+from vmkis.types import KisObjectProtocol  # 신규 경로
 
 # v2.0 스타일 계속 작동 (경고 없음)
-from pykis import KisObjectProtocol  # 기존 경로
+from vmkis import KisObjectProtocol  # 기존 경로
 ```
 
 #### 2️⃣ 경고 (v2.x~v2.9.x)
@@ -116,12 +116,12 @@ from pykis import KisObjectProtocol  # 기존 경로
 **예시**:
 ```python
 # v2.2~v2.9: Deprecation 경고
-from pykis import KisObjectProtocol
+from vmkis import KisObjectProtocol
 
 # 출력:
-# DeprecationWarning: 'from pykis import KisObjectProtocol'은(는)
+# DeprecationWarning: 'from vmkis import KisObjectProtocol'은(는)
 # 더 이상 권장되지 않습니다.
-# 대신 'from pykis.types import KisObjectProtocol'을(를) 사용하세요.
+# 대신 'from vmkis.types import KisObjectProtocol'을(를) 사용하세요.
 # 이 기능은 v3.0.0에서 제거될 예정입니다.
 ```
 
@@ -133,11 +133,11 @@ from pykis import KisObjectProtocol
 **예시**:
 ```python
 # v3.0: Deprecation 경로 완전 제거
-from pykis import KisObjectProtocol  # ❌ 에러!
-# AttributeError: module 'pykis' has no attribute 'KisObjectProtocol'
+from vmkis import KisObjectProtocol  # ❌ 에러!
+# AttributeError: module 'vmkis' has no attribute 'KisObjectProtocol'
 
 # ✅ 올바른 방식
-from pykis.types import KisObjectProtocol
+from vmkis.types import KisObjectProtocol
 ```
 
 ### 4.3 마이그레이션 타임라인
@@ -150,7 +150,7 @@ from pykis.types import KisObjectProtocol
 │  v2.2.0 (2025-12)  →  v2.3~v2.9 (2026-01~06)  →  v3.0 (2026-06+)
 │  신규 경로 추가          경고 표시                  완전 제거
 │  (기존 경로 유지)      (기존 경로 유지)
-│  
+│
 │  User Action:
 │  ┌─────────┐      ┌──────────────────┐       ┌─────────┐
 │  │초기 준비 │──→   │마이그레이션 실행  │  →    │업그레이드│
@@ -170,10 +170,10 @@ from pykis.types import KisObjectProtocol
 
 ```python
 # ✅ v2.x 내 안정성 보장
-from pykis import PyKis, Quote, Balance, Order
+from vmkis import VmKis, Quote, Balance, Order
 
 # 모든 v2.0~v2.9.9 버전에서 동일하게 작동
-kis = PyKis(app_key="...", app_secret="...")
+kis = VmKis(app_key="...", app_secret="...")
 quote = kis.stock("005930").quote()  # Always works
 ```
 
@@ -184,7 +184,7 @@ quote = kis.stock("005930").quote()  # Always works
 - 기본 기능
 
 **보장 안 하는 범위**:
-- 내부 구현 (pykis._internal)
+- 내부 구현 (vmkis._internal)
 - 성능 특성
 - 에러 메시지 정확한 문구
 - 시간 초과 값
@@ -278,49 +278,49 @@ Key:
 ### 8.1 현재 버전 확인
 
 ```python
-import pykis
+import vmkis
 
-print(f"PyKIS 버전: {pykis.__version__}")
-# 출력: PyKIS 버전: 2.2.0
+print(f"VmKis 버전: {vmkis.__version__}")
+# 출력: VmKis 버전: 2.2.0
 ```
 
 ### 8.2 최신 버전 확인
 
 ```bash
 # PyPI에서 최신 버전 확인
-pip index versions pykis
+pip index versions vmkis
 
 # 또는
-pip list --outdated | grep pykis
+pip list --outdated | grep vmkis
 ```
 
 ### 8.3 버전 고정 (권장)
 
 ```bash
 # requirements.txt
-pykis>=2.0.0,<3.0.0          # v2.x만 사용 (호환성 보장)
+vmkis>=2.0.0,<3.0.0          # v2.x만 사용 (호환성 보장)
 
 # 또는 특정 버전
-pykis==2.2.0                 # 정확히 v2.2.0만 사용
+vmkis==2.2.0                 # 정확히 v2.2.0만 사용
 
 # 또는 최신 유지
-pykis~=2.2                   # v2.2.x 최신 (v2.3은 미포함)
+vmkis~=2.2                   # v2.2.x 최신 (v2.3은 미포함)
 ```
 
 ### 8.4 안전한 업그레이드
 
 ```bash
 # 1. 테스트 환경에서 먼저 테스트
-pip install --upgrade pykis --dry-run
+pip install --upgrade vmkis --dry-run
 
 # 2. 충돌 확인
 pip check
 
 # 3. 실제 업그레이드
-pip install --upgrade pykis
+pip install --upgrade vmkis
 
 # 4. 버전 확인
-python -c "import pykis; print(pykis.__version__)"
+python -c "import vmkis; print(vmkis.__version__)"
 
 # 5. 테스트 실행
 pytest tests/
@@ -336,13 +336,13 @@ pytest tests/
 
 ```python
 # v1.x
-from pykis.kis import KIS
+from vmkis.kis import KIS
 kis = KIS(...)
 quote = kis.get_quote("005930")
 
 # v2.x
-from pykis import PyKis
-kis = PyKis(...)
+from vmkis import VmKis
+kis = VmKis(...)
 quote = kis.stock("005930").quote()
 ```
 
@@ -385,7 +385,7 @@ quote = kis.stock("005930").quote()
 # 보안 취약점 발견 시:
 
 1. GitHub Issues에 공개하지 마세요
-2. security@python-kis.org 또는 private message로 보고
+2. security@vm-stock-kis.org 또는 private message로 보고
 3. 48시간 내 응답 (목표)
 4. 패치 후 공개 (조율)
 ```
@@ -395,7 +395,7 @@ quote = kis.stock("005930").quote()
 ```markdown
 # GitHub Issues에서:
 
-1. [버전 명시] pykis==2.2.0
+1. [버전 명시] vmkis==2.2.0
 2. [재현 단계] 명확한 코드 예제
 3. [예상] 어떻게 작동해야 함
 4. [실제] 어떻게 작동하는지
@@ -432,6 +432,6 @@ quote = kis.stock("005930").quote()
 
 ---
 
-**마지막 업데이트**: 2025-12-20  
-**검토 주기**: 매 메이저 버전  
+**마지막 업데이트**: 2025-12-20
+**검토 주기**: 매 메이저 버전
 **다음 검토**: v3.0 베타 출시 시

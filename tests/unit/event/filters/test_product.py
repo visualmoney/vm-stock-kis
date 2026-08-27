@@ -2,9 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
-import pykis.event.filters.product as product_mod
-from pykis.event.filters.product import KisProductEventFilter, KisSimpleProduct
-from pykis.event.subscription import KisSubscriptionEventArgs
+import vmkis.event.filters.product as product_mod
+from vmkis.event.filters.product import KisProductEventFilter, KisSimpleProduct
+from vmkis.event.subscription import KisSubscriptionEventArgs
 
 
 def test_init_requires_market():

@@ -1,10 +1,10 @@
-# 튜토리얼 영상 스크립트: "5분 안에 Python-KIS 시작하기"
+# 튜토리얼 영상 스크립트: "5분 안에 VM-Stock-KIS 시작하기"
 
-**제작일**: 2025-12-20  
-**분량**: 약 5분 (300초)  
-**대상 관객**: Python 초보자, 트레이딩 관심자  
-**언어**: 한국어 (자막: 영어)  
-**해상도**: 1080p (1920x1080)  
+**제작일**: 2025-12-20
+**분량**: 약 5분 (300초)
+**대상 관객**: Python 초보자, 트레이딩 관심자
+**언어**: 한국어 (자막: 영어)
+**해상도**: 1080p (1920x1080)
 **프레임 레이트**: 30fps
 
 ---
@@ -36,7 +36,7 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ┌─────────────────────────────────────────┐
 │  [배경: 파란색 그래디언트]              │
 │                                         │
-│  Python-KIS 로고 [페이드인]             │
+│  VM-Stock-KIS 로고 [페이드인]             │
 │                                         │
 │  "5분 안에 시작하기"                    │
 │  [텍스트 애니메이션]                    │
@@ -46,15 +46,15 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ### 스크립트 (자막 & 음성)
 
 **한국어 음성** (30초):
-> "안녕하세요! Python-KIS입니다.  
-> 한국투자증권 API를 Python으로 쉽게 사용할 수 있는 라이브러리입니다.  
-> 지금부터 5분 안에 첫 거래를 시작하는 방법을 보여드리겠습니다.  
+> "안녕하세요! VM-Stock-KIS입니다.
+> 한국투자증권 API를 Python으로 쉽게 사용할 수 있는 라이브러리입니다.
+> 지금부터 5분 안에 첫 거래를 시작하는 방법을 보여드리겠습니다.
 > 준비되셨나요? 시작합니다!"
 
 **영어 자막**:
-> "Hello! This is Python-KIS.  
-> A Python library for easy access to Korea Investment & Securities API.  
-> In the next 5 minutes, I'll show you how to make your first trade.  
+> "Hello! This is VM-Stock-KIS.
+> A Python library for easy access to Korea Investment & Securities API.
+> In the next 5 minutes, I'll show you how to make your first trade.
 > Ready? Let's start!"
 
 **배경음악**: Upbeat, Tech-focused (0:00 ~ 4:40 전체)
@@ -68,9 +68,9 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ┌─────────────────────────────────────────┐
 │  [터미널 창 - 검은 배경]               │
 │                                         │
-│  $ pip install pykis                   │
-│  Collecting pykis...                    │
-│  Successfully installed pykis-2.2.0     │
+│  $ pip install vmkis                   │
+│  Collecting vmkis...                    │
+│  Successfully installed vmkis-2.2.0     │
 │                                         │
 │  [효과음: 설치 완료 신호음]             │
 └─────────────────────────────────────────┘
@@ -79,21 +79,21 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ### 스크립트 (60초)
 
 **한국어 음성**:
-> "먼저 설치부터 시작합니다.  
-> 터미널에서 `pip install pykis`를 입력하기만 하면 됩니다.  
-> [일시정지 2초]  
-> 설치가 완료되었습니다!  
-> 정말 간단하죠?  
-> 이제 인증 정보를 준비할 차례입니다.  
-> 한국투자증권 홈페이지에서 App Key와 App Secret을 받으셔야 합니다.  
+> "먼저 설치부터 시작합니다.
+> 터미널에서 `pip install vmkis`를 입력하기만 하면 됩니다.
+> [일시정지 2초]
+> 설치가 완료되었습니다!
+> 정말 간단하죠?
+> 이제 인증 정보를 준비할 차례입니다.
+> 한국투자증권 홈페이지에서 App Key와 App Secret을 받으셔야 합니다.
 > 개발자 포털에서 간단히 신청할 수 있습니다."
 
 **영어 자막**:
-> "First, let's install the library.  
-> Just type `pip install pykis` in the terminal.  
-> Installation complete!  
-> Now we need authentication credentials.  
-> Get your App Key and Secret from the KIS Developer Portal.  
+> "First, let's install the library.
+> Just type `pip install vmkis` in the terminal.
+> Installation complete!
+> Now we need authentication credentials.
+> Get your App Key and Secret from the KIS Developer Portal.
 > It only takes a few minutes to apply."
 
 **화면 캡처**: pip install 실행 → 설치 완료
@@ -118,21 +118,21 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ### 스크립트 (60초)
 
 **한국어 음성**:
-> "이제 설정 파일을 만들겠습니다.  
-> config.yaml이라는 파일을 생성하고,  
-> [일시정지 1초]  
-> App Key와 Secret을 입력합니다.  
-> 계좌번호도 필요합니다.  
-> 편의상 환경변수로도 설정할 수 있습니다.  
-> 설정이 완료되면,  
-> 드디어 코드를 작성할 차례입니다!  
+> "이제 설정 파일을 만들겠습니다.
+> config.yaml이라는 파일을 생성하고,
+> [일시정지 1초]
+> App Key와 Secret을 입력합니다.
+> 계좌번호도 필요합니다.
+> 편의상 환경변수로도 설정할 수 있습니다.
+> 설정이 완료되면,
+> 드디어 코드를 작성할 차례입니다!
 > 정말 쉽습니다!"
 
 **영어 자막**:
-> "Create a config.yaml file.  
-> Enter your App Key, App Secret, and account number.  
-> Alternatively, use environment variables.  
-> Configuration is now complete!  
+> "Create a config.yaml file.
+> Enter your App Key, App Secret, and account number.
+> Alternatively, use environment variables.
+> Configuration is now complete!
 > Time to write some code."
 
 **화면 캡처**: VS Code에서 config.yaml 작성
@@ -146,9 +146,9 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ┌─────────────────────────────────────────┐
 │  [코드 에디터 - Python 파일]           │
 │                                         │
-│  from pykis import PyKis               │
+│  from vmkis import VmKis               │
 │                                         │
-│  kis = PyKis()                         │
+│  kis = VmKis()                         │
 │  quote = kis.stock("005930").quote()   │
 │                                         │
 │  print(f"삼성전자 가격: {quote.price}")  │
@@ -161,36 +161,36 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ### 스크립트 (80초)
 
 **한국어 음성**:
-> "이제 Python 파일을 만들겠습니다.  
-> [일시정지 1초]  
-> 먼저 PyKis를 임포트합니다.  
-> 그 다음, PyKis 클라이언트를 초기화합니다.  
-> config.yaml에서 자동으로 설정을 읽습니다.  
-> [일시정지 2초]  
-> 이제 삼성전자 주가를 조회해봅시다.  
-> kis.stock('005930')은 삼성전자를 의미합니다.  
-> 그 다음 quote()를 호출하면 실시간 시세를 가져옵니다.  
-> [일시정지 1초]  
-> 보세요! 현재 가격이 출력되었습니다.  
-> 정말 간단하죠?  
-> [일시정지 1초]  
-> 이제 주문도 해볼 수 있습니다.  
-> kis.stock('005930').buy(quantity=10, price=60000)  
-> 이렇게 매수 주문을 할 수 있습니다.  
+> "이제 Python 파일을 만들겠습니다.
+> [일시정지 1초]
+> 먼저 VmKis를 임포트합니다.
+> 그 다음, VmKis 클라이언트를 초기화합니다.
+> config.yaml에서 자동으로 설정을 읽습니다.
+> [일시정지 2초]
+> 이제 삼성전자 주가를 조회해봅시다.
+> kis.stock('005930')은 삼성전자를 의미합니다.
+> 그 다음 quote()를 호출하면 실시간 시세를 가져옵니다.
+> [일시정지 1초]
+> 보세요! 현재 가격이 출력되었습니다.
+> 정말 간단하죠?
+> [일시정지 1초]
+> 이제 주문도 해볼 수 있습니다.
+> kis.stock('005930').buy(quantity=10, price=60000)
+> 이렇게 매수 주문을 할 수 있습니다.
 > 물론 실제 계좌가 필요합니다!"
 
 **영어 자막**:
-> "Create a Python script.  
-> Import PyKis.  
-> Initialize the client.  
-> Query Samsung Electronics stock.  
-> kis.stock('005930').quote()  
-> Done! The current price is displayed.  
-> You can also place orders:  
-> kis.stock('005930').buy(quantity=10, price=60000)  
+> "Create a Python script.
+> Import VmKis.
+> Initialize the client.
+> Query Samsung Electronics stock.
+> kis.stock('005930').quote()
+> Done! The current price is displayed.
+> You can also place orders:
+> kis.stock('005930').buy(quantity=10, price=60000)
 > Simple as that!"
 
-**화면 캡처**: 
+**화면 캡처**:
 - Python 코드 작성 (라이브 입력)
 - 코드 실행
 - 출력 결과
@@ -219,27 +219,27 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ### 스크립트 (50초)
 
 **한국어 음성**:
-> "축하합니다!  
-> 5분 만에 Python-KIS를 시작했습니다!  
-> [일시정지 1초]  
-> 이제 더 많은 것을 배울 준비가 되셨나요?  
-> [일시정지 1초]  
-> 다음 단계:  
-> 1. 공식 FAQ를 읽어보세요.  
-> 2. 예제 코드들을 실습해보세요.  
-> 3. GitHub Discussions에서 질문하세요.  
-> [일시정지 1초]  
-> 모든 문서는 깃허브에서 찾을 수 있습니다.  
+> "축하합니다!
+> 5분 만에 VM-Stock-KIS를 시작했습니다!
+> [일시정지 1초]
+> 이제 더 많은 것을 배울 준비가 되셨나요?
+> [일시정지 1초]
+> 다음 단계:
+> 1. 공식 FAQ를 읽어보세요.
+> 2. 예제 코드들을 실습해보세요.
+> 3. GitHub Discussions에서 질문하세요.
+> [일시정지 1초]
+> 모든 문서는 깃허브에서 찾을 수 있습니다.
 > 감사합니다! 행운을 빕니다!"
 
 **영어 자막**:
-> "Congratulations!  
-> You've started Python-KIS in just 5 minutes!  
-> Next steps:  
-> 1. Read the FAQ  
-> 2. Try the example code  
-> 3. Join GitHub Discussions  
-> Find all documentation on GitHub.  
+> "Congratulations!
+> You've started VM-Stock-KIS in just 5 minutes!
+> Next steps:
+> 1. Read the FAQ
+> 2. Try the example code
+> 3. Join GitHub Discussions
+> Find all documentation on GitHub.
 > Thank you! Happy trading!"
 
 **배경음악**: 클라이맥스 → 페이드 아웃
@@ -280,10 +280,10 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 
 ### YouTube 준비
 ```yaml
-제목: "Python-KIS: 5분 안에 거래 시작하기 | 한국투자증권 API"
+제목: "VM-Stock-KIS: 5분 안에 거래 시작하기 | 한국투자증권 API"
 
 설명:
-"Python-KIS는 한국투자증권 API를 쉽게 사용할 수 있는 라이브러리입니다.
+"VM-Stock-KIS는 한국투자증권 API를 쉽게 사용할 수 있는 라이브러리입니다.
 이 영상에서는 설치부터 첫 거래까지 5분만에 완성하는 방법을 보여드립니다.
 
 ⏱️ 시간대:
@@ -395,6 +395,6 @@ docs/
 
 ---
 
-**작성일**: 2025-12-20  
-**상태**: ✅ 스크립트 완성 (촬영 준비 완료)  
+**작성일**: 2025-12-20
+**상태**: ✅ 스크립트 완성 (촬영 준비 완료)
 **다음**: YouTube 영상 제작 (외부 제작사 의뢰 또는 자체 촬영)

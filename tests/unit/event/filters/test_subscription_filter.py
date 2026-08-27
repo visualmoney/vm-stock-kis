@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
-from pykis.event.filters.subscription import KisSubscriptionEventFilter
-from pykis.event.subscription import KisSubscriptionEventArgs
+from vmkis.event.filters.subscription import KisSubscriptionEventFilter
+from vmkis.event.subscription import KisSubscriptionEventArgs
 
 
 def test_filter_matches_with_key():

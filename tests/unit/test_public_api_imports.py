@@ -3,13 +3,13 @@ import warnings
 
 def test_public_types_and_core_imports():
     # core class
-    from pykis import PyKis, KisAuth
+    from vmkis import VmKis, KisAuth
 
-    assert PyKis is not None
+    assert VmKis is not None
     assert KisAuth is not None
 
     # public types
-    from pykis import Quote, Balance, Order, Chart, Orderbook
+    from vmkis import Quote, Balance, Order, Chart, Orderbook
 
     assert Quote is not None
     assert Balance is not None
@@ -23,7 +23,7 @@ def test_deprecated_import_warns():
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
         try:
-            from pykis import KisObjectProtocol
+            from vmkis import KisObjectProtocol
         except Exception:
             # if types module missing, just ensure warning was raised
             pass

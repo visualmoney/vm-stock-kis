@@ -1,22 +1,22 @@
 """
 # FAQ (자주 묻는 질문)
 
-PyKIS 사용 중 자주 묻는 질문과 답변입니다.
+VmKis 사용 중 자주 묻는 질문과 답변입니다.
 
 ## 설치 및 설정
 
-### Q1: PyKIS를 설치하려면 어떻게 해야 하나요?
+### Q1: VmKis를 설치하려면 어떻게 해야 하나요?
 
 A: 다음 명령어로 설치할 수 있습니다.
 
 ```bash
-pip install pykis
+pip install vmkis
 ```
 
 또는 poetry를 사용하는 경우:
 
 ```bash
-poetry add pykis
+poetry add vmkis
 ```
 
 ### Q2: API 키(AppKey, AppSecret)는 어디서 얻을 수 있나요?
@@ -37,16 +37,16 @@ A: 네, 가능합니다. 두 가지 방법이 있습니다:
 
 **방법 1: 환경 변수 사용**
 ```bash
-export PYKIS_REAL_TRADING=false  # Linux/macOS
-set PYKIS_REAL_TRADING=false     # Windows CMD
-$env:PYKIS_REAL_TRADING = "false" # Windows PowerShell
+export VMKIS_REAL_TRADING=false  # Linux/macOS
+set VMKIS_REAL_TRADING=false     # Windows CMD
+$env:VMKIS_REAL_TRADING = "false" # Windows PowerShell
 ```
 
 **방법 2: 코드에서 설정**
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(
+kis = VmKis(
     id="YOUR_ID",
     account="YOUR_ACCOUNT",
     appkey="YOUR_APPKEY",
@@ -80,7 +80,7 @@ A: 다음을 확인하세요:
 A: API 호출 제한을 초과했습니다. 해결 방법:
 
 ```python
-from pykis.utils.retry import with_retry
+from vmkis.utils.retry import with_retry
 
 @with_retry(max_retries=5, initial_delay=2.0)
 def fetch_quote(symbol):
@@ -105,9 +105,9 @@ time.sleep(5)  # 5초 대기 후 재시도
 A: 다음과 같이 조회할 수 있습니다:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 quote = kis.stock("005930").quote()  # 삼성전자
 
 print(f"종목명: {quote.name}")
@@ -142,9 +142,9 @@ quotes = asyncio.run(fetch_quotes(symbols))
 A: WebSocket을 사용하세요:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 
 def on_quote(quote):
     print(f"{quote.name}: {quote.price:,}원")
@@ -169,9 +169,9 @@ kis.subscribe_quotes(
 A: 다음과 같이 주문할 수 있습니다:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 
 # 매수
 order = kis.stock("005930").buy(
@@ -225,9 +225,9 @@ kis.subscribe_orders(on_order_status)
 A: 다음과 같이 확인할 수 있습니다:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 
 # 잔고 조회
 balance = kis.account().balance()
@@ -270,8 +270,8 @@ print(f"수익: {profit:,}원 ({profit_rate:.2f}%)")
 A: 재연결 로직을 추가하세요:
 
 ```python
-from pykis.utils.retry import with_retry
-from pykis.exceptions import KisConnectionError
+from vmkis.utils.retry import with_retry
+from vmkis.exceptions import KisConnectionError
 
 @with_retry(max_retries=5, initial_delay=1.0)
 def fetch_with_retry(symbol):
@@ -292,9 +292,9 @@ except Exception as e:
 A: 주식 시장이 닫혀있을 때 발생합니다. 장 시간을 확인하세요:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 
 # 장 시간 확인
 hours = kis.stock("005930").trading_hours()
@@ -315,9 +315,9 @@ A: 다음과 같이 변환할 수 있습니다:
 
 ```python
 import pandas as pd
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 
 # 차트 데이터를 DataFrame으로
 charts = kis.stock("005930").chart("D")  # 일봉
@@ -345,9 +345,9 @@ A: 이동평균 교차 전략 예제:
 
 ```python
 import pandas as pd
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(...)
+kis = VmKis(...)
 
 # 데이터 준비
 charts = kis.stock("005930").chart("D")
@@ -374,8 +374,8 @@ if latest['signal'] == 1 and df.iloc[-2]['signal'] != 1:
 A: 다음과 같이 조절할 수 있습니다:
 
 ```python
-from pykis import setLevel
-from pykis.logging import enable_json_logging
+from vmkis import setLevel
+from vmkis.logging import enable_json_logging
 
 # 로그 레벨 설정
 setLevel("DEBUG")  # 상세 로그
@@ -386,7 +386,7 @@ setLevel("WARNING") # 경고와 에러만
 enable_json_logging()
 
 # 이후 로그는 JSON 형식으로 출력
-kis = PyKis(...)
+kis = VmKis(...)
 # ... 코드 실행 ...
 ```
 
@@ -398,7 +398,7 @@ kis = PyKis(...)
 
 A: 다음 단계를 따르세요:
 
-1. [GitHub Issues](https://github.com/QuantumOmega/python-kis/issues) 방문
+1. [GitHub Issues](https://github.com/QuantumOmega/vm-stock-kis/issues) 방문
 2. "New Issue" 클릭
 3. 버그 설명 (제목, 상세 내용, 재현 방법, 환경 정보 포함)
 4. 제출
@@ -413,7 +413,7 @@ Description:
 Environment:
 - OS: Windows 11
 - Python: 3.11.9
-- pykis: 2.1.7
+- vmkis: 2.1.7
 
 Steps to reproduce:
 1. 잘못된 AppKey로 인증 시도
@@ -490,7 +490,7 @@ CMD ["python", "main.py"]
 
 **requirements.txt:**
 ```
-pykis>=2.1.0
+vmkis>=2.1.0
 pyyaml>=6.0
 python-dotenv>=1.2.0
 ```
@@ -538,14 +538,14 @@ def get_quote(symbol):
 
 ## 추가 리소스
 
-- 📚 [공식 문서](https://github.com/QuantumOmega/python-kis)
-- 💬 [GitHub Discussions](https://github.com/QuantumOmega/python-kis/discussions)
-- 🐛 [Bug Reports](https://github.com/QuantumOmega/python-kis/issues)
+- 📚 [공식 문서](https://github.com/QuantumOmega/vm-stock-kis)
+- 💬 [GitHub Discussions](https://github.com/QuantumOmega/vm-stock-kis/discussions)
+- 🐛 [Bug Reports](https://github.com/QuantumOmega/vm-stock-kis/issues)
 - 📖 [Tutorial](../QUICKSTART.md)
 - 🔗 [한국투자증권 API](https://www.truefriend.com)
 
 ---
 
 **마지막 업데이트**: 2025-12-20
-**문의**: [GitHub Discussions](https://github.com/QuantumOmega/python-kis/discussions) 또는 [Issues](https://github.com/QuantumOmega/python-kis/issues)
+**문의**: [GitHub Discussions](https://github.com/QuantumOmega/vm-stock-kis/discussions) 또는 [Issues](https://github.com/QuantumOmega/vm-stock-kis/issues)
 """

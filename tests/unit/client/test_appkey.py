@@ -1,7 +1,7 @@
 import pytest
 
-from pykis.__env__ import APPKEY_LENGTH, SECRETKEY_LENGTH
-from pykis.client.appkey import KisKey
+from vmkis.__env__ import APPKEY_LENGTH, SECRETKEY_LENGTH
+from vmkis.client.appkey import KisKey
 
 
 def make_key(length: int) -> str:

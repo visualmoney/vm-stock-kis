@@ -1,7 +1,7 @@
 import pytest
 
-from pykis.utils.rate_limit import RateLimiter
-import pykis.utils.rate_limit as rl
+from vmkis.utils.rate_limit import RateLimiter
+import vmkis.utils.rate_limit as rl
 
 
 def _make_fake_time(monkeypatch, start: float = 0.0):
@@ -134,7 +134,7 @@ def test_multiple_blocking_cycles(monkeypatch):
     # This will sleep for period + 0.05, then reset count to 0 and increment to 1
     assert limiter.acquire(blocking=True, blocking_callback=cb) is True
     assert cb_called["n"] == 1
-    
+
     # After blocking: _count=1, _last=3.05 (period + 0.05 seconds have passed)
     # The blocking acquire counted as 1
     assert limiter.count == 1
@@ -145,16 +145,16 @@ def test_multiple_blocking_cycles(monkeypatch):
     # But wait - the 3rd acquire should have triggered blocking again or failed
     # Let's check: after 2 acquires we have count=2, so a 3rd non-blocking should fail
     # But we called blocking=True (default), so it would sleep again
-    
+
     # Actually, the test expects count to be exactly 2 after these two calls
     # But count is actually 3 because: 1 (from blocking) + 2 (from next two calls) = 3
     # However, only 2 of those are within the rate limit before triggering another block
-    
+
     # The issue is that after the blocking acquire, we have count=1
     # Then first acquire makes it 2, second acquire makes it 3
     # But rate=2 means we can only have 2 per period
     # So the second acquire should trigger blocking again
-    
+
     # Let's just verify the count after the blocking acquire
     # The exact behavior depends on implementation details
     # For now, let's accept that count is 1 after blocking

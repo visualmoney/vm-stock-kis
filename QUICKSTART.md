@@ -3,7 +3,7 @@
 1. 설치
 
 ```bash
-pip install python-kis
+pip install vm-stock-kis
 ```
 
 2. 인증 정보 준비 (권장: 외부 파일 사용, 리포지토리에 커밋 금지)
@@ -22,12 +22,12 @@ virtual: false
 
 ```python
 import yaml
-from pykis import PyKis
+from vmkis import VmKis
 
 with open("config.yaml", "r", encoding="utf-8") as f:
     cfg = yaml.safe_load(f)
 
-kis = PyKis(id=cfg["id"], account=cfg["account"], appkey=cfg["appkey"], secretkey=cfg["secretkey"])
+kis = VmKis(id=cfg["id"], account=cfg["account"], appkey=cfg["appkey"], secretkey=cfg["secretkey"])
 print(kis.stock("005930").quote())
 ```
 
@@ -51,7 +51,7 @@ print(kis.stock("005930").quote())
 
 7. FAQ
 
-- Q: 환경변수로도 설정 가능한가요?  
-    A: 가능합니다. `os.environ`에서 불러와 `PyKis`에 전달하면 됩니다.
-- Q: 예제 실행 순서는?  
+- Q: 환경변수로도 설정 가능한가요?
+    A: 가능합니다. `os.environ`에서 불러와 `VmKis`에 전달하면 됩니다.
+- Q: 예제 실행 순서는?
     A: `hello_world.py` → `get_quote.py` → `get_balance.py` → `place_order.py`(모의) → `realtime_price.py` 순으로 권장합니다.

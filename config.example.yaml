@@ -1,8 +1,8 @@
 # """
-# Multi-profile config example for Python-KIS
+# Multi-profile config example for VM-Stock-KIS
 
 # This file supports multiple profiles (virtual and real). Copy this file to
-# `config.yaml` and set `PYKIS_PROFILE` environment variable to select a profile,
+# `config.yaml` and set `VMKIS_PROFILE` environment variable to select a profile,
 # or pass `--profile <name>` to example scripts that support it.
 
 # DO NOT commit the filled `config.yaml` to version control.

@@ -1,6 +1,6 @@
 import pytest
 
-from pykis.scope.base import KisScopeBase
+from vmkis.scope.base import KisScopeBase
 
 
 class DummyKis:

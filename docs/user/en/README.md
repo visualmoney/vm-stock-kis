@@ -1,17 +1,17 @@
-# Python-KIS: Korea Investment & Securities API Library
+# VM-Stock-KIS: Korea Investment & Securities API Library
 
 **Language**: [한국어](../../README.md) | [English](README.md)
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue)](https://www.python.org/)
 [![License](https://img.shields.io/badge/license-MIT-green)](../../../LICENCE)
-[![PyPI Version](https://img.shields.io/pypi/v/pykis)](https://pypi.org/project/pykis/)
+[![PyPI Version](https://img.shields.io/pypi/v/vmkis)](https://pypi.org/project/vmkis/)
 [![Test Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](../../../README.md)
 
 ---
 
 ## Overview
 
-**Python-KIS** is a Python library for the Korea Investment & Securities (KIS) REST API and WebSocket API. It provides a simple and intuitive interface for:
+**VM-Stock-KIS** is a Python library for the Korea Investment & Securities (KIS) REST API and WebSocket API. It provides a simple and intuitive interface for:
 
 - 📊 **Real-time stock quotes** (Korea Stock Exchange)
 - 💼 **Account management** (balance, holdings, profit/loss)
@@ -29,9 +29,9 @@
 
 ```python
 # Simple and intuitive API
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(app_key="YOUR_KEY", app_secret="YOUR_SECRET")
+kis = VmKis(app_key="YOUR_KEY", app_secret="YOUR_SECRET")
 quote = kis.stock("005930").quote()  # Samsung Electronics
 print(f"Current price: {quote.price:,} KRW")
 ```
@@ -39,7 +39,7 @@ print(f"Current price: {quote.price:,} KRW")
 ### 🔄 Auto-Retry with Exponential Backoff
 
 ```python
-from pykis.utils.retry import with_retry
+from vmkis.utils.retry import with_retry
 
 @with_retry(max_retries=5, initial_delay=2.0)
 def fetch_quote(symbol):
@@ -52,7 +52,7 @@ quote = fetch_quote("005930")
 ### 📋 Structured Logging (ELK Compatible)
 
 ```python
-from pykis.logging import enable_json_logging
+from vmkis.logging import enable_json_logging
 
 enable_json_logging()  # Enable JSON format
 
@@ -63,7 +63,7 @@ enable_json_logging()  # Enable JSON format
 ### 🎯 13 Exception Types
 
 ```python
-from pykis.exceptions import (
+from vmkis.exceptions import (
     KisConnectionError,      # Network issues (retryable)
     KisAuthenticationError,  # Invalid credentials
     KisRateLimitError,       # Too many requests (retryable)
@@ -87,11 +87,11 @@ except KisAuthenticationError:
 
 ```bash
 # Install from PyPI
-pip install pykis
+pip install vmkis
 
 # Or from source
-git clone https://github.com/yourusername/python-kis.git
-cd python-kis
+git clone https://github.com/yourusername/vm-stock-kis.git
+cd vm-stock-kis
 pip install -e .
 ```
 
@@ -100,15 +100,15 @@ pip install -e .
 #### Method 1: Environment Variables
 
 ```bash
-export PYKIS_APP_KEY="YOUR_APP_KEY"
-export PYKIS_APP_SECRET="YOUR_APP_SECRET"
-export PYKIS_ACCOUNT_NUMBER="YOUR_ACCOUNT_NUMBER"
+export VMKIS_APP_KEY="YOUR_APP_KEY"
+export VMKIS_APP_SECRET="YOUR_APP_SECRET"
+export VMKIS_ACCOUNT_NUMBER="YOUR_ACCOUNT_NUMBER"
 ```
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis()  # Loads from environment
+kis = VmKis()  # Loads from environment
 ```
 
 #### Method 2: Configuration File
@@ -123,19 +123,19 @@ kis:
 ```
 
 ```python
-from pykis.helpers import load_config
-from pykis import PyKis
+from vmkis.helpers import load_config
+from vmkis import VmKis
 
 config = load_config("config.yaml")
-kis = PyKis(**config['kis'])
+kis = VmKis(**config['kis'])
 ```
 
 #### Method 3: Direct Parameters
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(
+kis = VmKis(
     app_key="YOUR_APP_KEY",
     app_secret="YOUR_APP_SECRET",
     account_number="00000000-01"
@@ -249,10 +249,10 @@ for order in orders:
 
 ## Community & Support
 
-- 📝 **Issues**: [GitHub Issues](https://github.com/yourusername/python-kis/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/python-kis/discussions)
-- 📧 **Email**: support@python-kis.org
-- 🌐 **Website**: [https://python-kis.org](https://python-kis.org)
+- 📝 **Issues**: [GitHub Issues](https://github.com/yourusername/vm-stock-kis/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/vm-stock-kis/discussions)
+- 📧 **Email**: support@vm-stock-kis.org
+- 🌐 **Website**: [https://vm-stock-kis.org](https://vm-stock-kis.org)
 
 ---
 
@@ -264,8 +264,8 @@ We welcome contributions! Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md)
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/python-kis.git
-cd python-kis
+git clone https://github.com/yourusername/vm-stock-kis.git
+cd vm-stock-kis
 
 # Install development dependencies
 pip install -e ".[dev]"
@@ -274,7 +274,7 @@ pip install -e ".[dev]"
 pytest tests/
 
 # Run linter
-pylint pykis/
+pylint src/vmkis/
 ```
 
 ---
@@ -312,8 +312,8 @@ See [CHANGELOG.md](../../../CHANGELOG.md) for version history and updates.
 
 ---
 
-**Version**: 2.2.0  
-**Last Updated**: 2025-12-20  
+**Version**: 2.2.0
+**Last Updated**: 2025-12-20
 **Status**: 🟢 Stable
 
 ---

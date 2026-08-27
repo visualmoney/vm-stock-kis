@@ -6,7 +6,7 @@ API 인증 정보 검증과 에러 상황을 테스트합니다.
 
 import pytest
 
-from pykis import KisAuth
+from vmkis import KisAuth
 
 
 @pytest.mark.integration

@@ -3,39 +3,39 @@ from unittest import TestCase
 import pytest
 from requests.exceptions import SSLError
 
-from pykis import PyKis
-from pykis.api.account.balance import KisBalance, KisDeposit
-from pykis.scope.account import KisAccount
-from pykis.client.exceptions import KisHTTPError, KisAPIError
-from tests.env import load_pykis
+from vmkis import VmKis
+from vmkis.api.account.balance import KisBalance, KisDeposit
+from vmkis.scope.account import KisAccount
+from vmkis.client.exceptions import KisHTTPError, KisAPIError
+from tests.env import load_vmkis
 
 
 pytestmark = pytest.mark.requires_api
 
 
 class AccountBalanceTests(TestCase):
-    pykis: PyKis
-    virtual_pykis: PyKis
+    vmkis: VmKis
+    virtual_vmkis: VmKis
 
     @classmethod
     def setUpClass(cls) -> None:
         """클래스 레벨에서 한 번만 실행 - 토큰 발급 횟수 제한 방지"""
-        cls.pykis = load_pykis("real", use_websocket=False)
-        cls.virtual_pykis = load_pykis("virtual", use_websocket=False)
+        cls.vmkis = load_vmkis("real", use_websocket=False)
+        cls.virtual_vmkis = load_vmkis("virtual", use_websocket=False)
 
     def test_account_scope(self):
-        account = self.pykis.account()
+        account = self.vmkis.account()
 
         self.assertTrue(isinstance(account, KisAccount))
 
     def test_virtual_account_scope(self):
-        account = self.virtual_pykis.account()
+        account = self.virtual_vmkis.account()
 
         self.assertTrue(isinstance(account, KisAccount))
 
     def test_balance(self):
         try:
-            account = self.pykis.account()
+            account = self.vmkis.account()
             balance = account.balance()
 
             self.assertTrue(isinstance(balance, KisBalance))
@@ -49,7 +49,7 @@ class AccountBalanceTests(TestCase):
 
     def test_virtual_balance(self):
         try:
-            balance = self.virtual_pykis.account().balance()
+            balance = self.virtual_vmkis.account().balance()
 
             self.assertTrue(isinstance(balance, KisBalance))
             self.assertIsNotNone(balance.deposits["KRW"])
@@ -62,7 +62,7 @@ class AccountBalanceTests(TestCase):
 
     def test_balance_stock(self):
         try:
-            balance = self.pykis.account().balance()
+            balance = self.vmkis.account().balance()
 
             if not balance.stocks:
                 self.skipTest("No stocks in account")
@@ -77,7 +77,7 @@ class AccountBalanceTests(TestCase):
 
     def test_virtual_balance_stock(self):
         try:
-            balance = self.virtual_pykis.account().balance()
+            balance = self.virtual_vmkis.account().balance()
 
             if not balance.stocks:
                 self.skipTest("No stocks in account")

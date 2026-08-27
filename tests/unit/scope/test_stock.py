@@ -2,7 +2,7 @@ import types
 import pytest
 from types import SimpleNamespace
 
-import pykis.scope.stock as stock_mod
+import vmkis.scope.stock as stock_mod
 
 
 class DummyKis:

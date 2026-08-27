@@ -9,10 +9,10 @@ from datetime import datetime, timedelta
 
 import pytest
 import requests_mock
-from pykis import KisAuth, PyKis
-from pykis.__env__ import VIRTUAL_API_REQUEST_PER_SECOND
-from pykis.utils.rate_limit import RateLimiter
-from pykis.utils.timezone import TIMEZONE
+from vmkis import KisAuth, VmKis
+from vmkis.__env__ import VIRTUAL_API_REQUEST_PER_SECOND
+from vmkis.utils.rate_limit import RateLimiter
+from vmkis.utils.timezone import TIMEZONE
 
 
 @pytest.fixture
@@ -44,9 +44,9 @@ def mock_token_response():
     """토큰 발급 응답.
 
     만료 시각은 **반드시 현재 시각 기준 상대값**이어야 한다. 고정 날짜를 쓰면
-    그 날짜가 지나는 순간 토큰이 항상 만료 상태가 되고, `PyKis.primary_token`이
+    그 날짜가 지나는 순간 토큰이 항상 만료 상태가 되고, `VmKis.primary_token`이
     `remaining < 10분` 조건에 걸려 **매 요청마다 토큰을 재발급**한다.
-    토큰 발급도 `PyKis.request()`를 타므로 같은 rate limiter 쿼터를 소비해,
+    토큰 발급도 `VmKis.request()`를 타므로 같은 rate limiter 쿼터를 소비해,
     유량 제한 테스트의 소요 시간이 조용히 2배가 된다.
 
     실제로 이 픽스처는 `"2025-12-31 23:59:59"`로 고정되어 있었고 그 날짜가 지난 뒤
@@ -73,7 +73,7 @@ class TestRateLimitCompliance:
 
     def test_rate_limit_enforced_on_api_calls(self, mock_auth, mock_virtual_auth, mock_token_response):
         """전체 테스트를 실제로 돌리지 않고 기본 구조만 확인."""
-        # 실제로 호출하지 않으므로 기본적인 PyKis 초기화만 테스트
+        # 실제로 호출하지 않으므로 기본적인 VmKis 초기화만 테스트
         with requests_mock.Mocker() as m:
             # 토큰 발급 - real 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
@@ -84,7 +84,7 @@ class TestRateLimitCompliance:
             # API 응답
             m.get(requests_mock.ANY, json={"rt_cd": "0", "output": {}})
 
-            kis = PyKis(mock_auth, mock_virtual_auth, use_websocket=False)
+            kis = VmKis(mock_auth, mock_virtual_auth, use_websocket=False)
 
             # Rate limiter가 설정되어 있는지 확인
             assert kis._rate_limiters is not None
@@ -125,7 +125,7 @@ class TestRateLimitCompliance:
 
             m.get(requests_mock.ANY, json={"rt_cd": "0", "output": {}})
 
-            kis = PyKis(mock_auth, mock_virtual_auth, use_websocket=False)
+            kis = VmKis(mock_auth, mock_virtual_auth, use_websocket=False)
 
             request_count = 10
             errors = []
@@ -153,7 +153,7 @@ class TestRateLimitCompliance:
 
             assert not errors, f"요청 중 예외가 발생했습니다: {errors}"
 
-            # 토큰 발급도 PyKis.request()를 타므로 동일한 rate limiter 쿼터를 쓴다.
+            # 토큰 발급도 VmKis.request()를 타므로 동일한 rate limiter 쿼터를 쓴다.
             # 따라서 유량을 획득한 횟수는 (토큰 발급 + API 요청)이다.
             token_issues = sum(1 for r in m.request_history if "token" in r.path)
             acquisitions = len(m.request_history)

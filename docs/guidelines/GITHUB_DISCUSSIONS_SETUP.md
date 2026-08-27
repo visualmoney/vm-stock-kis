@@ -1,14 +1,14 @@
 # GitHub Discussions 설정 가이드
 
-**작성일**: 2025-12-20  
-**상태**: 설정 지침 문서  
-**목표**: Python-KIS 커뮤니티 허브 구축
+**작성일**: 2025-12-20
+**상태**: 설정 지침 문서
+**목표**: VM-Stock-KIS 커뮤니티 허브 구축
 
 ---
 
 ## 개요
 
-GitHub Discussions는 Python-KIS 사용자들이 질문하고, 아이디어를 공유하고, 공지를 받을 수 있는 중앙 커뮤니티 플랫폼입니다.
+GitHub Discussions는 VM-Stock-KIS 사용자들이 질문하고, 아이디어를 공유하고, 공지를 받을 수 있는 중앙 커뮤니티 플랫폼입니다.
 
 **장점**:
 - ✅ GitHub 계정으로 쉽게 접근
@@ -82,7 +82,7 @@ Settings → Discussions → Permissions
 ```
 
 **사용 예시**:
-- "Python-KIS를 사용해본 경험 공유합니다"
+- "VM-Stock-KIS를 사용해본 경험 공유합니다"
 - "다른 사람들은 이 기능을 어떻게 사용하고 있나요?"
 - "거래 알고리즘 구축 팁 공유"
 
@@ -129,7 +129,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        감사합니다! Python-KIS 커뮤니티에 질문을 제출해주셨습니다.
+        감사합니다! VM-Stock-KIS 커뮤니티에 질문을 제출해주셨습니다.
         다른 사용자들을 도와드릴 수 있도록 최대한 자세하게 설명해주세요.
 
   - type: textarea
@@ -149,8 +149,8 @@ body:
       description: "문제를 재현할 수 있는 최소한의 코드를 제공해주세요."
       language: python
       placeholder: |
-        from pykis import PyKis
-        kis = PyKis()
+        from vmkis import VmKis
+        kis = VmKis()
         quote = kis.stock("005930").quote()
         print(quote)
       required: false
@@ -172,12 +172,12 @@ body:
       label: "추가 정보"
       description: |
         - Python 버전: (예: 3.9)
-        - pykis 버전: (예: 2.2.0)
+        - vmkis 버전: (예: 2.2.0)
         - 에러 메시지:
       placeholder: |
         Python 3.11
-        pykis 2.2.0
-        
+        vmkis 2.2.0
+
         에러:
         ...
       required: false
@@ -202,7 +202,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Python-KIS를 더 좋게 만드는 데 도움을 주셔서 감사합니다! 🎉
+        VM-Stock-KIS를 더 좋게 만드는 데 도움을 주셔서 감사합니다! 🎉
         새로운 기능 제안을 자세히 설명해주세요.
 
   - type: textarea
@@ -247,7 +247,7 @@ body:
     attributes:
       label: "확인 사항"
       options:
-        - label: "이 기능이 Python-KIS의 범위에 맞다고 생각합니다"
+        - label: "이 기능이 VM-Stock-KIS의 범위에 맞다고 생각합니다"
           required: false
         - label: "유사한 기능 요청이 없는지 확인했습니다"
           required: false
@@ -260,7 +260,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Python-KIS 커뮤니티에 오신 것을 환영합니다! 💙
+        VM-Stock-KIS 커뮤니티에 오신 것을 환영합니다! 💙
         아이디어, 경험, 질문을 자유롭게 공유해주세요.
 
   - type: textarea
@@ -302,7 +302,7 @@ git push origin main
 
 ### 4.1 모더레이션 정책
 
-**목표**: 
+**목표**:
 - 존중하고 긍정적인 커뮤니티 유지
 - 중복된 질문 방지
 - 빠른 응답 시간
@@ -377,13 +377,13 @@ git push origin main
 
 ### 5.1 시작하기 Discussion
 
-**제목**: "🎯 Python-KIS 시작하기"
+**제목**: "🎯 VM-Stock-KIS 시작하기"
 
 **내용**:
 ```markdown
-# Python-KIS에 오신 것을 환영합니다! 👋
+# VM-Stock-KIS에 오신 것을 환영합니다! 👋
 
-Python-KIS는 한국투자증권 API를 Python으로 쉽게 사용할 수 있는 라이브러리입니다.
+VM-Stock-KIS는 한국투자증권 API를 Python으로 쉽게 사용할 수 있는 라이브러리입니다.
 
 ## 🚀 빠른 시작
 - [5분 만에 시작하기](docs/user/en/QUICKSTART.md)
@@ -419,7 +419,7 @@ Python-KIS는 한국투자증권 API를 Python으로 쉽게 사용할 수 있는
 ```markdown
 # 커뮤니티 행동 강령
 
-Python-KIS 커뮤니티는 모든 참여자를 존중하고 포용하는 환경을 추구합니다.
+VM-Stock-KIS 커뮤니티는 모든 참여자를 존중하고 포용하는 환경을 추구합니다.
 
 ## 우리의 약속
 - 존경과 존중
@@ -536,11 +536,11 @@ Week 3           첫 GitHub Discussions 라이브
 ### 첫 공지사항
 
 ```markdown
-제목: "Python-KIS GitHub Discussions 오픈! 🎉"
+제목: "VM-Stock-KIS GitHub Discussions 오픈! 🎉"
 
 안녕하세요!
 
-오늘부터 Python-KIS GitHub Discussions가 오픈됩니다! 🎊
+오늘부터 VM-Stock-KIS GitHub Discussions가 오픈됩니다! 🎊
 
 이제 다음을 통해 커뮤니티와 소통할 수 있습니다:
 - ❓ Q&A: 기술 질문 및 문제 해결
@@ -564,7 +564,7 @@ Week 3           첫 GitHub Discussions 라이브
 ```
 지표                     목표
 ====================================
-토론 개수                 20+ 
+토론 개수                 20+
 답변율                    90%
 평균 응답 시간            48시간 이내
 활성 참여자               10+
@@ -578,11 +578,10 @@ Week 3           첫 GitHub Discussions 라이브
 - [GitHub Discussions 공식 문서](https://docs.github.com/en/discussions)
 - [Discussion 템플릿](https://docs.github.com/en/discussions/managing-discussions-for-your-community/about-discussions)
 - [커뮤니티 모더레이션](https://docs.github.com/en/communities/moderating-comments-and-conversations)
-- [Python-KIS CONTRIBUTING.md](../../CONTRIBUTING.md)
+- [VM-Stock-KIS CONTRIBUTING.md](../../CONTRIBUTING.md)
 
 ---
 
-**작성일**: 2025-12-20  
-**상태**: ✅ 설정 가이드 완성 (구현 준비)  
+**작성일**: 2025-12-20
+**상태**: ✅ 설정 가이드 완성 (구현 준비)
 **다음**: GitHub에서 직접 설정 실행 및 초기화
-

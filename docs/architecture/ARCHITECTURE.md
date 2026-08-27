@@ -14,7 +14,7 @@
 ## 개요
 
 ### 프로젝트 정보
-- **프로젝트명**: Python-KIS (Korea Investment Securities API Wrapper)
+- **프로젝트명**: VM-Stock-KIS (Korea Investment Securities API Wrapper)
 - **목적**: 한국투자증권의 OpenAPI를 파이썬 환경에서 쉽게 사용할 수 있도록 제공
 - **버전**: 2.1.7
 - **라이선스**: MIT
@@ -42,7 +42,7 @@
 **공개 API 구조**:
 
 ```python
-# pykis/public_types.py
+# src/vmkis/public_types.py
 from typing import TypeAlias
 
 Quote: TypeAlias = _KisQuoteResponse
@@ -57,10 +57,10 @@ __all__ = ["Quote", "Balance", "Order", "Chart", "Orderbook", "MarketInfo", "Tra
 ```
 
 ```python
-# pykis/__init__.py
+# src/vmkis/__init__.py
 __all__ = [
     # 핵심 클래스
-    "PyKis", "KisAuth",
+    "VmKis", "KisAuth",
     # 공개 타입
     "Quote", "Balance", "Order", "Chart", "Orderbook", "MarketInfo", "TradingHours",
     # 초보자 도구
@@ -72,14 +72,14 @@ __all__ = [
 
 ```python
 # 권장 방식 (일반 사용자)
-from pykis import PyKis, KisAuth, Quote, Balance
+from vmkis import VmKis, KisAuth, Quote, Balance
 
 def analyze(quote: Quote, balance: Balance) -> None:
     print(f"{quote.name}: {quote.price:,}원")
 
 # 고급 사용자 (내부 구조 접근)
-from pykis.types import KisObjectProtocol
-from pykis.adapter.product.quote import KisQuotableProductMixin
+from vmkis.types import KisObjectProtocol
+from vmkis.adapter.product.quote import KisQuotableProductMixin
 ```
 
 ### 2.3 마이그레이션 타임라인
@@ -146,7 +146,7 @@ from pykis.adapter.product.quote import KisQuotableProductMixin
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                      사용자 코드                                   │
-│  kis = PyKis("secret.json")                                      │
+│  kis = VmKis("secret.json")                                      │
 │  stock = kis.stock("000660")                                     │
 │  quote = stock.quote()                                           │
 │  kis.account().balance()                                         │
@@ -171,7 +171,7 @@ from pykis.adapter.product.quote import KisQuotableProductMixin
         └──────────────┬──────────────┘
                        │
         ┌──────────────▼──────────────┐
-        │  PyKis Client (중앙 관리)    │
+        │  VmKis Client (중앙 관리)    │
         │  - HTTP Session 관리        │
         │  - WebSocket 관리           │
         │  - Token 관리               │
@@ -201,10 +201,10 @@ from pykis.adapter.product.quote import KisQuotableProductMixin
 ### 디렉토리 레이아웃
 
 ```
-pykis/
+src/vmkis/
 ├── __init__.py           # 공개 API 노출
 ├── __env__.py            # 환경 설정 및 상수
-├── kis.py                # PyKis 메인 클래스
+├── kis.py                # VmKis 메인 클래스
 ├── logging.py            # 로깅 유틸리티
 ├── types.py              # 공개 타입 정의
 │
@@ -288,7 +288,7 @@ pykis/
 
 ## 핵심 컴포넌트
 
-### 1. PyKis (메인 클래스)
+### 1. VmKis (메인 클래스)
 
 **역할**: 중앙 조율자로서 모든 API 호출의 진입점
 
@@ -300,7 +300,7 @@ pykis/
 
 **주요 메서드**:
 ```python
-class PyKis:
+class VmKis:
     def __init__(auth, virtual_auth=None, ...)
     def account() -> KisAccount         # 계좌 Scope
     def stock(symbol) -> KisStock       # 주식 Scope
@@ -397,7 +397,7 @@ kis.stock("000660").quote()
     ↓
 KisStockScope + KisQuotableProductMixin
     ↓
-PyKis.api("usdh1") / PyKis.request()
+VmKis.api("usdh1") / VmKis.request()
     ↓
 RateLimiter.wait()  (rate limit check)
     ↓
@@ -447,7 +447,7 @@ User Callback 실행
 ### 외부 라이브러리 의존성
 
 ```
-pykis/
+src/vmkis/
 ├── requests (>=2.32.3)
 │   └── HTTP 통신
 │
@@ -489,7 +489,7 @@ pytest-asyncio (^1.3.0)
 ### 내부 모듈 의존성 그래프
 
 ```
-PyKis (중앙)
+VmKis (중앙)
     ├── KisAccessToken
     ├── KisAuth
     ├── KisAccountNumber
@@ -502,7 +502,7 @@ PyKis (중앙)
 KisAccount / KisStock
     ├── KisObjectBase
     └── 각종 Adapter Mixin
-        └── PyKis (참조)
+        └── VmKis (참조)
 
 Response Objects
     ├── KisResponse
@@ -521,7 +521,7 @@ Event System
 ## 설계 패턴
 
 ### 1. 싱글톤 패턴
-- PyKis: 애플리케이션당 1-2개 인스턴스 (실전, 모의)
+- VmKis: 애플리케이션당 1-2개 인스턴스 (실전, 모의)
 
 ### 2. 팩토리 패턴
 - `KisObject.transform_()`: 동적 객체 생성
@@ -587,7 +587,7 @@ Exception
 ## 보안 고려사항
 
 ### 1. 토큰 관리
-- 기본값: `~/.pykis/` 디렉토리에 암호화 저장
+- 기본값: `~/.vmkis/` 디렉토리에 암호화 저장
 - `cryptography` 라이브러리로 암호화
 - 신뢰할 수 없는 환경에서는 사용 금지
 
@@ -691,5 +691,5 @@ tests/
 
 ---
 
-이 문서는 Python-KIS의 전체 아키텍처를 설명합니다.
+이 문서는 VM-Stock-KIS의 전체 아키텍처를 설명합니다.
 더 자세한 정보는 각 모듈별 문서를 참조하세요.

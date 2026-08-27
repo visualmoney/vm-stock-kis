@@ -4,13 +4,13 @@
 - 종료하려면 Enter를 누르세요.
 """
 import yaml
-from pykis import PyKis, KisAuth
+from vmkis import VmKis, KisAuth
 
 
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
     import os
 
-    profile = profile or os.environ.get("PYKIS_PROFILE")
+    profile = profile or os.environ.get("VMKIS_PROFILE")
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
@@ -42,7 +42,7 @@ def main() -> None:
         virtual=cfg.get("virtual", False),
     )
 
-    kis = PyKis(auth, keep_token=True)
+    kis = VmKis(auth, keep_token=True)
 
     stock = kis.stock("005930")  # 삼성전자
 

@@ -2,8 +2,8 @@ from datetime import date, datetime, time
 from decimal import Decimal
 
 import pytest
-from pykis.responses.dynamic import KisNoneValueError
-from pykis.responses.types import (
+from vmkis.responses.dynamic import KisNoneValueError
+from vmkis.responses.types import (
     KisAny,
     KisBool,
     KisDate,
@@ -17,7 +17,7 @@ from pykis.responses.types import (
     KisTime,
     KisTimeToDatetime,
 )
-from pykis.utils.timezone import TIMEZONE
+from vmkis.utils.timezone import TIMEZONE
 
 
 def test_kis_dynamic_dict_from_and_getattr_and_repr():

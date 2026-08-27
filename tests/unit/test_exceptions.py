@@ -5,10 +5,10 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from pykis.client.exceptions import (KisAuthenticationError, KisRateLimitError,
+from vmkis.client.exceptions import (KisAuthenticationError, KisRateLimitError,
                                      KisServerError, KisTimeoutError,
                                      KisValidationError)
-from pykis.utils.retry import RetryConfig, with_async_retry, with_retry
+from vmkis.utils.retry import RetryConfig, with_async_retry, with_retry
 
 
 class TestExceptionHierarchy:

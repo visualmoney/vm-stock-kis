@@ -4,7 +4,7 @@
 삼성전자(005930) 시세를 조회해 출력합니다.
 """
 import yaml
-from pykis import PyKis, KisAuth
+from vmkis import VmKis, KisAuth
 
 
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
@@ -16,13 +16,13 @@ def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
 
     Profile selection order:
       1. explicit `profile` argument
-      2. environment `PYKIS_PROFILE`
+      2. environment `VMKIS_PROFILE`
       3. `default` key in multi-config
       4. fallback to 'virtual'
     """
     import os
 
-    profile = profile or os.environ.get("PYKIS_PROFILE")
+    profile = profile or os.environ.get("VMKIS_PROFILE")
     with open(path, "r", encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
@@ -54,7 +54,7 @@ def main() -> None:
         virtual=cfg.get("virtual", False),
     )
 
-    kis = PyKis(auth, keep_token=True)
+    kis = VmKis(auth, keep_token=True)
 
     stock = kis.stock("005930")  # 삼성전자
     quote = stock.quote()

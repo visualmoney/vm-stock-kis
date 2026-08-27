@@ -1,11 +1,11 @@
-"""`pykis.simple.SimpleKIS` 테스트.
+"""`vmkis.simple.SimpleKIS` 테스트.
 
-`SimpleKIS`는 `PyKis`로 위임만 하는 얇은 파사드다. 따라서 검증할 것은
+`SimpleKIS`는 `VmKis`로 위임만 하는 얇은 파사드다. 따라서 검증할 것은
 "어떤 호출로 위임되는가"이며, 네트워크는 필요 없다.
 """
 
 import pytest
-from pykis.simple import SimpleKIS
+from vmkis.simple import SimpleKIS
 
 
 class FakeOrder:
@@ -35,7 +35,7 @@ class FakeAccount:
         return "balance"
 
 
-class FakePyKis:
+class FakeVmKis:
     def __init__(self):
         self.stocks = {}
 
@@ -48,7 +48,7 @@ class FakePyKis:
 
 @pytest.fixture
 def kis():
-    return FakePyKis()
+    return FakeVmKis()
 
 
 @pytest.fixture

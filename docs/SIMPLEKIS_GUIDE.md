@@ -1,6 +1,6 @@
 # SimpleKIS: 완벽한 초보자 인터페이스
 
-일반적인 `PyKis` 사용법 외에, 더 간단한 인터페이스를 원한다면 **`SimpleKIS`** 파사드를 사용하세요.
+일반적인 `VmKis` 사용법 외에, 더 간단한 인터페이스를 원한다면 **`SimpleKIS`** 파사드를 사용하세요.
 `SimpleKIS`는 Protocol과 Mixin 없이 직관적인 메서드만 제공합니다.
 
 ## 1. 기본 사용법
@@ -8,8 +8,8 @@
 ### 1.1 방법 1: create_client 헬퍼 사용 (권장)
 
 ```python
-from pykis import create_client
-from pykis.simple import SimpleKIS
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 # config.yaml에서 자동 로드하여 클라이언트 생성
 kis = create_client("config.yaml")
@@ -23,8 +23,8 @@ print(f"삼성전자: {price.price:,}원")
 ### 1.2 방법 2: 직접 생성
 
 ```python
-from pykis import PyKis, KisAuth
-from pykis.simple import SimpleKIS
+from vmkis import VmKis, KisAuth
+from vmkis.simple import SimpleKIS
 
 # 인증 정보 직접 지정
 auth = KisAuth(
@@ -35,16 +35,16 @@ auth = KisAuth(
     virtual=True  # 모의투자 모드
 )
 
-# PyKis 생성 (virtual_auth 사용)
-kis = PyKis(None, auth)
+# VmKis 생성 (virtual_auth 사용)
+kis = VmKis(None, auth)
 simple = SimpleKIS(kis)
 ```
 
 ### 1.3 방법 3: 대화형 설정 저장 후 사용
 
 ```python
-from pykis.helpers import save_config_interactive, create_client
-from pykis.simple import SimpleKIS
+from vmkis.helpers import save_config_interactive, create_client
+from vmkis.simple import SimpleKIS
 
 # 처음 한 번만: 대화형으로 설정 저장
 # (입력 숨겨짐 + 마스킹 + 확인 단계)
@@ -133,7 +133,7 @@ else:
 ### 3.1 설정 로드
 
 ```python
-from pykis.helpers import load_config
+from vmkis.helpers import load_config
 
 # YAML에서 설정 로드
 config = load_config("config.yaml")
@@ -144,7 +144,7 @@ print(config)
 ### 3.2 대화형 설정 저장 (보안)
 
 ```python
-from pykis.helpers import save_config_interactive
+from vmkis.helpers import save_config_interactive
 
 # 대화형으로 설정 저장
 # - 비밀키는 getpass로 입력 숨겨짐
@@ -174,26 +174,26 @@ Write config file? (y/N): y
 
 **환경변수로 확인 단계 건너뛰기 (CI/CD용):**
 ```bash
-export PYKIS_CONFIRM_SKIP=1
+export VMKIS_CONFIRM_SKIP=1
 python your_script.py
 ```
 
 ### 3.3 자동 클라이언트 생성
 
 ```python
-from pykis.helpers import create_client
-from pykis.simple import SimpleKIS
+from vmkis.helpers import create_client
+from vmkis.simple import SimpleKIS
 
-# 자동으로 PyKis 생성 (virtual 설정 포함)
+# 자동으로 VmKis 생성 (virtual 설정 포함)
 kis = create_client("config.yaml", keep_token=True)
 simple = SimpleKIS(kis)
 ```
 
 ---
 
-## 4. SimpleKIS vs PyKis 비교
+## 4. SimpleKIS vs VmKis 비교
 
-| 기능 | SimpleKIS | PyKis |
+| 기능 | SimpleKIS | VmKis |
 |------|-----------|-------|
 | **학습곡선** | ⭐⭐⭐⭐⭐ 초보자 | ⭐⭐⭐ 중급+ |
 | **메서드 개수** | 4개 | 150+개 |
@@ -208,7 +208,7 @@ simple = SimpleKIS(kis)
 - API를 빠르게 학습하고 싶을 때
 - 프로토타이핑이나 스크립트 작업
 
-**언제 PyKis를 쓸까?**
+**언제 VmKis를 쓸까?**
 - 웹소켓 실시간 데이터가 필요할 때
 - 차트, 호가, 복잡한 분석이 필요할 때
 - 고급 거래 전략을 구현할 때
@@ -220,8 +220,8 @@ simple = SimpleKIS(kis)
 ### 5.1 여러 종목 모니터링
 
 ```python
-from pykis import create_client
-from pykis.simple import SimpleKIS
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 import time
 
 kis = create_client("config.yaml")
@@ -235,18 +235,18 @@ while True:
         price = simple.get_price(sym)
         arrow = "📈" if price.change_rate > 0 else "📉"
         print(f"{arrow} {sym}: {price.price:,}원 ({price.change_rate:+.2f}%)")
-    
+
     balance = simple.get_balance()
     print(f"\n💰 총자산: {balance.total_assets:,}원")
-    
+
     time.sleep(60)  # 1분마다 갱신
 ```
 
 ### 5.2 자동 거래
 
 ```python
-from pykis import create_client
-from pykis.simple import SimpleKIS
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 kis = create_client("config.yaml")
 simple = SimpleKIS(kis)
@@ -268,8 +268,8 @@ else:
 ### 5.3 잔고 확인 및 거래 여부 결정
 
 ```python
-from pykis import create_client
-from pykis.simple import SimpleKIS
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 kis = create_client("config.yaml")
 simple = SimpleKIS(kis)
@@ -300,13 +300,13 @@ else:
 ```python
 # virtual=True (모의투자)
 auth = KisAuth(..., virtual=True)
-kis = PyKis(None, auth)
+kis = VmKis(None, auth)
 simple = SimpleKIS(kis)
 order = simple.place_order(...)  # 모의투자에서만 실행
 
 # virtual=False (실계좌) - 실제 주문!
 auth = KisAuth(..., virtual=False)
-kis = PyKis(auth)
+kis = VmKis(auth)
 simple = SimpleKIS(kis)
 order = simple.place_order(...)  # 💰 실제 주문 발생!
 ```
@@ -321,7 +321,7 @@ order = simple.place_order(...)  # 💰 실제 주문 발생!
 
 ```python
 # ❌ 나쁜 예: 코드에 직접 작성
-from pykis import KisAuth
+from vmkis import KisAuth
 auth = KisAuth(
     id="my_id",
     appkey="my_appkey",
@@ -330,11 +330,11 @@ auth = KisAuth(
 )
 
 # ✅ 좋은 예: 파일에서 로드
-from pykis.helpers import create_client
+from vmkis.helpers import create_client
 kis = create_client("config.yaml")  # 설정 외부화
 
 # ✅ 더 나은 예: 대화형 저장 (보안 강화)
-from pykis.helpers import save_config_interactive
+from vmkis.helpers import save_config_interactive
 config = save_config_interactive("config.yaml")
 # - getpass로 비밀키 숨김
 # - 마스킹된 미리보기
@@ -344,8 +344,8 @@ config = save_config_interactive("config.yaml")
 ### 6.3 에러 처리
 
 ```python
-from pykis import create_client
-from pykis.simple import SimpleKIS
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 try:
     kis = create_client("config.yaml")
@@ -381,7 +381,7 @@ with ThreadPoolExecutor(max_workers=3) as executor:
 
 ## 8. 다음 단계
 
-- **PyKis로 업그레이드**: 웹소켓, 차트, 호가 등 고급 기능 학습
+- **VmKis로 업그레이드**: 웹소켓, 차트, 호가 등 고급 기능 학습
 - **전략 개발**: 실제 거래 전략 구현 및 백테스팅
 - **자동화**: 스케줄 기반 자동 거래 시스템 구축
 - **모니터링**: 포트폴리오 성과 추적 및 리포팅

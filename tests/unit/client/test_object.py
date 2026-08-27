@@ -1,6 +1,6 @@
 import pytest
 
-from pykis.client.object import (
+from vmkis.client.object import (
     KisObjectBase,
     KisObjectProtocol,
     kis_object_init,

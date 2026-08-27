@@ -2,7 +2,7 @@
 
 **Language**: [한국어](../../docs/FAQ.md) | [English](FAQ.md)
 
-**Last Updated**: 2025-12-20  
+**Last Updated**: 2025-12-20
 **Version**: 2.2.0
 
 ---
@@ -21,31 +21,31 @@
 
 ## Installation & Setup
 
-### Q1: How do I install Python-KIS?
+### Q1: How do I install VM-Stock-KIS?
 
 **A**: Install from PyPI using pip:
 
 ```bash
-pip install pykis
+pip install vmkis
 ```
 
 For development:
 
 ```bash
-git clone https://github.com/yourusername/python-kis.git
-cd python-kis
+git clone https://github.com/yourusername/vm-stock-kis.git
+cd vm-stock-kis
 pip install -e ".[dev]"
 ```
 
 ### Q2: What are the system requirements?
 
-**A**: 
+**A**:
 - Python 3.8 or higher
 - Windows, macOS, or Linux
 - Internet connection
 - pip package manager
 
-### Q3: Can I use PyKIS without a KIS account?
+### Q3: Can I use VmKis without a KIS account?
 
 **A**: Yes, you can use the **virtual/sandbox environment** for testing:
 
@@ -65,7 +65,7 @@ No real money is involved in virtual trading.
 
 ### Q4: How do I get my API credentials?
 
-**A**: 
+**A**:
 1. Visit [KIS Developer Portal](https://developer.kis.co.kr)
 2. Sign in with your KIS account
 3. Create a new application
@@ -77,8 +77,8 @@ No real money is involved in virtual trading.
 
 1. **Environment Variables** (most secure):
    ```bash
-   export PYKIS_APP_KEY="your_key"
-   export PYKIS_APP_SECRET="your_secret"
+   export VMKIS_APP_KEY="your_key"
+   export VMKIS_APP_SECRET="your_secret"
    ```
 
 2. **Configuration File** (version-controlled):
@@ -92,23 +92,23 @@ No real money is involved in virtual trading.
 3. **Code** (❌ NOT RECOMMENDED - security risk):
    ```python
    # DON'T do this in production!
-   kis = PyKis(app_key="hardcoded_key", ...)
+   kis = VmKis(app_key="hardcoded_key", ...)
    ```
 
 ### Q6: Can I use multiple accounts?
 
-**A**: Yes, create multiple PyKis instances:
+**A**: Yes, create multiple VmKis instances:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-account1 = PyKis(
+account1 = VmKis(
     app_key="KEY1",
     app_secret="SECRET1",
     account_number="00000000-01"
 )
 
-account2 = PyKis(
+account2 = VmKis(
     app_key="KEY2",
     app_secret="SECRET2",
     account_number="00000000-02"
@@ -127,9 +127,9 @@ quote2 = account2.stock("005930").quote()
 **A**:
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis()
+kis = VmKis()
 samsung = kis.stock("005930")  # Samsung Electronics
 quote = samsung.quote()
 
@@ -323,7 +323,7 @@ print(f"Total Profit/Loss: {total_pl:,} KRW ({total_rate:+.2f}%)")
 **A**:
 
 ```python
-from pykis.exceptions import (
+from vmkis.exceptions import (
     KisConnectionError,
     KisAuthenticationError,
     KisRateLimitError,
@@ -351,7 +351,7 @@ except Exception as e:
 **Solution 1: Automatic Retry** (Recommended)
 
 ```python
-from pykis.utils.retry import with_retry
+from vmkis.utils.retry import with_retry
 
 @with_retry(
     max_retries=5,
@@ -380,7 +380,7 @@ for symbol in symbols:
 **A**:
 
 ```python
-from pykis.logging import enable_json_logging, get_logger
+from vmkis.logging import enable_json_logging, get_logger
 
 # Enable JSON logging (ELK compatible)
 enable_json_logging()
@@ -409,7 +409,7 @@ logger.info("Trading activity", extra={
 
 ```python
 import asyncio
-from pykis.utils.retry import with_async_retry
+from vmkis.utils.retry import with_async_retry
 
 @with_async_retry(max_retries=5)
 async def fetch_quote_async(symbol):
@@ -454,7 +454,7 @@ print(quote_cache["005930"])
 **A**:
 
 ```python
-from pykis.logging import enable_json_logging, get_logger
+from vmkis.logging import enable_json_logging, get_logger
 import time
 
 enable_json_logging()
@@ -513,11 +513,11 @@ See [REGIONAL_GUIDES.md](../../../docs/guidelines/REGIONAL_GUIDES.md) for Korean
 3. Check KIS API rate limits
 4. Implement request queuing
 
-### "ModuleNotFoundError: No module named 'pykis'"
+### "ModuleNotFoundError: No module named 'vmkis'"
 
 **Solution**:
 ```bash
-pip install pykis
+pip install vmkis
 # or for development
 pip install -e .
 ```
@@ -537,12 +537,12 @@ pip install -e .
 
 ## Getting Help
 
-- 💬 **GitHub Issues**: Report bugs at [GitHub Issues](https://github.com/yourusername/python-kis/issues)
-- 💭 **Discussions**: Ask questions at [GitHub Discussions](https://github.com/yourusername/python-kis/discussions)
-- 📧 **Email**: support@python-kis.org
+- 💬 **GitHub Issues**: Report bugs at [GitHub Issues](https://github.com/yourusername/vm-stock-kis/issues)
+- 💭 **Discussions**: Ask questions at [GitHub Discussions](https://github.com/yourusername/vm-stock-kis/discussions)
+- 📧 **Email**: support@vm-stock-kis.org
 
 ---
 
-**Version**: 2.2.0  
-**Last Updated**: 2025-12-20  
+**Version**: 2.2.0
+**Last Updated**: 2025-12-20
 **Status**: 🟢 Stable

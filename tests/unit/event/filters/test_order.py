@@ -2,11 +2,11 @@ from types import SimpleNamespace
 
 import pytest
 
-from pykis.event.filters.order import (
+from vmkis.event.filters.order import (
     KisOrderNumberEventFilter,
     KisSimpleOrderNumber,
 )
-from pykis.event.subscription import KisSubscriptionEventArgs
+from vmkis.event.subscription import KisSubscriptionEventArgs
 
 
 def test_init_string_requires_all_fields():
@@ -54,7 +54,7 @@ def test_filter_matches_and_non_matches(monkeypatch):
             self.order_number = order_number
 
     # monkeypatch the protocol name in module to a simple base class so isinstance passes
-    import pykis.event.filters.order as order_mod
+    import vmkis.event.filters.order as order_mod
 
     monkeypatch.setattr(order_mod, "KisSimpleRealtimeExecution", Resp)
 

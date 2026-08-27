@@ -22,6 +22,10 @@ jobs:
         python-version: ['3.10', '3.13']
     steps:
       - uses: actions/checkout@v4
+        with:
+          # hatch-vcs는 git 태그에서 버전을 만듭니다. 기본 shallow clone에는 태그가
+          # 없어 fallback-version("0.0.0")으로 떨어집니다.
+          fetch-depth: 0
 
       - uses: astral-sh/setup-uv@v6
         with:

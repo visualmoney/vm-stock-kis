@@ -4,8 +4,8 @@ from datetime import date
 
 import pytest
 
-from pykis.api.account import daily_order as daily_mod
-from pykis.client.account import KisAccountNumber
+from vmkis.api.account import daily_order as daily_mod
+from vmkis.client.account import KisAccountNumber
 
 
 def test_daily_orders_calls_domestic_and_foreign_and_constructs_integration():

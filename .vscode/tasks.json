@@ -49,7 +49,7 @@
         {
             "label": "Poetry: Build (with coverage)",
             "type": "shell",
-            "command": "poetry run pytest --maxfail=1 -q --cov=pykis --cov-report=xml:reports/coverage.xml --cov-report=html:htmlcov; if ($LASTEXITCODE -eq 0) { python -m poetry build } else { exit $LASTEXITCODE }",
+            "command": "poetry run pytest --maxfail=1 -q --cov=vmkis --cov-report=xml:reports/coverage.xml --cov-report=html:htmlcov; if ($LASTEXITCODE -eq 0) { python -m poetry build } else { exit $LASTEXITCODE }",
             "group": "build",
             "presentation": {
                 "reveal": "always",

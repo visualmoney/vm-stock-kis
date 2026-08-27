@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 import pytest
 
-from pykis.client.cache import KisCacheStorage
+from vmkis.client.cache import KisCacheStorage
 
 
 def test_set_get_without_expire_and_type_check():
@@ -44,8 +44,8 @@ def test_set_with_timedelta_not_expired_until_time_passes(monkeypatch):
         def now(cls):
             return cls._now
 
-    # patch the module-level datetime used in pykis.client.cache
-    monkeypatch.setattr("pykis.client.cache.datetime", DummyDateTime)
+    # patch the module-level datetime used in vmkis.client.cache
+    monkeypatch.setattr("vmkis.client.cache.datetime", DummyDateTime)
 
     # expire after 1 second from current fake now
     store.set("t", "val", expire=timedelta(seconds=1))
@@ -66,7 +66,7 @@ def test_set_with_float_seconds_expire(monkeypatch):
         def now(cls):
             return cls._now
 
-    monkeypatch.setattr("pykis.client.cache.datetime", DummyDateTime)
+    monkeypatch.setattr("vmkis.client.cache.datetime", DummyDateTime)
 
     # expire in 0.05 seconds from fake now
     store.set("f", 3.14, expire=0.05)

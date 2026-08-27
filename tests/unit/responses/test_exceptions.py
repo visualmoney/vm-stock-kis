@@ -4,7 +4,7 @@ from requests import Response
 
 import pytest
 
-from pykis.responses.exceptions import KisNotFoundError, KisMarketNotOpenedError
+from vmkis.responses.exceptions import KisNotFoundError, KisMarketNotOpenedError
 
 
 def make_response_with_request(method="GET", url="https://api.example/test?x=1", headers=None, body: bytes | None = None):

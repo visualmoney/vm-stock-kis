@@ -1,10 +1,10 @@
-"""Unit tests for pykis.adapter.account.order"""
+"""Unit tests for vmkis.adapter.account.order"""
 from types import SimpleNamespace
 
 
 def test_buy_forwards_to_account_buy():
     """KisOrderableAccountMixin.buy should forward to account_buy with all parameters."""
-    from pykis.adapter.account.order import KisOrderableAccountMixin
+    from vmkis.adapter.account.order import KisOrderableAccountMixin
 
     calls = []
 
@@ -32,7 +32,7 @@ def test_buy_forwards_to_account_buy():
 
 def test_sell_forwards_to_account_sell():
     """KisOrderableAccountMixin.sell should forward to account_sell."""
-    from pykis.adapter.account.order import KisOrderableAccountMixin
+    from vmkis.adapter.account.order import KisOrderableAccountMixin
 
     calls = []
 
@@ -60,7 +60,7 @@ def test_sell_forwards_to_account_sell():
 
 def test_order_forwards_correctly():
     """KisOrderableAccountMixin.order should forward to account_order."""
-    from pykis.adapter.account.order import KisOrderableAccountMixin
+    from vmkis.adapter.account.order import KisOrderableAccountMixin
 
     calls = []
 
@@ -88,7 +88,7 @@ def test_order_forwards_correctly():
 
 def test_modify_and_cancel_forward():
     """KisOrderableAccountMixin modify/cancel should forward to order_modify functions."""
-    from pykis.adapter.account.order import KisOrderableAccountMixin
+    from vmkis.adapter.account.order import KisOrderableAccountMixin
 
     modify_calls = []
     cancel_calls = []
@@ -130,7 +130,7 @@ def test_modify_and_cancel_forward():
 
 def test_orderable_amount_and_pending_orders_forward():
     """orderable_amount and pending_orders should forward correctly."""
-    from pykis.adapter.account.order import KisOrderableAccountMixin
+    from vmkis.adapter.account.order import KisOrderableAccountMixin
 
     amount_calls = []
     pending_calls = []

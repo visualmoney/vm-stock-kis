@@ -2,8 +2,8 @@ import threading
 import time
 import pytest
 
-from pykis.utils import thread_safe as ts_mod
-from pykis.utils.thread_safe import thread_safe, get_lock
+from vmkis.utils import thread_safe as ts_mod
+from vmkis.utils.thread_safe import thread_safe, get_lock
 
 
 def test_get_lock_sets_and_returns_same_lock():

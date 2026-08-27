@@ -24,7 +24,7 @@
    - `virtual`: true (모의투자) / false (실계좌)
 
 3. 프로파일 선택 (멀티프로파일 사용 시)
-   - 환경변수: `PYKIS_PROFILE=real` 또는 `PYKIS_PROFILE=virtual`
+   - 환경변수: `VMKIS_PROFILE=real` 또는 `VMKIS_PROFILE=virtual`
    - 또는 스크립트 인자: `--profile real`
    - 기본값: `virtual` (설정에서 `default`가 있으면 해당 값 사용)
 
@@ -47,7 +47,7 @@
 # 모의투자 계정에서 먼저 검증 (권장)
 python examples/01_basic/get_quote.py
 python examples/01_basic/get_balance.py
-python examples/01_basic/place_order.py   
+python examples/01_basic/place_order.py
 
 # 실시간 예제 (Enter를 눌러 종료)
 python examples/01_basic/realtime_price.py
@@ -59,4 +59,3 @@ python examples/01_basic/realtime_price.py
 - **모의투자 권장**: `config.yaml`에서 `virtual: true` 설정하고 모의투자로 먼저 검증
 - **config.yaml 보관**: 절대 GitHub에 커밋하지 마세요
 - **실시간 예제**: 종료 시 Enter를 눌러 구독을 해제하세요
-

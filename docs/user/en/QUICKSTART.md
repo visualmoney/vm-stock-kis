@@ -2,7 +2,7 @@
 
 **Language**: [한국어](../../QUICKSTART.md) | [English](QUICKSTART.md)
 
-Get up and running with Python-KIS in 5 minutes!
+Get up and running with VM-Stock-KIS in 5 minutes!
 
 ---
 
@@ -18,11 +18,11 @@ Get up and running with Python-KIS in 5 minutes!
 ## Step 1: Installation (1 minute)
 
 ```bash
-# Install PyKIS from PyPI
-pip install pykis
+# Install VmKis from PyPI
+pip install vmkis
 
 # Verify installation
-python -c "import pykis; print(f'PyKIS {pykis.__version__} installed successfully')"
+python -c "import vmkis; print(f'VmKis {vmkis.__version__} installed successfully')"
 ```
 
 ---
@@ -49,21 +49,21 @@ Use the sandbox credentials provided by KIS for testing.
 
 ```bash
 # Linux/macOS
-export PYKIS_APP_KEY="your_app_key_here"
-export PYKIS_APP_SECRET="your_app_secret_here"
-export PYKIS_ACCOUNT_NUMBER="00000000-01"
+export VMKIS_APP_KEY="your_app_key_here"
+export VMKIS_APP_SECRET="your_app_secret_here"
+export VMKIS_ACCOUNT_NUMBER="00000000-01"
 
 # Windows PowerShell
-$env:PYKIS_APP_KEY="your_app_key_here"
-$env:PYKIS_APP_SECRET="your_app_secret_here"
-$env:PYKIS_ACCOUNT_NUMBER="00000000-01"
+$env:VMKIS_APP_KEY="your_app_key_here"
+$env:VMKIS_APP_SECRET="your_app_secret_here"
+$env:VMKIS_ACCOUNT_NUMBER="00000000-01"
 ```
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
 # Loads credentials from environment
-kis = PyKis()
+kis = VmKis()
 ```
 
 ### Option B: Configuration File
@@ -84,19 +84,19 @@ logging:
 ```
 
 ```python
-from pykis.helpers import load_config
-from pykis import PyKis
+from vmkis.helpers import load_config
+from vmkis import VmKis
 
 config = load_config("config.yaml")
-kis = PyKis(**config['kis'])
+kis = VmKis(**config['kis'])
 ```
 
 ### Option C: Direct Parameters
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis(
+kis = VmKis(
     app_key="YOUR_APP_KEY",
     app_secret="YOUR_APP_SECRET",
     account_number="00000000-01",
@@ -111,10 +111,10 @@ kis = PyKis(
 ### Example 1: Get Stock Quote
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
 # Initialize client
-kis = PyKis()
+kis = VmKis()
 
 # Get stock quote (Samsung Electronics: 005930)
 samsung = kis.stock("005930")
@@ -219,8 +219,8 @@ print(df)
 1. Wait a few moments before retrying
 2. Use the built-in retry mechanism:
    ```python
-   from pykis.utils.retry import with_retry
-   
+   from vmkis.utils.retry import with_retry
+
    @with_retry(max_retries=5)
    def safe_quote_fetch(symbol):
        return kis.stock(symbol).quote()
@@ -291,16 +291,16 @@ Closed:         Weekends & Korean holidays
 
 - [KIS API Documentation](https://www.kis.co.kr/api)
 - [Korea Exchange (KRX)](http://www.krx.co.kr/)
-- [PyKIS GitHub](https://github.com/yourusername/python-kis)
+- [VmKis GitHub](https://github.com/yourusername/vm-stock-kis)
 
 ---
 
 ## Getting Help
 
-- 💬 **GitHub Issues**: [Report bugs](https://github.com/yourusername/python-kis/issues)
-- 💭 **GitHub Discussions**: [Ask questions](https://github.com/yourusername/python-kis/discussions)
-- 📧 **Email**: support@python-kis.org
-- 📚 **Wiki**: [Community documentation](https://github.com/yourusername/python-kis/wiki)
+- 💬 **GitHub Issues**: [Report bugs](https://github.com/yourusername/vm-stock-kis/issues)
+- 💭 **GitHub Discussions**: [Ask questions](https://github.com/yourusername/vm-stock-kis/discussions)
+- 📧 **Email**: support@vm-stock-kis.org
+- 📚 **Wiki**: [Community documentation](https://github.com/yourusername/vm-stock-kis/wiki)
 
 ---
 
@@ -308,6 +308,6 @@ Closed:         Weekends & Korean holidays
 
 ---
 
-**Last Updated**: 2025-12-20  
-**Version**: 2.2.0  
+**Last Updated**: 2025-12-20
+**Version**: 2.2.0
 **Status**: 🟢 Stable

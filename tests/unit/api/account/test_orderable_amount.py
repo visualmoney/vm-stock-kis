@@ -3,7 +3,7 @@ import types
 
 import pytest
 
-from pykis.api.account import orderable_amount as oa
+from vmkis.api.account import orderable_amount as oa
 
 
 def test_domestic_foreign_amount_and_foreign_quantity(monkeypatch):
