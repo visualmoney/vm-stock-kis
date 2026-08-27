@@ -1,7 +1,7 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📄 Docs
-    url: https://github.com/Soju06/python-kis/wiki
+    url: https://github.com/visualmoney/vm-stock-kis/wiki
     about: VmKis 라이브러리의 문서
   - name: 📄 한국투자증권 API 문서
     url: https://apiportal.koreainvestment.com/apiservice/oauth2

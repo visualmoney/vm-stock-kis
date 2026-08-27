@@ -291,29 +291,29 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 
 ## 3. 튜토리얼 목록 📖
 
-- [1. VmKis 인증 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#1-vmkis-인증-관리)
-  - [1.1. 시크릿 키 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#11-시크릿-키-관리)
-  - [1.2. 엑세스 토큰 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#12-엑세스-토큰-관리)
-- [2. 종목 시세 및 차트 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#2-종목-시세-및-차트-조회)
-  - [2.1. 시세 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#21-시세-조회)
-  - [2.2. 차트 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#22-차트-조회)
-  - [2.3. 호가 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#23-호가-조회)
-  - [2.4. 장운영 시간 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#24-장운영-시간-조회)
-- [3. 주문 및 잔고 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#3-주문-및-잔고-조회)
-  - [3.1. 예수금 및 보유 종목 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#31-예수금-및-보유-종목-조회)
-  - [3.2. 기간 손익 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#32-기간-손익-조회)
-  - [3.3. 일별 체결 내역 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#33-일별-체결-내역-조회)
-  - [3.4. 매수 가능 금액/수량 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#34-매수-가능-금액수량-조회)
-  - [3.5. 매도 가능 수량 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#35-매도-가능-수량-조회)
-  - [3.6. 미체결 주문 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#36-미체결-주문-조회)
-  - [3.7. 매도/매수 주문 및 정정/취소](https://github.com/Soju06/python-kis/wiki/Tutorial#37-매도매수-주문-및-정정취소)
-    - [3.7.1. 매수/매도 주문](https://github.com/Soju06/python-kis/wiki/Tutorial#371-매수매도-주문)
-    - [3.7.2. 주문 정정](https://github.com/Soju06/python-kis/wiki/Tutorial#372-주문-정정)
-- [4. 실시간 이벤트 수신](https://github.com/Soju06/python-kis/wiki/Tutorial#4-실시간-이벤트-수신)
-  - [4.1. 이벤트 수신을 했는데, 바로 취소됩니다.](https://github.com/Soju06/python-kis/wiki/Tutorial#41-이벤트-수신을-했는데-바로-취소됩니다)
-  - [4.2. 실시간 체결가 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#42-실시간-체결가-조회)
-  - [4.3. 실시간 호가 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#43-실시간-호가-조회)
-  - [4.4. 실시간 체결내역 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#44-실시간-체결내역-조회)
+- [1. VmKis 인증 관리](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#1-vmkis-인증-관리)
+  - [1.1. 시크릿 키 관리](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#11-시크릿-키-관리)
+  - [1.2. 엑세스 토큰 관리](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#12-엑세스-토큰-관리)
+- [2. 종목 시세 및 차트 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#2-종목-시세-및-차트-조회)
+  - [2.1. 시세 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#21-시세-조회)
+  - [2.2. 차트 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#22-차트-조회)
+  - [2.3. 호가 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#23-호가-조회)
+  - [2.4. 장운영 시간 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#24-장운영-시간-조회)
+- [3. 주문 및 잔고 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#3-주문-및-잔고-조회)
+  - [3.1. 예수금 및 보유 종목 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#31-예수금-및-보유-종목-조회)
+  - [3.2. 기간 손익 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#32-기간-손익-조회)
+  - [3.3. 일별 체결 내역 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#33-일별-체결-내역-조회)
+  - [3.4. 매수 가능 금액/수량 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#34-매수-가능-금액수량-조회)
+  - [3.5. 매도 가능 수량 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#35-매도-가능-수량-조회)
+  - [3.6. 미체결 주문 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#36-미체결-주문-조회)
+  - [3.7. 매도/매수 주문 및 정정/취소](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#37-매도매수-주문-및-정정취소)
+    - [3.7.1. 매수/매도 주문](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#371-매수매도-주문)
+    - [3.7.2. 주문 정정](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#372-주문-정정)
+- [4. 실시간 이벤트 수신](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#4-실시간-이벤트-수신)
+  - [4.1. 이벤트 수신을 했는데, 바로 취소됩니다.](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#41-이벤트-수신을-했는데-바로-취소됩니다)
+  - [4.2. 실시간 체결가 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#42-실시간-체결가-조회)
+  - [4.3. 실시간 호가 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#43-실시간-호가-조회)
+  - [4.4. 실시간 체결내역 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#44-실시간-체결내역-조회)
 
 
 ## 4. Changelog ✨
@@ -409,4 +409,4 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 
 ### License
 
-[MIT](https://github.com/Soju06/python-kis/blob/main/LICENCE)
+[MIT](https://github.com/visualmoney/vm-stock-kis/blob/main/LICENCE)

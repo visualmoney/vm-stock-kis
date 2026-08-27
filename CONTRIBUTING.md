@@ -24,7 +24,7 @@ VM-Stock-KIS 프로젝트에 기여해 주셔서 감사합니다! 🎉
 ### 1. 저장소 클론
 
 ```bash
-git clone https://github.com/Soju06/python-kis.git
+git clone https://github.com/visualmoney/vm-stock-kis.git
 cd vm-stock-kis
 ```
 
@@ -552,7 +552,7 @@ result = kis.new_feature(...)
 
 ### Q1: 코드를 처음 기여하는데 어디서부터 시작해야 하나요?
 
-**A**: [Good First Issue](https://github.com/Soju06/python-kis/labels/good%20first%20issue) 라벨이 붙은 이슈부터 시작하세요.
+**A**: [Good First Issue](https://github.com/visualmoney/vm-stock-kis/labels/good%20first%20issue) 라벨이 붙은 이슈부터 시작하세요.
 
 ### Q2: 테스트를 작성하려면 실제 API 키가 필요한가요?
 
@@ -627,8 +627,8 @@ except KisAuthenticationError:
 
 VM-Stock-KIS에 기여해 주신 모든 분들께 감사드립니다! 🙏
 
-- [기여자 목록](https://github.com/Soju06/python-kis/graphs/contributors)
+- [기여자 목록](https://github.com/visualmoney/vm-stock-kis/graphs/contributors)
 
 ---
 
-질문이 있으시면 [GitHub Discussions](https://github.com/Soju06/python-kis/discussions) 또는 Issue를 통해 문의하세요.
+질문이 있으시면 [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions) 또는 Issue를 통해 문의하세요.

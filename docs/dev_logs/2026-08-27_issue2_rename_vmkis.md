@@ -206,10 +206,44 @@ git tag v2.1.6 ──hatch-vcs──► 2.1.6.post1.dev5+g11ea7787f
 
 ---
 
+## sentinel의 부작용 — 포크를 가리켜야 할 링크까지 되돌림
+
+스윕은 업스트림 URL(`github.com/Soju06/python-kis`)을 sentinel로 **일괄** 보호했다.
+그 결과 정말 보존해야 할 링크뿐 아니라 **이 저장소를 가리켜야 할 링크까지**
+업스트림으로 복원됐다. 특히 `.github/ISSUE_TEMPLATE/*`는 "이 저장소에 이슈를
+올리기 전에 확인하라"는 안내인데 업스트림 Issues를 가리키고 있었다.
+
+용도별로 나눠 처리했다.
+
+### 포크로 변경
+
+| 파일 | 곳 | 성격 |
+|---|---|---|
+| `.github/ISSUE_TEMPLATE/bug-report.yml` | 4 | 이 저장소의 Docs/Issues/PR |
+| `.github/ISSUE_TEMPLATE/feature-request.yml` | 4 | 동일 |
+| `.github/ISSUE_TEMPLATE/question.yml` | 3 | 동일 |
+| `.github/ISSUE_TEMPLATE/config.yml` | 1 | Docs 위키 |
+| `CONTRIBUTING.md` | 4 | clone URL, good first issue, contributors, Discussions |
+| `README.md` | 24 | 현행 튜토리얼 위키 앵커(`wiki/Tutorial#...`), LICENCE 링크 |
+
+포크의 위키에 실제로 `Tutorial` 페이지가 존재함을 확인한 뒤 옮겼다
+(`git ls-remote ...wiki.git`에 HEAD 존재, `wiki/Tutorial` 200).
+
+### 업스트림 유지 (16곳, 전부 `README.md`)
+
+* 릴리스 노트의 `issues/N`·`pull/N` 12곳 — **실제로 업스트림에 있는** PR과 이슈다.
+  포크로 바꾸면 존재하지 않는 번호를 가리킨다.
+* `tree/v1.0.6` 1곳 — 2.0.0 이전 라이브러리.
+* 커밋 SHA로 고정된 옛 위키 3곳 (`wiki/Home/d6aaf20...` 등) — 당시 문서 스냅샷.
+
+`README.md`의 `soju06`은 HTS 로그인 ID 예시라 이름 변경 대상이 아니다.
+
+---
+
 ## 남은 일 (커밋 3~6, 이번 범위 밖)
 
-* **커밋 3**: `ci.yml`/`publish.yml` 재작성, `dependabot.yml` 추가,
-  `.github` 템플릿 링크 정정 (현재 업스트림을 가리킴)
+* **커밋 3**: `ci.yml`/`publish.yml` 재작성, `dependabot.yml` 추가
+  (`.github` 템플릿 링크 정정은 위와 같이 이번에 완료)
 * **커밋 4**: `VERSIONING.md` 축소(500줄 → 약 60줄), `MIGRATION_GUIDE.md`에
   v2.x ↔ v3.0.0 대조표, `CONTRIBUTING.md`의 poetry → uv, `CHANGELOG.md` 신규
 * **커밋 5**: `ruff check --fix` + `ruff format` 단독 스윕 + `.git-blame-ignore-revs`
