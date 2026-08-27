@@ -944,12 +944,12 @@ dev = [
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-html", specifier = ">=4.1.1" },
     { name = "requests-mock", specifier = ">=1.12.1" },
-    { name = "ruff", specifier = ">=0.14.10" },
+    { name = "ruff", specifier = ">=0.16.4,<0.17" },
 ]
 docs = [{ name = "plantuml", specifier = ">=0.3.0" }]
 lint = [
     { name = "pre-commit", specifier = ">=3.7.1" },
-    { name = "ruff", specifier = ">=0.14.10" },
+    { name = "ruff", specifier = ">=0.16.4,<0.17" },
 ]
 test = [
     { name = "pytest", specifier = ">=9.0.1" },

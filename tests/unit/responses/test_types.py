@@ -2,22 +2,21 @@ from datetime import date, datetime, time
 from decimal import Decimal
 
 import pytest
-
+from pykis.responses.dynamic import KisNoneValueError
 from pykis.responses.types import (
-    KisDynamicDict,
     KisAny,
-    KisString,
-    KisInt,
-    KisFloat,
-    KisDecimal,
     KisBool,
     KisDate,
-    KisTime,
     KisDatetime,
+    KisDecimal,
     KisDict,
+    KisDynamicDict,
+    KisFloat,
+    KisInt,
+    KisString,
+    KisTime,
     KisTimeToDatetime,
 )
-from pykis.responses.dynamic import KisNoneValueError
 from pykis.utils.timezone import TIMEZONE
 
 
@@ -110,3 +109,98 @@ def test_time_to_datetime_transform():
     res = ktt.transform("120000")
     assert isinstance(res, datetime)
     assert res.time().hour == 12 and res.time().minute == 0
+
+
+# ---------------------------------------------------------------------------
+# transform()의 두 공통 경로
+#
+# 대부분의 KisType.transform()은 다음 두 가지를 먼저 처리한다.
+#   1) 이미 목표 타입인 값은 그대로 반환한다 (멱등)
+#   2) 빈 문자열은 KisNoneValueError로 "값 없음"을 알린다
+#
+# 두 경로 모두 API 응답에 빈 칸이 섞여 들어오거나 이미 변환된 값이 재차 흘러올 때
+# 동작을 좌우하지만 테스트가 없었다.
+# ---------------------------------------------------------------------------
+
+ALREADY_CONVERTED = [
+    (KisDecimal, Decimal("1.5")),
+    (KisBool, True),
+    (KisDate, date(2026, 8, 27)),
+    (KisTime, time(9, 30)),
+    (KisDatetime, datetime(2026, 8, 27, 9, 30, tzinfo=TIMEZONE)),
+    (KisDict, {"a": 1}),
+    (KisTimeToDatetime, datetime(2026, 8, 27, 9, 30, tzinfo=TIMEZONE)),
+]
+
+
+@pytest.mark.parametrize(
+    ("kis_type", "value"),
+    ALREADY_CONVERTED,
+    ids=[t.__name__ for t, _ in ALREADY_CONVERTED],
+)
+def test_transform_is_idempotent_for_converted_values(kis_type, value):
+    """이미 목표 타입인 값은 변환 없이 그대로 반환한다."""
+    assert kis_type().transform(value) is value
+
+
+EMPTY_STRING_RAISES = [
+    KisDecimal,
+    KisBool,
+    KisDate,
+    KisTime,
+    KisDatetime,
+    KisDict,
+    KisTimeToDatetime,
+]
+
+
+@pytest.mark.parametrize("kis_type", EMPTY_STRING_RAISES, ids=lambda t: t.__name__)
+def test_empty_string_raises_none_value_error(kis_type):
+    """빈 문자열은 '값 없음'으로 취급한다."""
+    with pytest.raises(KisNoneValueError):
+        kis_type().transform("")
+
+
+def test_bool_transform_coerces_non_string_input():
+    """문자열도 bool도 int도 아닌 값은 str()로 강제 변환 후 판정한다."""
+
+    class Truthy:
+        def __str__(self):
+            return "Y"
+
+    class Falsy:
+        def __str__(self):
+            return "N"
+
+    assert KisBool().transform(Truthy()) is True
+    assert KisBool().transform(Falsy()) is False
+
+
+def test_dict_transform_accepts_mapping_pairs():
+    """Dict가 아닌 매핑 가능한 입력은 dict()로 변환한다."""
+    assert KisDict().transform([("a", 1), ("b", 2)]) == {"a": 1, "b": 2}
+
+
+class TestKisDynamicDictDunders:
+    """`KisDynamicDict`의 특수 메서드."""
+
+    def test_str_matches_repr(self):
+        """__str__은 __repr__과 같은 문자열을 낸다."""
+        instance = KisDynamicDict.from_dict({"a": 1})
+
+        assert str(instance) == repr(instance)
+
+    def test_dict_returns_backing_data(self):
+        """__dict__()는 원본 데이터를 그대로 돌려준다."""
+        data = {"a": 1, "b": 2}
+
+        assert KisDynamicDict.from_dict(data).__dict__() == data
+
+    def test_missing_key_falls_back_to_attribute_lookup(self):
+        """없는 키는 일반 속성 조회로 넘어가고, 그마저 없으면 AttributeError."""
+        instance = KisDynamicDict.from_dict({"a": 1})
+        # 속성명을 변수로 두는 이유: 상수를 쓰면 ruff B009, 그냥 접근하면 B018이 걸린다.
+        missing = "does_not_exist"
+
+        with pytest.raises(AttributeError):
+            getattr(instance, missing)

@@ -83,8 +83,10 @@ test = [
     "requests-mock>=1.12.1",
 ]
 lint = [
-    # .pre-commit-config.yaml이 ruff v0.14.10을 고정하고 있어 하한을 맞춥니다.
-    "ruff>=0.14.10",
+    # 상한을 둡니다. ruff는 마이너 버전에서 기본 규칙셋이 바뀌고, 이 프로젝트는
+    # [tool.ruff]에 select를 지정하지 않아 그대로 영향을 받습니다.
+    # 실측: 같은 코드에 v0.14.10은 228건, v0.16.4는 1003건을 보고합니다.
+    "ruff>=0.16.4,<0.17",
     "pre-commit>=3.7.1",
 ]
 docs = [
@@ -190,10 +192,10 @@ omit = ["*/__init__.py"]
 source = ["pykis", "*/site-packages/pykis"]
 
 [tool.coverage.report]
-# 한시적 인하 (원래 90). tests/unit/test_logging.py의 구문 오류로 약 8개월간
-# 테스트 수집 자체가 실패하고 있었고, 복구 후 실측 커버리지가 89.01%로 확인됐습니다.
-# 부채 정리 후 90으로 복원할 것: https://github.com/visualmoney/vm-stock-kis/issues/3
-fail_under = 70
+# 이슈 #3에서 70으로 한시 인하했다가 복원한 값입니다.
+# CI도 이 값을 그대로 씁니다(`uv run coverage report`). CI 쪽에 --fail-under를
+# 따로 주면 두 곳이 갈라지므로 주지 않습니다.
+fail_under = 90
 show_missing = true
 skip_covered = true
 exclude_also = [
