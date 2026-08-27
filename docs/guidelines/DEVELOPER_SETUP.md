@@ -1,73 +1,102 @@
-# vm-stock-kis 개발환경 설정 가이드 (Windows)
+# vm-stock-kis 개발환경 설정 가이드
 
-본 가이드는 `vm-stock-kis` 레포지토리에서 로컬 개발을 시작하기 위한 단계입니다. 이 프로젝트는 `poetry`를 사용합니다.
+이 프로젝트는 [uv](https://docs.astral.sh/uv/)를 씁니다. Poetry는 더 이상
+사용하지 않습니다.
+
+기여 절차 전반은 [CONTRIBUTING.md](../../CONTRIBUTING.md)를 보세요.
+이 문서는 환경 구축만 다룹니다.
 
 ## 1. 필수 소프트웨어
-- Python 3.11 이상 (현재 테스트 환경: 3.12)
-- Git
-- Poetry
+
+- **Python 3.10 이상** (`requires-python = ">=3.10"`).
+  직접 설치하지 않아도 됩니다 — uv가 `.python-version`을 보고 알아서 받아옵니다.
+- **Git**
 - VS Code (권장)
 
-## 2. 저장소 복제
-```powershell
-git clone <repo_url> c:\Python\github.com\vm-stock-kis
-cd c:\Python\github.com\vm-stock-kis
+## 2. uv 설치
+
+```bash
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Linux/macOS
+curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
 
-## 3. Poetry 설치 (설치되어 있지 않은 경우)
-```powershell
-pip install --user poetry
-# 또는 choco를 사용하는 경우
-choco install poetry -y
+## 3. 저장소 복제 및 의존성 설치
+
+```bash
+git clone https://github.com/visualmoney/vm-stock-kis.git
+cd vm-stock-kis
+uv sync --group dev
 ```
 
-## 4. 가상환경 생성 및 의존성 설치
-프로젝트 루트에서:
-```powershell
-python -m poetry install --no-interaction --with=test
+`uv sync`가 `.venv`를 만들고 Python 인터프리터까지 챙깁니다.
+`.python-version`(현재 `3.10`)이 기본 인터프리터를 정합니다.
+
+> **얕은 복제(shallow clone)를 하지 마세요.** 버전을 git 태그에서 만들기 때문에
+> 태그가 없으면 `0.0.0`이 됩니다. 자세한 내용은
+> [VERSIONING.md](../developer/VERSIONING.md)를 보세요.
+
+## 4. pre-commit 훅 설치 (필수)
+
+```bash
+uv run pre-commit install
 ```
-- 위 명령은 개발 및 테스트 의존성을 설치합니다.
+
+**선택이 아닙니다.** 구문 오류가 있는 파일과 파싱되지 않는 워크플로가 커밋되어
+CI가 8개월간 단 한 잡도 실행하지 못한 적이 있습니다. 훅이 그것을 막습니다.
 
 ## 5. VS Code 설정
-- 권장 확장: `Python`, `Pylance`, `PlantUML (jebbs.plantuml)`, `Prettier` 등
-- VS Code에서 Python 인터프리터를 Poetry 가상환경으로 설정: `Python: Select Interpreter` → `.venv` 경로 선택
+
+- 권장 확장은 `.vscode/extensions.json`에 있습니다.
+- `Python: Select Interpreter` → `.venv` 경로 선택
+- `.vscode/tasks.json`에 sync / test / coverage / build / pre-commit 태스크가 있습니다.
 
 ## 6. 테스트 실행
-- 전체 테스트 (Poetry를 통해):
-```powershell
-python -m poetry run pytest
-```
-- 특정 테스트 파일 실행 예:
-```powershell
-python -m poetry run pytest tests/unit/responses/test_dynamic_transform.py -q
-```
 
-## 7. 코드 스타일/포매팅
-- 프로젝트에 포맷터/린터가 설정되어 있으면 해당 명령 사용(예: `black`, `ruff` 등).
-- 예시:
-```powershell
-python -m poetry run black .
-python -m poetry run ruff check .
+```bash
+# CI와 동일한 조건 (실 API 자격증명이 필요한 테스트 제외)
+uv run pytest -m 'not requires_api'
+
+# 커버리지 포함
+uv run pytest -m 'not requires_api' --cov --cov-report=html:htmlcov
+
+# 특정 파일만
+uv run pytest tests/unit/responses/test_dynamic_transform.py -q
+
+# 이름으로 좁히기
+uv run pytest -k <testname> -q
 ```
 
-## 8. 커밋/브랜치 규칙
-- `main` 브랜치는 보호되어 있음(팀 규칙에 따라 다름). 기능별 브랜치에서 작업 후 PR 제출 권장.
+커버리지 임계값은 `pyproject.toml`의 `[tool.coverage.report] fail_under`를 따릅니다.
 
-## 9. 유용한 명령 모음
-```powershell
-# 의존성 설치 재실행
-python -m poetry install
+## 7. 코드 스타일
 
-# 테스트 + 커버리지
-python -m poetry run pytest --cov=vmkis --cov-report=html:htmlcov
+`ruff`가 린트와 포맷을 모두 담당합니다. `black`과 `isort`는 제거했습니다 —
+black의 기본 88자가 `[tool.ruff] line-length = 120`과 충돌했습니다.
 
-# 가상환경 셸 접속
-python -m poetry shell
+```bash
+uv run ruff check --fix .
+uv run ruff format .
 ```
 
-## 10. 문제해결
-- 의존성 문제: `.venv` 삭제 후 `poetry install` 재시도
-- 테스트 실패: `python -m poetry run pytest -k <testname> -q`로 좁혀서 디버깅
+pre-commit을 설치했다면 커밋 시 자동으로 실행됩니다.
 
----
-작성자: 자동 생성 가이드
+## 8. 빌드
+
+```bash
+uv build
+```
+
+버전은 git 태그에서 나옵니다. 배포 절차는
+[PYPI_RELEASE.md](./PYPI_RELEASE.md)를 보세요.
+
+## 9. 문제 해결
+
+| 증상 | 조치 |
+|---|---|
+| 의존성이 꼬임 | `.venv` 삭제 후 `uv sync --group dev` |
+| `uv.lock`이 어긋남 | `uv lock` (CI는 `uv lock --check`로 검증합니다) |
+| 버전이 `0.0.0` | 태그 없이 빌드된 것. `git fetch --tags` 후 재시도 |
+| 태그를 만들었는데 버전이 그대로 | `uv sync --reinstall-package vm-stock-kis` |

@@ -145,6 +145,7 @@ include = [
     "/README.md",
     "/QUICKSTART.md",
     "/CONTRIBUTING.md",
+    "/CHANGELOG.md",
     "/SECURITY.md",
     "/SECURITY.en.md",
     "/LICENCE",

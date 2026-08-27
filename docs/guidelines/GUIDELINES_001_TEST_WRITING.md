@@ -325,10 +325,10 @@ def test_something():
 
 ```bash
 # 전체 커버리지 측정
-poetry run pytest --cov=vmkis --cov-report=html --cov-report=term-missing
+uv run pytest --cov --cov-report=html --cov-report=term-missing
 
 # 특정 모듈 커버리지 측정
-poetry run pytest tests/unit/api/stock/ --cov=vmkis.api.stock --cov-report=term-missing
+uv run pytest tests/unit/api/stock/ --cov=vmkis.api.stock --cov-report=term-missing
 ```
 
 ---
