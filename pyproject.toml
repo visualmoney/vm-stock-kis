@@ -12,7 +12,18 @@ requires-python = ">=3.10"
 # PEP 639. LICENCE는 영국식 철자라 기본 glob(LICENSE*)에 잡히지 않으므로 명시합니다.
 license = "MIT"
 license-files = ["LICENCE"]
+# PEP 621 에는 "원저자(upstream author)"를 담는 표준 필드가 없습니다.
+# 포크 관계는 아래 세 가지를 조합해 표현합니다.
+#
+#   authors                        코드를 쓴 사람 전부 (원저자 포함)
+#   maintainers                    이 배포판을 내고 관리하는 주체
+#   [project.urls] Original Project  업스트림 저장소 링크
+#
+# src/vmkis/__env__.py 는 이 값들을 배포 메타데이터에서 읽습니다.
+# 여기가 유일한 출처이므로 저자 정보를 소스에 다시 적지 마세요.
+# __author__ 는 maintainers 의 첫 항목이 됩니다.
 authors = [
+    # 원저자. https://github.com/Soju06/python-kis
     { name = "Soju06", email = "qlskssk@gmail.com" },
     { name = "visualmoney", email = "visualmoney2@gmail.com" },
 ]

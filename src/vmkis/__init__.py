@@ -1,8 +1,12 @@
 from vmkis.__env__ import (
     __author__,
     __author_email__,
+    __authors__,
     __license__,
+    __maintainers__,
     __package_name__,
+    __upstream_author__,
+    __upstream_url__,
     __url__,
     __version__,
 )
