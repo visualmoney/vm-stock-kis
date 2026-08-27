@@ -53,21 +53,20 @@ jobs:
 
       # 태그와 실제로 빌드된 버전이 일치하는지 확인합니다.
       # hatch-vcs가 태그를 못 읽으면 여기서 멈춥니다.
+      # 앞 스텝이 packaging으로 이미 정규화한 값을 씁니다. 파일명을 다시 파싱하면
+      # 같은 정보를 두 방식으로 구하게 되어 어긋날 수 있습니다.
+      #
+      # 태그에 붙임표를 쓰면(v3.0.0-rc1) PEP 440 정규화 결과가 3.0.0rc1이 되어
+      # 여기서 걸립니다. v3.0.0rc1 형태로 쓰세요.
       - name: Tag matches built version
         if: startsWith(github.ref, 'refs/tags/')
+        env:
+          BUILT_VERSION: ${{ steps.version.outputs.version }}
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          # ls 의 출력을 파싱하지 않습니다(SC2012). 글롭으로 직접 받습니다.
-          shopt -s nullglob
-          wheels=(dist/*.whl)
-          if [ ${#wheels[@]} -ne 1 ]; then
-            echo "::error::휠이 정확히 1개여야 합니다 (발견: ${#wheels[@]})"
-            exit 1
-          fi
-          built=$(basename "${wheels[0]}" | sed -E 's/vm_stock_kis-([^-]+)-.*/\1/')
-          echo "tag=$tag built=$built"
-          if [ "$tag" != "$built" ]; then
-            echo "::error::태그($tag)와 빌드 버전($built)이 다릅니다"
+          echo "tag=$tag built=$BUILT_VERSION"
+          if [ "$tag" != "$BUILT_VERSION" ]; then
+            echo "::error::태그($tag)와 빌드 버전($BUILT_VERSION)이 다릅니다"
             exit 1
           fi
 
