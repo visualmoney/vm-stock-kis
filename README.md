@@ -11,6 +11,7 @@
 ### 빠른 시작
 
 - [QUICKSTART.md](./QUICKSTART.md) — 설치, config.yaml 예제, 테스트 팁
+- [SECURITY.md](./SECURITY.md) ([English](./SECURITY.en.md)) — 자격증명 취급 방식과 취약점 신고
 - 예제 모음: [examples/01_basic](./examples/01_basic) (hello_world, 시세/잔고, 주문, 실시간 체결가)
 
 
