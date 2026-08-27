@@ -24,7 +24,7 @@ jobs:
           # 없으면 fallback-version("0.0.0")인 아티팩트가 만들어집니다.
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock

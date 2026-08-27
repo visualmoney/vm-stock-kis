@@ -14,6 +14,10 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+# NOTE: astral-sh/setup-uv 는 v7 이후로 부동 메이저 태그(v8, v9, v10 ...)를
+# 발행하지 않습니다. @v10 은 존재하지 않아 "unable to find version" 으로 실패하므로
+# 정확한 버전을 고정합니다. 갱신은 dependabot 이 담당합니다.
+
 jobs:
   test:
     name: Tests (Python ${{ matrix.python-version }})
@@ -31,7 +35,7 @@ jobs:
           # 없어 fallback-version("0.0.0")으로 떨어집니다.
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
@@ -86,7 +90,7 @@ jobs:
       # 그래서 이 검사는 pre-commit 훅에도 함께 둡니다.
       - uses: raven-actions/actionlint@v2
 
-      - uses: astral-sh/setup-uv@v10
+      - uses: astral-sh/setup-uv@v10.0.1
         with:
           enable-cache: true
           cache-dependency-glob: uv.lock
