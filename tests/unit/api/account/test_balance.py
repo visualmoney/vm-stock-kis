@@ -2,7 +2,7 @@ import pytest
 from decimal import Decimal
 from types import SimpleNamespace
 
-from pykis.api.account import balance as bal
+from vmkis.api.account import balance as bal
 
 
 def test_market_from_code_none_and_invalid(monkeypatch):
@@ -160,7 +160,7 @@ def test_balance_stock_base_currency_property():
     stock = object.__new__(bal.KisBalanceStockBase)
     stock.market = "KRX"
     assert stock.currency == "KRW"
-    
+
     # Test other markets
     stock.market = "NASDAQ"
     assert stock.currency == "USD"
@@ -168,23 +168,23 @@ def test_balance_stock_base_currency_property():
 
 def test_domestic_balance_init_and_post_init(monkeypatch):
     # Test __init__ sets account_number correctly
-    from pykis.client.account import KisAccountNumber
+    from vmkis.client.account import KisAccountNumber
     acc = KisAccountNumber("12345678-01")
-    
+
     # Create proper mock objects with required base classes
     stock = object.__new__(bal.KisBalanceStockBase)
     stock.symbol = "AAA"
-    
+
     deposit = object.__new__(bal.KisDepositBase)
-    
+
     balance = object.__new__(bal.KisDomesticBalance)
     balance.account_number = acc
     balance.stocks = [stock]
     balance.deposits = {"KRW": deposit}
-    
+
     # Manually call __post_init__ to test stock/deposit assignment
     balance.__post_init__()
-    
+
     # Should have assigned account_number and balance to children
     assert balance.stocks[0].account_number == acc
     assert balance.stocks[0].balance is balance
@@ -195,11 +195,11 @@ def test_foreign_present_balance_stock_market_resolution(monkeypatch):
     # Test __post_init__ sets _needs_market_resolution flag
     stock = object.__new__(bal.KisForeignPresentBalanceStock)
     stock.__data__ = {"ovrs_excg_cd": ""}
-    
+
     # Call __post_init__ to test market resolution flag
     stock._needs_market_resolution = False
     stock.__post_init__()
-    
+
     # Should set flag when market cannot be inferred
     assert stock._needs_market_resolution == True
 
@@ -209,18 +209,18 @@ def test_foreign_present_balance_stock_kis_post_init_resolves_market(monkeypatch
     stock = object.__new__(bal.KisForeignPresentBalanceStock)
     stock._needs_market_resolution = True
     stock.symbol = "AAPL"
-    
+
     called = []
-    
+
     def mock_resolve(kis, symbol, quotable):
         called.append((symbol, quotable))
         return "NASDAQ"
-    
+
     monkeypatch.setattr(bal, "resolve_market", mock_resolve)
-    
+
     stock.kis = SimpleNamespace()
     stock.__kis_post_init__()
-    
+
     assert called[0] == ("AAPL", False)
     assert stock.market == "NASDAQ"
 
@@ -231,37 +231,37 @@ def test_foreign_present_balance_stock_kis_post_init_handles_exception(monkeypat
     stock._needs_market_resolution = True
     stock.symbol = "AAPL"
     stock.market = "KRX"  # Original value
-    
+
     def mock_resolve(kis, symbol, quotable):
         raise ValueError("Test error")
-    
+
     monkeypatch.setattr(bal, "resolve_market", mock_resolve)
-    
+
     stock.kis = SimpleNamespace()
     stock.__kis_post_init__()
-    
+
     # Should not raise, market stays unchanged
     assert stock.market == "KRX"
 
 
 def test_foreign_present_balance_init_and_post_init():
     # Test initialization and post_init assignment
-    from pykis.client.account import KisAccountNumber
+    from vmkis.client.account import KisAccountNumber
     acc = KisAccountNumber("12345678-01")
-    
+
     stock = object.__new__(bal.KisBalanceStockBase)
     stock.symbol = "AAPL"
-    
+
     deposit = object.__new__(bal.KisDepositBase)
-    
+
     balance = object.__new__(bal.KisForeignPresentBalance)
     balance.account_number = acc
     balance.country = "US"
     balance.stocks = [stock]
     balance.deposits = {"USD": deposit}
-    
+
     balance.__post_init__()
-    
+
     # Should assign account_number to children
     assert balance.stocks[0].account_number == acc
     assert balance.stocks[0].balance is balance
@@ -274,7 +274,7 @@ def test_domestic_balance_fetch_pagination(monkeypatch):
         def __init__(self):
             self.virtual = False
             self.call_count = 0
-        
+
         def fetch(self, *args, **kwargs):
             self.call_count += 1
             result = SimpleNamespace()
@@ -282,15 +282,15 @@ def test_domestic_balance_fetch_pagination(monkeypatch):
             result.is_last = self.call_count >= 2
             result.next_page = SimpleNamespace(is_first=False)
             return result
-    
+
     kis = FakeKis()
-    from pykis.client.account import KisAccountNumber
-    
+    from vmkis.client.account import KisAccountNumber
+
     # Mock KisPage
     monkeypatch.setattr(bal, "KisPage", SimpleNamespace(first=lambda: SimpleNamespace(to=lambda x: SimpleNamespace(is_first=True))))
-    
+
     result = bal.domestic_balance(kis, "12345678-01", continuous=True)
-    
+
     # Should have called fetch twice (pagination)
     assert kis.call_count == 2
     assert len(result.stocks) == 2
@@ -307,7 +307,7 @@ def test_foreign_balance_country_market_mapping():
 def test_foreign_balance_routes_to_internal(monkeypatch):
     # Test _foreign_balance calls _internal_foreign_balance for each market
     called_markets = []
-    
+
     def mock_internal(kis, account, market=None, page=None, continuous=True):
         called_markets.append(market)
         result = SimpleNamespace()
@@ -316,12 +316,12 @@ def test_foreign_balance_routes_to_internal(monkeypatch):
         result.account_number = account
         result.country = "US"
         return result
-    
+
     monkeypatch.setattr(bal, "_internal_foreign_balance", mock_internal)
-    
+
     kis = SimpleNamespace(virtual=False)
     result = bal._foreign_balance(kis, "12345678-01", country="US")
-    
+
     # Should call for NASDAQ market
     assert "NASDAQ" in called_markets
     assert len(result.stocks) >= 1
@@ -330,30 +330,30 @@ def test_foreign_balance_routes_to_internal(monkeypatch):
 def test_balance_routes_to_domestic_for_kr(monkeypatch):
     # Test balance() routes to domestic_balance for KR country
     called = []
-    
+
     def mock_domestic(kis, account, country=None):
         called.append("domestic")
         return SimpleNamespace(stocks=[], deposits={})
-    
+
     monkeypatch.setattr(bal, "domestic_balance", mock_domestic)
-    
+
     bal.balance(object(), "12345678-01", country="KR")
-    
+
     assert "domestic" in called
 
 
 def test_balance_routes_to_foreign_for_non_kr(monkeypatch):
     # Test balance() routes to foreign_balance for non-KR country
     called = []
-    
+
     def mock_foreign(kis, account, country=None):
         called.append("foreign")
         return SimpleNamespace(stocks=[], deposits={})
-    
+
     monkeypatch.setattr(bal, "foreign_balance", mock_foreign)
-    
+
     bal.balance(object(), "12345678-01", country="US")
-    
+
     assert "foreign" in called
 
 
@@ -361,12 +361,12 @@ def test_balance_integration_for_none_country(monkeypatch):
     # Test balance() creates integration balance when country is None
     dom = SimpleNamespace(stocks=[SimpleNamespace(symbol="KR1")], deposits={"KRW": SimpleNamespace()})
     fore = SimpleNamespace(stocks=[SimpleNamespace(symbol="US1")], deposits={"USD": SimpleNamespace()})
-    
+
     monkeypatch.setattr(bal, "domestic_balance", lambda *a, **k: dom)
     monkeypatch.setattr(bal, "foreign_balance", lambda *a, **k: fore)
-    
+
     result = bal.balance(object(), "12345678-01", country=None)
-    
+
     assert isinstance(result, bal.KisIntegrationBalance)
     assert len(result.stocks) == 2
 
@@ -374,60 +374,60 @@ def test_balance_integration_for_none_country(monkeypatch):
 def test_account_balance_forwards_to_balance(monkeypatch):
     # Test account_balance forwards to balance function
     called = []
-    
+
     def mock_balance(kis, account, country=None):
         called.append((account, country))
         return SimpleNamespace()
-    
+
     monkeypatch.setattr(bal, "balance", mock_balance)
-    
+
     account = SimpleNamespace(kis=object(), account_number="12345678-01")
     bal.account_balance(account, country="US")
-    
+
     assert called[0] == ("12345678-01", "US")
 
 
 def test_orderable_quantity_finds_stock_in_balance(monkeypatch):
     # Test orderable_quantity returns correct value
     stock = SimpleNamespace(symbol="AAPL", orderable=Decimal("100"))
-    
+
     def mock_stock_method(symbol):
         if symbol == "AAPL":
             return stock
         return None
-    
+
     balance_obj = SimpleNamespace(stocks=[stock], stock=mock_stock_method)
-    
+
     monkeypatch.setattr(bal, "balance", lambda kis, account, country: balance_obj)
-    
+
     qty = bal.orderable_quantity(object(), "12345678-01", "AAPL", country="US")
-    
+
     assert qty == Decimal("100")
 
 
 def test_orderable_quantity_returns_none_if_not_found(monkeypatch):
     # Test orderable_quantity returns None when stock not found
     balance_obj = SimpleNamespace(stocks=[], stock=lambda symbol: None)
-    
+
     monkeypatch.setattr(bal, "balance", lambda kis, account, country: balance_obj)
-    
+
     qty = bal.orderable_quantity(object(), "12345678-01", "NOTFOUND", country="US")
-    
+
     assert qty is None
 
 
 def test_account_orderable_quantity_forwards_correctly(monkeypatch):
     # Test account_orderable_quantity forwards to orderable_quantity
     called = []
-    
+
     def mock_orderable(kis, account, symbol, country=None):
         called.append((account, symbol, country))
         return Decimal("50")
-    
+
     monkeypatch.setattr(bal, "orderable_quantity", mock_orderable)
-    
+
     account = SimpleNamespace(kis=object(), account_number="12345678-01")
     qty = bal.account_orderable_quantity(account, "AAPL", country="US")
-    
+
     assert called[0] == ("12345678-01", "AAPL", "US")
     assert qty == Decimal("50")

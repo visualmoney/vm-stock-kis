@@ -2,9 +2,9 @@ import types
 from types import EllipsisType
 import pytest
 
-from pykis.client.exceptions import KisAPIError
+from vmkis.client.exceptions import KisAPIError
 
-from pykis.api.account import order_modify as om
+from vmkis.api.account import order_modify as om
 
 
 class FakeOrder:
@@ -58,7 +58,7 @@ def test_domestic_modify_order_not_found_raises(monkeypatch):
     def fake_pending(k, account, country):
         return Pending()
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", fake_pending)
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", fake_pending)
 
     with pytest.raises(ValueError):
         om.domestic_modify_order(kis, order)
@@ -78,7 +78,7 @@ def test_domestic_modify_price_setting_uses_quote_and_fetch(monkeypatch):
     def fake_pending(k, account, country):
         return Pending()
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", fake_pending)
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", fake_pending)
 
     # make order_condition return a price-setting demanding 'upper' limit
     monkeypatch.setattr(om, "order_condition", lambda **kwargs: ("01", "upper", None))
@@ -113,7 +113,7 @@ def test_foreign_modify_missing_api_raises(monkeypatch):
         def order(self, _):
             return sample_info
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", lambda self, account, country: Pending())
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: Pending())
     monkeypatch.setattr(om, "order_condition", lambda **kwargs: ("01", None, None))
 
     with pytest.raises(ValueError):
@@ -211,7 +211,7 @@ def test_foreign_modify_success_calls_get_market_code_and_fetch(monkeypatch):
     sample_info = types.SimpleNamespace(price=10, qty=5, condition=None, execution=None, branch="001", number="1")
     sample_info.type = "buy"
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
     monkeypatch.setattr(om, "order_condition", lambda **kwargs: ("01", None, None))
     monkeypatch.setattr(om, "get_market_code", lambda market: "MK")
 
@@ -229,7 +229,7 @@ def test_foreign_modify_price_setting_uses_quote(monkeypatch):
     sample_info = types.SimpleNamespace(price=10, qty=5, condition=None, execution=None, branch="001", number="1")
     sample_info.type = "buy"
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
     monkeypatch.setattr(om, "order_condition", lambda **kwargs: ("01", "upper", None))
     monkeypatch.setattr(om, "quote", lambda self, symbol, market: types.SimpleNamespace(high_limit=999, low_limit=1))
 
@@ -248,7 +248,7 @@ def test_foreign_daytime_modify_quote_path_and_price_selection(monkeypatch):
     sample_info = types.SimpleNamespace(price=None, qty=2, condition=None, execution=None, branch="001", number="1")
     sample_info.type = "buy"
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
     monkeypatch.setattr(om, "ensure_price", lambda p, *args, **kwargs: p)
     monkeypatch.setattr(om, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(high_limit=500, low_limit=10))
 
@@ -266,7 +266,7 @@ def test_foreign_daytime_cancel_order_success_and_virtual(monkeypatch):
     sample_info = types.SimpleNamespace(qty=7)
     sample_info.type = "buy"
 
-    monkeypatch.setattr("pykis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
+    monkeypatch.setattr("vmkis.api.account.pending_order.pending_orders", lambda self, account, country: types.SimpleNamespace(order=lambda o: sample_info))
 
     om.foreign_daytime_cancel_order(kis, order)
     called = kis._fetch_calls[-1][1]

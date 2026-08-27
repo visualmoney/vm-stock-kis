@@ -2,7 +2,7 @@ import types
 
 import pytest
 
-import pykis.scope.account as account_mod
+import vmkis.scope.account as account_mod
 
 
 class FakeAcc:

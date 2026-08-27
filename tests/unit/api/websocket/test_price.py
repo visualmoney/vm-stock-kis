@@ -1,4 +1,4 @@
-from pykis.api.websocket import price
+from vmkis.api.websocket import price
 
 
 class FakeTicket:

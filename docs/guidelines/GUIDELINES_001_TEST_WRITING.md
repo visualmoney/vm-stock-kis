@@ -1,7 +1,7 @@
 # 테스트 코드 작성 가이드라인
 
-**작성일**: 2025-12-17  
-**목적**: python-kis 프로젝트의 테스트 코드 작성 표준화  
+**작성일**: 2025-12-17
+**목적**: vm-stock-kis 프로젝트의 테스트 코드 작성 표준화
 **적용 범위**: 모든 단위 테스트, 통합 테스트
 
 ---
@@ -72,14 +72,14 @@ def test_1():
 
 class TestQuotableMarket:
     """quotable_market() 함수 테스트"""
-    
+
     def test_validates_empty_symbol(self):
         """테스트: 빈 심볼은 ValueError 발생"""
         ...
 
 class TestInfo:
     """info() 함수 테스트"""
-    
+
     def test_continues_on_rt_cd_7_error(self):
         """테스트: rt_cd=7은 재시도"""
         ...
@@ -147,7 +147,7 @@ result = KisDomesticDailyChartBar.transform_(mock_response.__data__)
 ```python
 # ✅ KisAPIError 생성 패턴
 
-from pykis.client.exceptions import KisAPIError
+from vmkis.client.exceptions import KisAPIError
 
 api_error = KisAPIError(
     data={
@@ -173,14 +173,14 @@ def test_feature_behavior():
     # Arrange: 테스트 환경 준비
     fake_kis = Mock()
     fake_kis.cache.get.return_value = None
-    
+
     mock_response = Mock()
     mock_response.output.stck_prpr = "65000"
     fake_kis.fetch.return_value = mock_response
-    
+
     # Act: 기능 실행
     result = quotable_market(fake_kis, "005930", market="KR", use_cache=False)
-    
+
     # Assert: 결과 검증
     assert result == "KRX"
     fake_kis.fetch.assert_called_once()
@@ -192,7 +192,7 @@ def test_feature_behavior():
 def test_raises_exception_on_invalid_input():
     """테스트: 잘못된 입력에 예외 발생"""
     fake_kis = Mock()
-    
+
     # Act & Assert
     with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
         quotable_market(fake_kis, "")
@@ -205,21 +205,21 @@ def test_continues_on_rt_cd_7_error():
     """테스트: rt_cd=7 에러 시 다음 마켓 코드로 재시도"""
     fake_kis = Mock()
     fake_kis.cache.get.return_value = None
-    
+
     # Arrange: rt_cd=7 에러 후 성공
     api_error = KisAPIError(
         data={"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": mock_http_response},
         response=mock_http_response
     )
     api_error.rt_cd = 7
-    
+
     mock_info = Mock()
     fake_kis.fetch.side_effect = [api_error, mock_info]
-    
+
     # Act: US 마켓 사용 (3개 코드로 재시도 가능)
-    with patch('pykis.api.stock.info.quotable_market', return_value="US"):
+    with patch('vmkis.api.stock.info.quotable_market', return_value="US"):
         result = info(fake_kis, "AAPL", market="US", use_cache=False, quotable=True)
-    
+
     # Assert: 2개 마켓 코드 시도 확인
     assert result == mock_info
     assert fake_kis.fetch.call_count == 2
@@ -260,18 +260,18 @@ MARKET_TYPE_MAP = {
 
 def test_continues_on_rt_cd_7_error():
     """재시도 테스트는 다중 코드 마켓 필수"""
-    with patch('pykis.api.stock.info.quotable_market', return_value="US"):  # ✅ 3개 코드
+    with patch('vmkis.api.stock.info.quotable_market', return_value="US"):  # ✅ 3개 코드
         ...
-    
+
     # ❌ 불가능한 조합
-    with patch('pykis.api.stock.info.quotable_market', return_value="KR"):  # ❌ 1개 코드만
+    with patch('vmkis.api.stock.info.quotable_market', return_value="KR"):  # ❌ 1개 코드만
         ...
 
 # ✅ 마켓 소진 테스트 시: KR, KRX, NASDAQ 등 단일 코드 마켓 사용
 
 def test_raises_not_found_when_all_markets_exhausted():
     """모든 마켓 소진 시 테스트는 단일 코드 마켓 적합"""
-    with patch('pykis.api.stock.info.quotable_market', return_value="KR"):  # ✅ 1개 코드
+    with patch('vmkis.api.stock.info.quotable_market', return_value="KR"):  # ✅ 1개 코드
         ...
 ```
 
@@ -325,10 +325,10 @@ def test_something():
 
 ```bash
 # 전체 커버리지 측정
-poetry run pytest --cov=pykis --cov-report=html --cov-report=term-missing
+poetry run pytest --cov=vmkis --cov-report=html --cov-report=term-missing
 
 # 특정 모듈 커버리지 측정
-poetry run pytest tests/unit/api/stock/ --cov=pykis.api.stock --cov-report=term-missing
+poetry run pytest tests/unit/api/stock/ --cov=vmkis.api.stock --cov-report=term-missing
 ```
 
 ---
@@ -356,12 +356,12 @@ mock_response.request.body = None
 
 ```python
 # ❌ 마켓 코드 잘못 선택
-with patch('pykis.api.stock.info.quotable_market', return_value="KR"):
+with patch('vmkis.api.stock.info.quotable_market', return_value="KR"):
     # 1개 코드만 있어서 재시도 테스트 불가능
     ...
 
 # ✅ 올바른 마켓 코드
-with patch('pykis.api.stock.info.quotable_market', return_value="US"):
+with patch('vmkis.api.stock.info.quotable_market', return_value="US"):
     # 3개 코드로 재시도 가능
     ...
 ```

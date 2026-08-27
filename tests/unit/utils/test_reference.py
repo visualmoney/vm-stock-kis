@@ -2,7 +2,7 @@ import gc
 
 import pytest
 
-from pykis.utils.reference import (
+from vmkis.utils.reference import (
     ReferenceStore,
     ReferenceTicket,
     package_mathod,

@@ -3,7 +3,7 @@ from decimal import Decimal
 from zoneinfo import ZoneInfo
 
 import pytest
-from pykis.utils import repr as kisrepr
+from vmkis.utils import repr as kisrepr
 
 
 def test_decimal_datetime_date_time_zoneinfo_custom_reprs():

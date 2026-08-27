@@ -2,12 +2,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from pykis.responses.response import (
+from vmkis.responses.response import (
     raise_not_found,
     KisResponse,
     KisPaginationAPIResponse,
 )
-from pykis.client.exceptions import KisAPIError
+from vmkis.client.exceptions import KisAPIError
 
 
 def test_raise_not_found_raises_with_response():

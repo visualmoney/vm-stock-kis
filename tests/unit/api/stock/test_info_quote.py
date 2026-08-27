@@ -1,5 +1,5 @@
-from pykis.api.stock import info as info_mod
-from pykis.api.stock import quote as quote_mod
+from vmkis.api.stock import info as info_mod
+from vmkis.api.stock import quote as quote_mod
 
 
 def test_info_empty_symbol_raises():

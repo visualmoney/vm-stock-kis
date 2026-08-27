@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 
-from pykis.api.websocket import order_book
-from pykis.api.websocket import price as ws_price
+from vmkis.api.websocket import order_book
+from vmkis.api.websocket import price as ws_price
 
 
 class FakeTicket:
@@ -51,44 +51,44 @@ def test_domestic_orderbook_pre_init_parses_data():
     """국내 주식 호가 데이터 파싱 테스트"""
     from datetime import datetime
     from decimal import Decimal
-    
+
     # Create test data with 59 fields matching __fields__ structure
     data = [""] * 59
     data[0] = "005930"  # symbol (MKSC_SHRN_ISCD)
     data[1] = "143500"  # time (BSOP_HOUR) - 14:35:00
     data[2] = "0"       # condition (HOUR_CLS_CODE) - normal trading
-    
+
     # 매도호가 1-10 (indices 3-12)
     for i in range(10):
         data[3 + i] = str(50000 + i * 100)  # 매도호가
-    
+
     # 매수호가 1-10 (indices 13-22)
     for i in range(10):
         data[13 + i] = str(49900 - i * 100)  # 매수호가
-    
+
     # 매도호가 잔량 1-10 (indices 23-32)
     for i in range(10):
         data[23 + i] = str(1000 + i * 100)  # 매도호가 잔량
-    
+
     # 매수호가 잔량 1-10 (indices 33-42)
     for i in range(10):
         data[33 + i] = str(2000 + i * 100)  # 매수호가 잔량
-    
+
     orderbook_obj = order_book.KisDomesticRealtimeOrderbook()
     orderbook_obj.__pre_init__(data)
-    
+
     # Verify time parsing
     assert orderbook_obj.time.hour == 14
     assert orderbook_obj.time.minute == 35
     assert orderbook_obj.time.second == 0
-    
+
     # Verify asks (매도호가)
     assert len(orderbook_obj.asks) == 10
     assert orderbook_obj.asks[0].price == Decimal("50000")
     assert orderbook_obj.asks[0].volume == 1000
     assert orderbook_obj.asks[9].price == Decimal("50900")
     assert orderbook_obj.asks[9].volume == 1900
-    
+
     # Verify bids (매수호가)
     assert len(orderbook_obj.bids) == 10
     assert orderbook_obj.bids[0].price == Decimal("49900")
@@ -99,8 +99,8 @@ def test_domestic_orderbook_pre_init_parses_data():
 
 def test_domestic_orderbook_condition_mapping():
     """국내 주식 호가 조건 매핑 테스트"""
-    from pykis.api.websocket.order_book import DOMESTIC_REALTIME_ORDER_BOOK_ORDER_CONDITION_MAP
-    
+    from vmkis.api.websocket.order_book import DOMESTIC_REALTIME_ORDER_BOOK_ORDER_CONDITION_MAP
+
     # Verify the mapping dictionary
     assert DOMESTIC_REALTIME_ORDER_BOOK_ORDER_CONDITION_MAP["0"] is None
     assert DOMESTIC_REALTIME_ORDER_BOOK_ORDER_CONDITION_MAP["A"] == "after"
@@ -113,7 +113,7 @@ def test_asia_orderbook_pre_init_parses_data():
     """아시아 주식 호가 데이터 파싱 테스트"""
     from datetime import datetime
     from decimal import Decimal
-    
+
     # Create test data with 17 fields
     data = [""] * 17
     data[0] = "DHKS000660"   # RSYM (DHKS + symbol, HKS=Hong Kong Stock)
@@ -133,25 +133,25 @@ def test_asia_orderbook_pre_init_parses_data():
     data[14] = "4500"        # VASK1 (ask volume 1)
     data[15] = "100"         # DBID1 (bid volume change 1)
     data[16] = "50"          # DASK1 (ask volume change 1)
-    
+
     orderbook_obj = order_book.KisAsiaRealtimeOrderbook()
     orderbook_obj.__pre_init__(data)
-    
+
     # Verify market (parsed from RSYM)
     assert orderbook_obj.market == "HKEX"
-    
+
     # Verify time parsing (local time)
     assert orderbook_obj.time.year == 2024
     assert orderbook_obj.time.month == 1
     assert orderbook_obj.time.day == 15
     assert orderbook_obj.time.hour == 14
     assert orderbook_obj.time.minute == 30
-    
+
     # Verify asks (only 1 level for Asia)
     assert len(orderbook_obj.asks) == 1
     assert orderbook_obj.asks[0].price == Decimal("101.000")
     assert orderbook_obj.asks[0].volume == 4500
-    
+
     # Verify bids (only 1 level for Asia)
     assert len(orderbook_obj.bids) == 1
     assert orderbook_obj.bids[0].price == Decimal("100.500")
@@ -162,7 +162,7 @@ def test_us_orderbook_pre_init_parses_data():
     """미국 주식 호가 데이터 파싱 테스트 (10 레벨)"""
     from datetime import datetime
     from decimal import Decimal
-    
+
     # Create test data with 71 fields
     data = [""] * 71
     data[0] = "DNASAAPL"     # RSYM (realtime symbol for NASDAQ)
@@ -176,7 +176,7 @@ def test_us_orderbook_pre_init_parses_data():
     data[8] = "95000"        # AVOL (total ask volume)
     data[9] = "5000"         # BDVL (bid volume change)
     data[10] = "3000"        # ADVL (ask volume change)
-    
+
     # Fill 10 levels of bid/ask data
     # Each level has: bid_price, ask_price, bid_volume, ask_volume, bid_change, ask_change (6 fields)
     for i in range(10):
@@ -187,27 +187,27 @@ def test_us_orderbook_pre_init_parses_data():
         data[base_index + 3] = str(900 + i * 100)          # VASK (ask volume)
         data[base_index + 4] = str(50 + i * 10)            # DBID (bid change)
         data[base_index + 5] = str(40 + i * 10)            # DASK (ask change)
-    
+
     orderbook_obj = order_book.KisUSRealtimeOrderbook()
     orderbook_obj.__pre_init__(data)
-    
+
     # Verify market (parsed from RSYM)
     assert orderbook_obj.market == "NASDAQ"
-    
+
     # Verify time parsing (local time)
     assert orderbook_obj.time.year == 2024
     assert orderbook_obj.time.month == 1
     assert orderbook_obj.time.day == 15
     assert orderbook_obj.time.hour == 9
     assert orderbook_obj.time.minute == 30
-    
+
     # Verify asks (10 levels for US)
     assert len(orderbook_obj.asks) == 10
     assert orderbook_obj.asks[0].price == Decimal("148.01")
     assert orderbook_obj.asks[0].volume == 900
     assert orderbook_obj.asks[9].price == Decimal("148.10")
     assert orderbook_obj.asks[9].volume == 1800
-    
+
     # Verify bids (10 levels for US)
     assert len(orderbook_obj.bids) == 10
     assert orderbook_obj.bids[0].price == Decimal("148.00")
@@ -219,16 +219,16 @@ def test_us_orderbook_pre_init_parses_data():
 def test_on_order_book_with_extended_flag():
     """주간거래 시세 조회 플래그 테스트"""
     fake = FakeClient()
-    
+
     # Test with extended=True for US market
     ticket = order_book.on_order_book(
-        fake, 
-        "NASDAQ", 
-        "TSLA", 
-        lambda *_: None, 
+        fake,
+        "NASDAQ",
+        "TSLA",
+        lambda *_: None,
         extended=True
     )
-    
+
     # Should use extended realtime symbol starting with 'R'
     assert isinstance(ticket.key, str)
     assert ticket.key.startswith("R")  # Extended symbols start with R
@@ -239,10 +239,10 @@ def test_on_order_book_with_extended_flag():
 def test_on_order_book_asia_market_routing():
     """아시아 시장 호가 라우팅 테스트"""
     fake = FakeClient()
-    
+
     # Test Asian markets (should use HDFSASP1)
     asian_markets = ["HKEX", "SSE", "SZSE", "TYO", "HNX", "HSX"]
-    
+
     for market in asian_markets:
         fake.calls.clear()
         ticket = order_book.on_order_book(
@@ -251,7 +251,7 @@ def test_on_order_book_asia_market_routing():
             "TEST",
             lambda *_: None
         )
-        
+
         # Asian markets should use HDFSASP1
         assert ticket.id == "HDFSASP1", f"Failed for market {market}"
 
@@ -262,13 +262,13 @@ def test_on_product_order_book_with_extended():
     prod.market = "NYSE"
     prod.symbol = "NVDA"
     prod.kis = SimpleNamespace(websocket=FakeClient())
-    
+
     ticket = order_book.on_product_order_book(
-        prod, 
-        lambda *_: None, 
+        prod,
+        lambda *_: None,
         extended=True
     )
-    
+
     # Should forward extended flag
     assert ticket.id == "HDFSASP0"  # US market
     assert isinstance(ticket.key, str)
@@ -277,10 +277,10 @@ def test_on_product_order_book_with_extended():
 def test_on_order_book_with_where_filter():
     """이벤트 필터 전달 테스트"""
     fake = FakeClient()
-    
+
     def my_filter(*args):
         return True
-    
+
     ticket = order_book.on_order_book(
         fake,
         "KRX",
@@ -288,7 +288,7 @@ def test_on_order_book_with_where_filter():
         lambda *_: None,
         where=my_filter
     )
-    
+
     # Should combine filters (KisProductEventFilter + user filter)
     assert len(fake.calls) == 1
     # The where parameter should be a KisMultiEventFilter
@@ -299,7 +299,7 @@ def test_on_order_book_with_where_filter():
 def test_on_order_book_with_once_flag():
     """한번만 실행 플래그 테스트"""
     fake = FakeClient()
-    
+
     ticket = order_book.on_order_book(
         fake,
         "KRX",
@@ -307,7 +307,7 @@ def test_on_order_book_with_once_flag():
         lambda *_: None,
         once=True
     )
-    
+
     # Should pass once flag
     assert len(fake.calls) == 1
     assert fake.calls[0]["once"] is True

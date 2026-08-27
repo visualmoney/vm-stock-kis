@@ -4,12 +4,12 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
-from pykis.api.auth.token import KisAccessToken
-from pykis.responses.dynamic import KisObject
-from pykis.client.auth import KisAuth
-from pykis.client.exceptions import KisHTTPError
-from pykis.client.form import KisForm
-from pykis.kis import PyKis
+from vmkis.api.auth.token import KisAccessToken
+from vmkis.responses.dynamic import KisObject
+from vmkis.client.auth import KisAuth
+from vmkis.client.exceptions import KisHTTPError
+from vmkis.client.form import KisForm
+from vmkis.kis import VmKis
 
 
 @pytest.fixture
@@ -44,11 +44,11 @@ VALID_APPKEY = "A" * 36
 VALID_SECRETKEY = "S" * 180
 
 
-@patch("pykis.kis.KisAuth.load")
+@patch("vmkis.kis.KisAuth.load")
 def test_init_with_auth_path(mock_load_auth, mock_kis_auth):
-    """auth 파일 경로로 PyKis 초기화 테스트"""
+    """auth 파일 경로로 VmKis 초기화 테스트"""
     mock_load_auth.return_value = mock_kis_auth
-    kis = PyKis("fake/path/auth.json", use_websocket=False)
+    kis = VmKis("fake/path/auth.json", use_websocket=False)
     mock_load_auth.assert_called_once_with("fake/path/auth.json")
     assert kis.appkey == mock_kis_auth.key
     assert str(kis.primary_account) == mock_kis_auth.account_number
@@ -56,8 +56,8 @@ def test_init_with_auth_path(mock_load_auth, mock_kis_auth):
 
 
 def test_init_with_kwargs():
-    """키워드 인자로 PyKis 초기화 테스트"""
-    kis = PyKis(
+    """키워드 인자로 VmKis 초기화 테스트"""
+    kis = VmKis(
         id="test_id",
         appkey="test_appkey_36chars_1234567890_abcde",
         secretkey="test_secretkey_180chars_long_aa72vEu5ejiqRwpPRetP2fPdMVeTswa2oitr48MiH1Orje0W8sflP9s9cOfottRWfGsxetpntEpxNo+6zNSZsKUo7G7f8COnXdouYtdUsi34nMVMzDoPrbN5Uu2podrHD8Bhh0zWVHW8nCXu2kEojo=",
@@ -71,8 +71,8 @@ def test_init_with_kwargs():
 
 
 def test_init_with_virtual_kwargs():
-    """가상 계좌 키워드 인자로 PyKis 초기화 테스트"""
-    kis = PyKis(
+    """가상 계좌 키워드 인자로 VmKis 초기화 테스트"""
+    kis = VmKis(
         id="test_id",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -93,20 +93,20 @@ def test_init_with_virtual_kwargs():
     assert kis.virtual
 
 
-@patch("pykis.kis.PyKis.__del__", new=lambda self: None)
+@patch("vmkis.kis.VmKis.__del__", new=lambda self: None)
 def test_init_value_errors():
     """초기화 시 발생하는 ValueError 테스트
 
-    `PyKis.__del__`가 부분 초기화된 객체에서 `AttributeError`를 일으키는
+    `VmKis.__del__`가 부분 초기화된 객체에서 `AttributeError`를 일으키는
     테스트 실행 환경에서 UnraisableExceptionWarning을 막기 위해 소멸자를
     임시로 무력화합니다.
     """
     with pytest.raises(ValueError, match="id를 입력해야 합니다."):
-        PyKis(use_websocket=False)
+        VmKis(use_websocket=False)
     with pytest.raises(ValueError, match="appkey를 입력해야 합니다."):
-        PyKis(id="test", use_websocket=False)
+        VmKis(id="test", use_websocket=False)
     with pytest.raises(ValueError, match="secretkey를 입력해야 합니다."):
-        PyKis(id="test", appkey="key", use_websocket=False)
+        VmKis(id="test", appkey="key", use_websocket=False)
     # Note: the library requires a separate `virtual_auth` object (or
     # explicit virtual authentication input) to treat the client as a
     # virtual client. Passing only virtual key strings does not raise
@@ -114,11 +114,11 @@ def test_init_value_errors():
     # assert that behavior here.
 
 
-@patch("pykis.kis.requests.Session")
-@patch("pykis.api.auth.token.token_issue")
+@patch("vmkis.kis.requests.Session")
+@patch("vmkis.api.auth.token.token_issue")
 def test_token_property(mock_token_issue, mock_session):
     """token 속성 테스트 (만료 및 재발급)"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     # 토큰이 없을 때 발급
     mock_token_issue.return_value = KisObject.transform_(
@@ -162,10 +162,10 @@ def test_token_property(mock_token_issue, mock_session):
     mock_token_issue.assert_called_once_with(kis, domain="real")
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_rate_limit_and_token_expiry(mock_session):
     """API 요청 시 Rate Limit 및 토큰 만료 처리 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis.token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -184,7 +184,7 @@ def test_request_rate_limit_and_token_expiry(mock_session):
         MagicMock(ok=True, json=lambda: {"rt_cd": "0"}),
     ]
 
-    with patch("pykis.api.auth.token.token_issue") as mock_token_issue:
+    with patch("vmkis.api.auth.token.token_issue") as mock_token_issue:
         mock_token_issue.return_value = KisObject.transform_(
             {
                 "access_token": "new_token",
@@ -195,7 +195,7 @@ def test_request_rate_limit_and_token_expiry(mock_session):
             KisAccessToken,
         )
 
-        with patch("pykis.kis.sleep") as mock_sleep:
+        with patch("vmkis.kis.sleep") as mock_sleep:
             response = kis.request("/")
 
             assert response.json()["rt_cd"] == "0"
@@ -205,10 +205,10 @@ def test_request_rate_limit_and_token_expiry(mock_session):
             assert kis.token.token == "new_token"
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_http_error(mock_session):
     """HTTP 에러 발생 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis.token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -235,8 +235,8 @@ def test_request_http_error(mock_session):
         kis.request("/")
 
 
-@patch("pykis.kis.Path.exists", return_value=True)
-@patch("pykis.kis.KisAccessToken.load")
+@patch("vmkis.kis.Path.exists", return_value=True)
+@patch("vmkis.kis.KisAccessToken.load")
 @patch("builtins.open", new_callable=mock_open)
 def test_load_cached_token(mock_file, mock_load_token, mock_exists):
     """캐시된 토큰 로딩 테스트"""
@@ -251,17 +251,17 @@ def test_load_cached_token(mock_file, mock_load_token, mock_exists):
     )
     mock_load_token.return_value = mock_token
 
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
 
     assert kis._token == mock_token
     assert mock_load_token.call_count == 1
 
 
-@patch("pykis.kis.Path.mkdir")
-@patch("pykis.kis.KisAccessToken.save")
+@patch("vmkis.kis.Path.mkdir")
+@patch("vmkis.kis.KisAccessToken.save")
 def test_save_cached_token(mock_save, mock_mkdir):
     """토큰 캐시 저장 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
     token = KisObject.transform_(
         {
             "access_token": "new_token",
@@ -273,7 +273,7 @@ def test_save_cached_token(mock_save, mock_mkdir):
     )
     kis._token = token
 
-    with patch("pykis.kis.PyKis._get_hashed_token_name") as mock_hash_name:
+    with patch("vmkis.kis.VmKis._get_hashed_token_name") as mock_hash_name:
         mock_hash_name.return_value = "hashed_token_name.json"
         kis._save_cached_token(kis._keep_token, domain="real")
 
@@ -285,7 +285,7 @@ def test_save_cached_token(mock_save, mock_mkdir):
 
     def test_primary_and_websocket_errors():
         """`primary` and `websocket` accessors raise when uninitialized"""
-        kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+        kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
         # primary should raise when no account
         kis.primary_account = None
@@ -298,10 +298,10 @@ def test_save_cached_token(mock_save, mock_mkdir):
             _ = kis.websocket
 
 
-    @patch("pykis.api.auth.token.token_revoke")
+    @patch("vmkis.api.auth.token.token_revoke")
     def test_discard_calls_token_revoke(mock_revoke):
         """discard() should call token_revoke for both tokens when present"""
-        kis = PyKis(
+        kis = VmKis(
             id="t",
             appkey=VALID_APPKEY,
             secretkey=VALID_SECRETKEY,
@@ -334,21 +334,21 @@ def test_save_cached_token(mock_save, mock_mkdir):
 
         # two calls (real + virtual)
         assert mock_revoke.call_count == 2
-        # first arg should be the PyKis instance, second is token string
+        # first arg should be the VmKis instance, second is token string
         assert mock_revoke.call_args_list[0][0][0] is kis
         assert mock_revoke.call_args_list[0][0][1] == "realtok"
 
 
     def test_get_hashed_token_name_missing_virtual_appkey():
         """_get_hashed_token_name raises when virtual appkey missing for virtual domain"""
-        kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+        kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
         with pytest.raises(ValueError, match="모의도메인 AppKey가 없습니다."):
             kis._get_hashed_token_name("virtual")
 
 
     def test_request_get_validation_errors():
         """Request should validate GET body and appkey_location rules"""
-        kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+        kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
         with pytest.raises(ValueError, match="GET 요청에는 body를 입력할 수 없습니다."):
             kis.request("/", method="GET", body={"a": 1})
@@ -360,14 +360,14 @@ def test_save_cached_token(mock_save, mock_mkdir):
 def test_keep_token_property():
     """keep_token 속성 테스트"""
     # keep_token=False인 경우
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     assert not kis.keep_token
 
     # keep_token=True인 경우
-    with patch("pykis.kis.get_cache_path") as mock_cache_path:
+    with patch("vmkis.kis.get_cache_path") as mock_cache_path:
         mock_cache_path.return_value = "fake/cache/path"
-        with patch("pykis.kis.Path.exists", return_value=False):
-            kis = PyKis(
+        with patch("vmkis.kis.Path.exists", return_value=False):
+            kis = VmKis(
                 id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False
             )
             assert kis.keep_token
@@ -388,9 +388,9 @@ def test_init_with_virtual_auth_validation():
     virtual_auth.key = MagicMock()
     virtual_auth.key.appkey = VALID_APPKEY
 
-    with patch("pykis.kis.PyKis.__del__", new=lambda self: None):
+    with patch("vmkis.kis.VmKis.__del__", new=lambda self: None):
         with pytest.raises(ValueError, match="virtual_auth에는 모의도메인 인증 정보를 입력해야 합니다."):
-            PyKis(real_auth, virtual_auth, use_websocket=False)
+            VmKis(real_auth, virtual_auth, use_websocket=False)
 
 
 def test_init_with_auth_virtual_error():
@@ -401,9 +401,9 @@ def test_init_with_auth_virtual_error():
     virtual_auth.key = MagicMock()
     virtual_auth.account_number = "12345678-01"
 
-    with patch("pykis.kis.PyKis.__del__", new=lambda self: None):
+    with patch("vmkis.kis.VmKis.__del__", new=lambda self: None):
         with pytest.raises(ValueError, match="auth에는 실전도메인 인증 정보를 입력해야 합니다."):
-            PyKis(virtual_auth, use_websocket=False)
+            VmKis(virtual_auth, use_websocket=False)
 
 
 def test_init_with_both_auth_objects():
@@ -426,7 +426,7 @@ def test_init_with_both_auth_objects():
     virtual_auth.key.secretkey = VALID_SECRETKEY
     virtual_auth.account_number = "12345678-01"
 
-    kis = PyKis(real_auth, virtual_auth, use_websocket=False)
+    kis = VmKis(real_auth, virtual_auth, use_websocket=False)
 
     assert kis.appkey.id == "real_id"
     assert kis.virtual_appkey.id == "virtual_id"
@@ -434,10 +434,10 @@ def test_init_with_both_auth_objects():
     assert kis.virtual
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_with_post_method_and_form(mock_session):
     """POST 요청 시 form 처리 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -459,10 +459,10 @@ def test_request_with_post_method_and_form(mock_session):
     mock_form.build.assert_called_once()
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_with_appkey_in_body(mock_session):
     """POST 요청 시 appkey_location이 body인 경우"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -483,19 +483,19 @@ def test_request_with_appkey_in_body(mock_session):
     # appkey.build가 body에 호출되었는지는 간접적으로 확인됨
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_virtual_domain_without_virtual_appkey(mock_session):
     """virtual 도메인 요청 시 virtual_appkey가 없으면 에러"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     with pytest.raises(ValueError, match="모의도메인 AppKey가 없습니다."):
         kis.request("/test", domain="virtual")
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_fetch_with_api_and_continuous(mock_session):
     """fetch 메서드의 api 및 continuous 파라미터 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -519,10 +519,10 @@ def test_fetch_with_api_and_continuous(mock_session):
     assert call_kwargs["headers"]["tr_cont"] == "N"
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_fetch_with_verbose_false(mock_session):
     """fetch의 verbose=False 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -537,30 +537,30 @@ def test_fetch_with_verbose_false(mock_session):
     mock_response.json.return_value = {"rt_cd": "0"}
     mock_session.return_value.request.return_value = mock_response
 
-    with patch("pykis.logging.logger.debug") as mock_debug:
+    with patch("vmkis.logging.logger.debug") as mock_debug:
         result = kis.fetch("/test", verbose=False)
         assert result.rt_cd == "0"
         mock_debug.assert_not_called()
 
 
-@patch("pykis.kis.Path.exists")
-@patch("pykis.kis.KisAccessToken.load")
+@patch("vmkis.kis.Path.exists")
+@patch("vmkis.kis.KisAccessToken.load")
 def test_load_cached_token_with_exceptions(mock_load, mock_exists):
     """캐시된 토큰 로딩 시 예외 처리 테스트"""
     mock_exists.return_value = True
     mock_load.side_effect = Exception("Load failed")
 
     # 예외가 발생해도 초기화는 성공해야 함
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
 
     assert kis._token is None  # 로드 실패로 None이어야 함
 
 
-@patch("pykis.kis.Path.mkdir")
-@patch("pykis.kis.KisAccessToken.save")
+@patch("vmkis.kis.Path.mkdir")
+@patch("vmkis.kis.KisAccessToken.save")
 def test_save_cached_token_with_force(mock_save, mock_mkdir):
     """_save_cached_token의 force 파라미터 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
 
     # Mock token property to avoid actual token issuance
     mock_token = KisObject.transform_(
@@ -573,19 +573,19 @@ def test_save_cached_token_with_force(mock_save, mock_mkdir):
         KisAccessToken,
     )
 
-    with patch.object(PyKis, "token", new_callable=lambda: property(lambda self: mock_token)):
-        with patch("pykis.kis.PyKis._get_hashed_token_name") as mock_hash:
+    with patch.object(VmKis, "token", new_callable=lambda: property(lambda self: mock_token)):
+        with patch("vmkis.kis.VmKis._get_hashed_token_name") as mock_hash:
             mock_hash.return_value = "hashed.json"
             kis._save_cached_token(kis._keep_token, force=True)
 
             mock_save.assert_called_once()
 
 
-@patch("pykis.kis.Path.mkdir")
-@patch("pykis.kis.KisAccessToken.save")
+@patch("vmkis.kis.Path.mkdir")
+@patch("vmkis.kis.KisAccessToken.save")
 def test_save_cached_token_virtual_domain(mock_save, mock_mkdir):
     """virtual 도메인 토큰 저장 테스트"""
-    kis = PyKis(
+    kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -605,17 +605,17 @@ def test_save_cached_token_virtual_domain(mock_save, mock_mkdir):
         KisAccessToken,
     )
 
-    with patch("pykis.kis.PyKis._get_hashed_token_name") as mock_hash:
+    with patch("vmkis.kis.VmKis._get_hashed_token_name") as mock_hash:
         mock_hash.return_value = "hashed_virtual.json"
         kis._save_cached_token(kis._keep_token, domain="virtual")
 
         assert mock_save.call_count == 1
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_close_method(mock_session):
     """close 메서드 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     kis.close()
 
@@ -623,10 +623,10 @@ def test_close_method(mock_session):
     assert mock_session.return_value.close.call_count == 2
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_del_method(mock_session):
     """__del__ 메서드 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     kis.__del__()
 
@@ -634,8 +634,8 @@ def test_del_method(mock_session):
     assert mock_session.return_value.close.call_count == 2
 
 
-@patch("pykis.kis.Path.exists")
-@patch("pykis.kis.KisAccessToken.load")
+@patch("vmkis.kis.Path.exists")
+@patch("vmkis.kis.KisAccessToken.load")
 def test_load_cached_token_for_virtual_domain(mock_load, mock_exists):
     """virtual 도메인 캐시 토큰 로딩 테스트"""
     mock_exists.return_value = True
@@ -650,7 +650,7 @@ def test_load_cached_token_for_virtual_domain(mock_load, mock_exists):
     )
     mock_load.return_value = mock_token
 
-    kis = PyKis(
+    kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -664,10 +664,10 @@ def test_load_cached_token_for_virtual_domain(mock_load, mock_exists):
     assert mock_load.call_count == 2
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_with_form_in_header(mock_session):
     """form_location이 header인 경우 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -689,10 +689,10 @@ def test_request_with_form_in_header(mock_session):
     mock_form.build.assert_called_once()
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_with_form_in_params(mock_session):
     """form_location이 params인 경우 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -726,8 +726,8 @@ def test_init_token_from_path():
         KisAccessToken,
     )
 
-    with patch("pykis.kis.KisAccessToken.load", return_value=mock_token):
-        kis = PyKis(
+    with patch("vmkis.kis.KisAccessToken.load", return_value=mock_token):
+        kis = VmKis(
             id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, token="fake/token.json", use_websocket=False
         )
 
@@ -746,8 +746,8 @@ def test_init_virtual_token_from_path():
         KisAccessToken,
     )
 
-    with patch("pykis.kis.KisAccessToken.load", return_value=mock_token):
-        kis = PyKis(
+    with patch("vmkis.kis.KisAccessToken.load", return_value=mock_token):
+        kis = VmKis(
             id="t",
             appkey=VALID_APPKEY,
             secretkey=VALID_SECRETKEY,
@@ -760,11 +760,11 @@ def test_init_virtual_token_from_path():
         assert kis._virtual_token == mock_token
 
 
-@patch("pykis.kis.requests.Session")
-@patch("pykis.api.auth.token.token_issue")
+@patch("vmkis.kis.requests.Session")
+@patch("vmkis.api.auth.token.token_issue")
 def test_primary_token_for_virtual_domain(mock_token_issue, mock_session):
     """virtual 도메인의 primary_token 테스트"""
-    kis = PyKis(
+    kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -789,12 +789,12 @@ def test_primary_token_for_virtual_domain(mock_token_issue, mock_session):
     mock_token_issue.assert_called_once_with(kis, domain="virtual")
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_primary_token_returns_token_for_real_domain(mock_session):
     """real 도메인에서 primary_token이 token을 반환하는지 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
-    with patch("pykis.api.auth.token.token_issue") as mock_issue:
+    with patch("vmkis.api.auth.token.token_issue") as mock_issue:
         mock_issue.return_value = KisObject.transform_(
             {
                 "access_token": "real_token",
@@ -811,10 +811,10 @@ def test_primary_token_returns_token_for_real_domain(mock_session):
         mock_issue.assert_called_once_with(kis, domain="real")
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_primary_token_setter(mock_session):
     """primary_token setter 테스트"""
-    kis = PyKis(
+    kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -837,11 +837,11 @@ def test_primary_token_setter(mock_session):
     assert kis._virtual_token == mock_token
 
 
-@patch("pykis.api.auth.token.token_revoke")
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.api.auth.token.token_revoke")
+@patch("vmkis.kis.requests.Session")
 def test_discard_real_domain_only(mock_session, mock_revoke):
     """실전 도메인만 토큰 폐기"""
-    kis = PyKis(
+    kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -866,11 +866,11 @@ def test_discard_real_domain_only(mock_session, mock_revoke):
     assert kis._token is None
 
 
-@patch("pykis.api.auth.token.token_revoke")
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.api.auth.token.token_revoke")
+@patch("vmkis.kis.requests.Session")
 def test_discard_virtual_domain_only(mock_session, mock_revoke):
     """모의 도메인만 토큰 폐기"""
-    kis = PyKis(
+    kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
@@ -895,10 +895,10 @@ def test_discard_virtual_domain_only(mock_session, mock_revoke):
     assert kis._virtual_token is None
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_without_auth(mock_session):
     """auth=False로 요청 시 토큰 없이 요청"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     mock_response = MagicMock(ok=True)
     mock_response.json.return_value = {"rt_cd": "0"}
@@ -910,10 +910,10 @@ def test_request_without_auth(mock_session):
     # auth=False이므로 토큰이 헤더에 추가되지 않음
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_without_appkey_location(mock_session):
     """appkey_location=None으로 요청"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -933,10 +933,10 @@ def test_request_without_appkey_location(mock_session):
     assert response.json()["rt_cd"] == "0"
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_fetch_basic_functionality(mock_session):
     """fetch의 기본 동작 테스트"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -956,8 +956,8 @@ def test_fetch_basic_functionality(mock_session):
     assert result.rt_cd == "0"
 
 
-@patch("pykis.kis.requests.Session")
-@patch("pykis.api.auth.token.token_issue")
+@patch("vmkis.kis.requests.Session")
+@patch("vmkis.api.auth.token.token_issue")
 def test_primary_token_with_keep_token(mock_token_issue, mock_session):
     """primary_token 발급 시 keep_token이 활성화된 경우"""
     mock_token_issue.return_value = KisObject.transform_(
@@ -970,8 +970,8 @@ def test_primary_token_with_keep_token(mock_token_issue, mock_session):
         KisAccessToken,
     )
 
-    with patch("pykis.kis.Path.exists", return_value=False):
-        kis = PyKis(
+    with patch("vmkis.kis.Path.exists", return_value=False):
+        kis = VmKis(
             id="t",
             appkey=VALID_APPKEY,
             secretkey=VALID_SECRETKEY,
@@ -987,10 +987,10 @@ def test_primary_token_with_keep_token(mock_token_issue, mock_session):
             mock_save.assert_called_once()
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_response_json_exception(mock_session):
     """응답의 json() 호출 시 예외 처리"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",
@@ -1016,10 +1016,10 @@ def test_request_response_json_exception(mock_session):
         kis.request("/test")
 
 
-@patch("pykis.kis.requests.Session")
+@patch("vmkis.kis.requests.Session")
 def test_request_with_none_form_element(mock_session):
     """form 리스트에 None 요소가 포함된 경우"""
-    kis = PyKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
     kis._token = KisObject.transform_(
         {
             "access_token": "test_token",

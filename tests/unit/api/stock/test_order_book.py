@@ -1,7 +1,7 @@
 from decimal import Decimal
 from types import SimpleNamespace
 
-from pykis.api.stock import order_book
+from vmkis.api.stock import order_book
 
 
 def test_orderbook_item_equality_and_iter():

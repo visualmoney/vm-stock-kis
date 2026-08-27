@@ -1,6 +1,6 @@
 import pytest
 
-from pykis.client.form import KisForm
+from vmkis.client.form import KisForm
 
 
 def test_kisform_is_abstract_cannot_instantiate():

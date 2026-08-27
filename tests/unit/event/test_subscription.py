@@ -2,9 +2,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from pykis.client.messaging import KisWebsocketTR
-from pykis.event.handler import KisEventArgs
-from pykis.event.subscription import (
+from vmkis.client.messaging import KisWebsocketTR
+from vmkis.event.handler import KisEventArgs
+from vmkis.event.subscription import (
     KisSubscribedEventArgs,
     KisUnsubscribedEventArgs,
     KisSubscriptionEventArgs,

@@ -60,7 +60,7 @@
 라이브러리는 파이썬 3.11을 기준으로 작성되었습니다.
 
 ```zsh
-pip install python-kis
+pip install vm-stock-kis
 ```
 
 <details>
@@ -78,13 +78,13 @@ colorlog>=6.8.2
 
 ### 2.2. 라이브러리 사용 📚
 
-#### 2.2.1. PyKis 객체 생성
+#### 2.2.1. VmKis 객체 생성
 
 1. 시크릿 키를 파일로 관리하는 방법 (권장)
 
    먼저 시크릿 키를 파일로 저장합니다.
    ```python
-    from pykis import KisAuth
+    from vmkis import KisAuth
 
     auth = KisAuth(
         # HTS 로그인 ID  예) soju06
@@ -103,25 +103,25 @@ colorlog>=6.8.2
     auth.save("secret.json")
     ```
 
-    그 후, 저장된 시크릿 키를 사용하여 PyKis 객체를 생성합니다.
+    그 후, 저장된 시크릿 키를 사용하여 VmKis 객체를 생성합니다.
 
     ```python
-    from pykis import PyKis, KisAuth
+    from vmkis import VmKis, KisAuth
 
-    # 실전투자용 PyKis 객체를 생성합니다.
-    kis = PyKis("secret.json", keep_token=True)
-    kis = PyKis(KisAuth.load("secret.json"), keep_token=True)
+    # 실전투자용 VmKis 객체를 생성합니다.
+    kis = VmKis("secret.json", keep_token=True)
+    kis = VmKis(KisAuth.load("secret.json"), keep_token=True)
 
-    # 모의투자용 PyKis 객체를 생성합니다.
-    kis = PyKis("secret.json", "virtual_secret.json", keep_token=True)
-    kis = PyKis(KisAuth.load("secret.json"), KisAuth.load("virtual_secret.json"), keep_token=True)
+    # 모의투자용 VmKis 객체를 생성합니다.
+    kis = VmKis("secret.json", "virtual_secret.json", keep_token=True)
+    kis = VmKis(KisAuth.load("secret.json"), KisAuth.load("virtual_secret.json"), keep_token=True)
     ```
 2. 시크릿 키를 직접 입력하는 방법
     ```python
-    from pykis import PyKis
+    from vmkis import VmKis
 
     # 실전투자용 한국투자증권 API를 생성합니다.
-    kis = PyKis(
+    kis = VmKis(
         id="soju06",  # HTS 로그인 ID
         account="00000000-01",  # 계좌번호
         appkey="PSED321z...",  # AppKey 36자리
@@ -130,7 +130,7 @@ colorlog>=6.8.2
     )
 
     # 모의투자용 한국투자증권 API를 생성합니다.
-    kis = PyKis(
+    kis = VmKis(
         id="soju06",  # HTS 로그인 ID
         account="00000000-01",  # 모의투자 계좌번호
         appkey="PSED321z...",  # 실전투자 AppKey 36자리
@@ -147,7 +147,7 @@ colorlog>=6.8.2
 `stock.quote()` 함수를 이용하여 국내주식 및 해외주식의 시세를 조회할 수 있습니다.
 
 ```python
-from pykis import KisQuote
+from vmkis import KisQuote
 
 # 엔비디아의 상품 객체를 가져옵니다.
 stock = kis.stock("NVDA")
@@ -155,7 +155,7 @@ stock = kis.stock("NVDA")
 quote: KisQuote = stock.quote()
 quote: KisQuote = stock.quote(extended=True) # 주간거래 시세
 
-# PyKis의 모든 객체는 repr을 통해 주요 내용을 확인할 수 있습니다.
+# VmKis의 모든 객체는 repr을 통해 주요 내용을 확인할 수 있습니다.
 # 데이터를 확인하는 용도이므로 실제 프로퍼티 타입과 다를 수 있습니다.
 print(quote)
 ```
@@ -197,7 +197,7 @@ KisForeignQuote(
 `account.balance()` 함수를 이용하여 예수금 및 보유 종목을 조회할 수 있습니다.
 
 ```python
-from pykis import KisBalance
+from vmkis import KisBalance
 
 # 주 계좌 객체를 가져옵니다.
 account = kis.account()
@@ -230,7 +230,7 @@ KisIntegrationBalance(
 `stock.order()`, `stock.buy()`, `stock.sell()`, `stock.modify()`, `stock.cancel()` 함수를 이용하여 매수/매도 주문 및 정정/취소를 할 수 있습니다.
 
 ```python
-from pykis import KisOrder
+from vmkis import KisOrder
 
 # SK하이닉스 1주 시장가 매수 주문
 order: KisOrder = hynix.buy(qty=1)
@@ -260,7 +260,7 @@ for order in account.pending_orders():
 국내주식 및 해외주식의 실시간 체결가 조회는 `stock.on("price", callback)` 함수를 이용하여 수신할 수 있습니다.
 
 ```python
-from pykis import KisRealtimePrice, KisSubscriptionEventArgs, KisWebsocketClient, PyKis
+from vmkis import KisRealtimePrice, KisSubscriptionEventArgs, KisWebsocketClient, VmKis
 
 def on_price(sender: KisWebsocketClient, e: KisSubscriptionEventArgs[KisRealtimePrice]):
     print(e.response)
@@ -291,7 +291,7 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 
 ## 3. 튜토리얼 목록 📖
 
-- [1. PyKis 인증 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#1-pykis-인증-관리)
+- [1. VmKis 인증 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#1-vmkis-인증-관리)
   - [1.1. 시크릿 키 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#11-시크릿-키-관리)
   - [1.2. 엑세스 토큰 관리](https://github.com/Soju06/python-kis/wiki/Tutorial#12-엑세스-토큰-관리)
 - [2. 종목 시세 및 차트 조회](https://github.com/Soju06/python-kis/wiki/Tutorial#2-종목-시세-및-차트-조회)

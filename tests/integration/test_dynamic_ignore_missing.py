@@ -2,7 +2,7 @@
 
 import pytest
 
-from pykis.responses.dynamic import KisObject, KisDynamic, KisTransform, KisType
+from vmkis.responses.dynamic import KisObject, KisDynamic, KisTransform, KisType
 
 
 class PassThrough(KisType):

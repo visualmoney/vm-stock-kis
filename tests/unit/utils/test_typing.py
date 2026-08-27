@@ -1,7 +1,7 @@
 import pytest
 from typing import Protocol
 
-from pykis.utils.typing import Checkable
+from vmkis.utils.typing import Checkable
 
 
 def test_instantiation_with_builtin_types_and_no_storage():

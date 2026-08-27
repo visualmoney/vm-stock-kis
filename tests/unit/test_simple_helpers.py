@@ -13,8 +13,8 @@ def test_create_client_and_simple(monkeypatch, tmp_path):
     p = tmp_path / "config.yaml"
     p.write_text(yaml.dump(cfg, sort_keys=False), encoding="utf-8")
 
-    # Dummy PyKis to avoid network calls
-    class DummyPyKis:
+    # Dummy VmKis to avoid network calls
+    class DummyVmKis:
         def __init__(self, *args, **kwargs):
             self.inited = True
 
@@ -35,15 +35,15 @@ def test_create_client_and_simple(monkeypatch, tmp_path):
 
             return A()
 
-    # import helpers and monkeypatch PyKis used there
-    import pykis.helpers as helpers
+    # import helpers and monkeypatch VmKis used there
+    import vmkis.helpers as helpers
 
-    monkeypatch.setattr(helpers, "PyKis", DummyPyKis, raising=False)
+    monkeypatch.setattr(helpers, "VmKis", DummyVmKis, raising=False)
 
     kis = helpers.create_client(str(p))
-    assert isinstance(kis, DummyPyKis)
+    assert isinstance(kis, DummyVmKis)
 
-    from pykis.simple import SimpleKIS
+    from vmkis.simple import SimpleKIS
 
     sk = SimpleKIS.from_client(kis)
     assert sk.get_price("005930")["symbol"] == "005930"

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 # =============================================================== project ====
 [project]
-name = "python-kis"
+name = "vm-stock-kis"
 dynamic = ["version"]
 description = "파이썬 한국투자증권 REST 기반 Trading API 라이브러리"
 readme = "README.md"
@@ -57,6 +57,10 @@ dependencies = [
     "colorlog>=6.8.2",
     "cryptography>=43.0.0",
     "python-dotenv>=1.2.1,<2",
+    # vmkis.helpers가 YAML 설정 파일을 읽습니다. 이 의존성이 없으면 helpers가
+    # import에 실패하고 vmkis/__init__.py가 그것을 삼켜 create_client와
+    # save_config_interactive가 조용히 None이 됩니다.
+    "pyyaml>=6.0",
     "requests>=2.32.3",
     "typing-extensions>=4.12",
     "tzdata>=2024.1",
@@ -107,7 +111,7 @@ required-version = ">=0.9"
 # cache-keys를 지정하면 기본값을 "대체"하므로 pyproject.toml을 다시 나열합니다.
 cache-keys = [
     { file = "pyproject.toml" },
-    { dir = "pykis" },
+    { dir = "src" },
     { git = { commit = true, tags = true } },
 ]
 
@@ -123,9 +127,9 @@ fallback-version = "0.0.0"
 version_scheme = "no-guess-dev"
 
 [tool.hatch.build.targets.wheel]
-# 필수: 프로젝트명 python-kis는 python_kis로 정규화되어 모듈명 pykis와 다르므로
+# 필수: 프로젝트명 vm-stock-kis는 vm_stock_kis로 정규화되어 모듈명 vmkis와 다르므로
 # hatchling의 자동 탐지가 실패합니다.
-packages = ["pykis"]
+packages = ["src/vmkis"]
 # hatchling 1.32.0이 기본 core metadata를 2.5(PEP 794)로 올렸으나 PyPI 수용 여부가
 # 확인되지 않았습니다. 2.4는 PEP 639 License-Expression을 지원하는 최소 버전입니다.
 # TestPyPI에서 2.5가 통과하는 것을 확인하면 이 두 줄을 삭제하세요.
@@ -135,7 +139,7 @@ core-metadata-version = "2.4"
 core-metadata-version = "2.4"
 # hatchling 기본값은 gitignore되지 않은 모든 것을 담아 docs/ 전체가 포함됩니다.
 include = [
-    "/pykis",
+    "/src",
     "/tests",
     "/examples",
     "/README.md",
@@ -149,7 +153,7 @@ include = [
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-src = ["pykis", "tests"]
+src = ["vmkis", "tests"]
 extend-exclude = ["docs/generated", "docs/diagrams"]
 
 # ================================================================ pytest ====
@@ -157,7 +161,7 @@ extend-exclude = ["docs/generated", "docs/diagrams"]
 minversion = "9.0"
 testpaths = ["tests"]
 # 유지 필수: tests/에 __init__.py도 conftest.py도 없어서
-# `from tests.env import load_pykis`가 이 설정에 의존합니다.
+# `from tests.env import load_vmkis`가 이 설정에 의존합니다.
 pythonpath = ["."]
 addopts = [
     "-ra",
@@ -185,11 +189,11 @@ asyncio_default_fixture_loop_scope = "function"
 [tool.coverage.run]
 branch = true
 # source가 아니라 source_pkgs: editable 설치에서도 import 가능한 패키지로 해석됩니다.
-source_pkgs = ["pykis"]
+source_pkgs = ["vmkis"]
 omit = ["*/__init__.py"]
 
 [tool.coverage.paths]
-source = ["pykis", "*/site-packages/pykis"]
+source = ["src/vmkis", "*/site-packages/vmkis"]
 
 [tool.coverage.report]
 # 이슈 #3에서 70으로 한시 인하했다가 복원한 값입니다.

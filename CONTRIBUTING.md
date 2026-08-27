@@ -1,6 +1,6 @@
 # 기여 가이드 (Contributing Guide)
 
-Python-KIS 프로젝트에 기여해 주셔서 감사합니다! 🎉
+VM-Stock-KIS 프로젝트에 기여해 주셔서 감사합니다! 🎉
 
 이 문서는 프로젝트에 기여하는 방법을 설명합니다.
 
@@ -25,7 +25,7 @@ Python-KIS 프로젝트에 기여해 주셔서 감사합니다! 🎉
 
 ```bash
 git clone https://github.com/Soju06/python-kis.git
-cd python-kis
+cd vm-stock-kis
 ```
 
 ### 2. Poetry 설치 및 의존성 설치
@@ -65,7 +65,7 @@ poetry run pre-commit install
 poetry run pytest
 
 # 커버리지 포함
-poetry run pytest --cov=pykis --cov-report=html
+poetry run pytest --cov=vmkis --cov-report=html
 
 # 특정 테스트만
 poetry run pytest tests/unit/test_public_api_imports.py
@@ -119,14 +119,14 @@ git checkout -b docs/update-quickstart
 # ✅ 권장
 def get_quote(symbol: str, market: str = "KRX") -> Quote:
     """시세 정보를 조회합니다.
-    
+
     Args:
         symbol: 종목 코드 (예: "005930")
         market: 시장 코드 (기본값: "KRX")
-    
+
     Returns:
         시세 정보 객체
-    
+
     Raises:
         KisAPIError: API 호출 실패 시
     """
@@ -158,19 +158,19 @@ def process_orders(
 ```python
 def buy_stock(self, symbol: str, quantity: int, price: int) -> Order:
     """주식 매수 주문을 실행합니다.
-    
+
     Args:
         symbol: 종목 코드 (6자리)
         quantity: 주문 수량
         price: 주문 가격 (원)
-    
+
     Returns:
         주문 정보 객체
-    
+
     Raises:
         KisAPIError: 주문 실패 시
         ValueError: 잘못된 파라미터
-    
+
     Example:
         >>> order = kis.stock("005930").buy(qty=10, price=65000)
         >>> print(order.order_number)
@@ -182,7 +182,7 @@ def buy_stock(self, symbol: str, quantity: int, price: int) -> Order:
 
 | 타입 | 규칙 | 예시 |
 |------|------|------|
-| 클래스 | PascalCase | `KisQuote`, `PyKis` |
+| 클래스 | PascalCase | `KisQuote`, `VmKis` |
 | 함수/메서드 | snake_case | `get_balance()`, `place_order()` |
 | 상수 | UPPER_SNAKE_CASE | `MAX_RETRY`, `API_VERSION` |
 | 내부 변수 | snake_case | `order_count`, `balance_info` |
@@ -201,8 +201,8 @@ import requests
 from websocket import WebSocket
 
 # 3. 로컬 모듈
-from pykis.client.auth import KisAuth
-from pykis.types import Quote
+from vmkis.client.auth import KisAuth
+from vmkis.types import Quote
 ```
 
 ---
@@ -313,25 +313,25 @@ tests/
 ```python
 # tests/unit/test_helpers.py
 import pytest
-from pykis.helpers import load_config
+from vmkis.helpers import load_config
 
 def test_load_config_single_profile():
     """단일 프로필 설정 파일 로드 테스트"""
     cfg = load_config("config.example.virtual.yaml")
-    
+
     assert cfg["id"] == "YOUR_VIRTUAL_ID"
     assert cfg["virtual"] is True
 
 def test_load_config_multi_profile_default():
     """다중 프로필 설정 파일에서 기본 프로필 로드"""
     cfg = load_config("config.example.yaml")
-    
+
     assert cfg["id"] == "YOUR_VIRTUAL_ID"  # default = virtual
 
 def test_load_config_multi_profile_explicit():
     """다중 프로필 설정 파일에서 명시적 프로필 선택"""
     cfg = load_config("config.example.yaml", profile="real")
-    
+
     assert cfg["id"] == "YOUR_REAL_ID"
     assert cfg["virtual"] is False
 
@@ -346,7 +346,7 @@ def test_load_config_profile_not_found():
 ```python
 # tests/integration/test_stock_quote.py
 import pytest
-from pykis import PyKis, KisAuth
+from vmkis import VmKis, KisAuth
 
 @pytest.fixture
 def kis_client():
@@ -358,12 +358,12 @@ def kis_client():
         secretkey=os.environ["KIS_SECRET"],
         virtual=True,
     )
-    return PyKis(auth)
+    return VmKis(auth)
 
 def test_get_quote_samsung(kis_client):
     """삼성전자 시세 조회"""
     quote = kis_client.stock("005930").quote()
-    
+
     assert quote.symbol == "005930"
     assert quote.name == "삼성전자"
     assert quote.price > 0
@@ -383,7 +383,7 @@ poetry run pytest tests/unit/test_helpers.py
 poetry run pytest tests/unit/test_helpers.py::test_load_config_single_profile
 
 # 커버리지 포함
-poetry run pytest --cov=pykis --cov-report=html
+poetry run pytest --cov=vmkis --cov-report=html
 ```
 
 ---
@@ -450,7 +450,7 @@ def example():
 
 ```bash
 # (향후 추가 예정)
-poetry run sphinx-apidoc -o docs/api pykis
+poetry run sphinx-apidoc -o docs/api vmkis
 poetry run sphinx-build -b html docs docs/_build
 ```
 
@@ -483,7 +483,7 @@ poetry run sphinx-build -b html docs docs/_build
 
 - OS: Windows 11 / macOS 14 / Ubuntu 22.04
 - Python 버전: 3.11.5
-- python-kis 버전: 2.1.7
+- vm-stock-kis 버전: 2.1.7
 - 설치 방법: pip / poetry
 
 ## 에러 로그
@@ -575,7 +575,7 @@ result = kis.new_feature(...)
 **A**: 429/5xx 에러에 대한 자동 재시도를 원하면 데코레이터를 사용하세요:
 
 ```python
-from pykis.utils.retry import with_retry
+from vmkis.utils.retry import with_retry
 
 @with_retry(max_retries=5, initial_delay=2.0)
 def fetch_quote(symbol):
@@ -587,7 +587,7 @@ def fetch_quote(symbol):
 **A**: 프로덕션 환경에서 ELK/Datadog과 연동하려면:
 
 ```python
-from pykis.logging import enable_json_logging
+from vmkis.logging import enable_json_logging
 
 enable_json_logging()
 # 이후 로그는 JSON 형식으로 출력됨
@@ -598,7 +598,7 @@ enable_json_logging()
 **A**: 새로운 예외 클래스들이 추가되었습니다:
 
 ```python
-from pykis.exceptions import (
+from vmkis.exceptions import (
     KisConnectionError,
     KisAuthenticationError,
     KisRateLimitError,
@@ -625,7 +625,7 @@ except KisAuthenticationError:
 
 ## 감사 인사
 
-Python-KIS에 기여해 주신 모든 분들께 감사드립니다! 🙏
+VM-Stock-KIS에 기여해 주신 모든 분들께 감사드립니다! 🙏
 
 - [기여자 목록](https://github.com/Soju06/python-kis/graphs/contributors)
 

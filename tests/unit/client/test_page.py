@@ -1,6 +1,6 @@
 import pytest
 
-from pykis.client.page import KisPage, to_page_status
+from vmkis.client.page import KisPage, to_page_status
 
 
 def test_to_page_status_begin_and_end_and_invalid():

@@ -4,9 +4,9 @@ import types
 
 import pytest
 
-from pykis.api.auth import token as tk
-from pykis.api.auth.token import KisAccessToken, token_issue, token_revoke
-from pykis.utils.timezone import TIMEZONE
+from vmkis.api.auth import token as tk
+from vmkis.api.auth.token import KisAccessToken, token_issue, token_revoke
+from vmkis.utils.timezone import TIMEZONE
 
 
 def make_token_instance(offset_seconds: int = 0) -> KisAccessToken:

@@ -1,6 +1,6 @@
 import types
 
-from pykis.api.base import account_product as apb
+from vmkis.api.base import account_product as apb
 
 
 def test_account_product_inherits_and_properties_work():
@@ -22,7 +22,7 @@ def test_account_product_inherits_and_properties_work():
     def fake_info(kis, symbol, market):
         return types.SimpleNamespace(name="N")
 
-    import pykis.api.stock.info as info_mod
+    import vmkis.api.stock.info as info_mod
 
     info_mod_info = getattr(info_mod, "info")
     try:

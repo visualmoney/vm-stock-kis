@@ -1,6 +1,6 @@
 # 마이그레이션 가이드 (Migration Guide)
 
-Python-KIS v2.x → v3.0 마이그레이션 가이드입니다.
+VM-Stock-KIS v2.x → v3.0 마이그레이션 가이드입니다.
 
 ---
 
@@ -44,8 +44,8 @@ v3.0.0 (2026-06+) ← Breaking Changes
 
 **이전 (v2.1.7)**:
 ```python
-from pykis import (
-    PyKis, KisAuth,
+from vmkis import (
+    VmKis, KisAuth,
     KisObjectProtocol,
     KisQuotableProductMixin,
     KisOrderableAccountProductMixin,
@@ -56,28 +56,28 @@ from pykis import (
 **현재 (v2.2.0+)**:
 ```python
 # 권장: 일반 사용자
-from pykis import (
-    PyKis, KisAuth,
+from vmkis import (
+    VmKis, KisAuth,
     Quote, Balance, Order, Chart, Orderbook,
     SimpleKIS, create_client,
 )
 
 # 고급 사용자 (내부 구조 접근)
-from pykis.types import KisObjectProtocol
-from pykis.adapter.product.quote import KisQuotableProductMixin
+from vmkis.types import KisObjectProtocol
+from vmkis.adapter.product.quote import KisQuotableProductMixin
 ```
 
 **변경사항**:
-- `pykis/__init__.py`의 `__all__`이 20개로 축소
-- 내부 Protocol/Mixin은 `pykis.types` 및 하위 모듈에서 import
+- `src/vmkis/__init__.py`의 `__all__`이 20개로 축소
+- 내부 Protocol/Mixin은 `vmkis.types` 및 하위 모듈에서 import
 - 기존 import 경로는 `DeprecationWarning`과 함께 동작 (v3.0.0까지 유지)
 
 ### 2. 새로운 공개 타입 모듈
 
-**추가된 모듈**: `pykis/public_types.py`
+**추가된 모듈**: `src/vmkis/public_types.py`
 
 ```python
-from pykis.public_types import Quote, Balance, Order
+from vmkis.public_types import Quote, Balance, Order
 
 def analyze(quote: Quote, balance: Balance) -> None:
     print(f"{quote.name}: {quote.price:,}원")
@@ -99,11 +99,11 @@ def analyze(quote: Quote, balance: Balance) -> None:
 
 **SimpleKIS** (간소화된 API):
 ```python
-from pykis import SimpleKIS
+from vmkis import SimpleKIS
 
 # Before (기존)
 auth = KisAuth(...)
-kis = PyKis(auth)
+kis = VmKis(auth)
 quote = kis.stock("005930").quote()
 
 # After (신규)
@@ -114,7 +114,7 @@ balance = simple.get_balance()
 
 **헬퍼 함수**:
 ```python
-from pykis import create_client, save_config_interactive
+from vmkis import create_client, save_config_interactive
 
 # 자동 클라이언트 생성
 kis = create_client("config.yaml")
@@ -132,28 +132,28 @@ save_config_interactive("config.yaml")
 **작동하지 않는 코드 (v3.0.0부터)**:
 ```python
 # ❌ AttributeError 발생
-from pykis import KisObjectProtocol
-from pykis import KisQuotableProductMixin
+from vmkis import KisObjectProtocol
+from vmkis import KisQuotableProductMixin
 ```
 
 **올바른 코드 (v3.0.0에서 동작)**:
 ```python
 # ✅ 공개 타입 (일반 사용자)
-from pykis import Quote, Balance, Order
+from vmkis import Quote, Balance, Order
 
 # ✅ 내부 구조 (고급 사용자)
-from pykis.types import KisObjectProtocol
-from pykis.adapter.product.quote import KisQuotableProductMixin
+from vmkis.types import KisObjectProtocol
+from vmkis.adapter.product.quote import KisQuotableProductMixin
 ```
 
 ### 2. `types.py` 역할 변경
 
 **v2.x**:
-- `pykis.types`는 모든 타입을 포함 (공개 + 내부)
+- `vmkis.types`는 모든 타입을 포함 (공개 + 내부)
 
 **v3.0.0+**:
-- `pykis.types`는 내부 Protocol/고급 타입만 포함
-- 공개 타입은 `pykis.public_types` 또는 `pykis.__init__`에서 import
+- `vmkis.types`는 내부 Protocol/고급 타입만 포함
+- 공개 타입은 `vmkis.public_types` 또는 `vmkis.__init__`에서 import
 
 ---
 
@@ -162,13 +162,13 @@ from pykis.adapter.product.quote import KisQuotableProductMixin
 ### Step 1: v2.2.0으로 업그레이드 (즉시 가능)
 
 ```bash
-pip install --upgrade python-kis
+pip install --upgrade vm-stock-kis
 ```
 
 **확인**:
 ```python
-import pykis
-print(pykis.__version__)  # 2.2.0 이상
+import vmkis
+print(vmkis.__version__)  # 2.2.0 이상
 ```
 
 ### Step 2: Deprecation 경고 확인
@@ -180,8 +180,8 @@ python -W all your_script.py
 
 **경고 예시**:
 ```
-DeprecationWarning: from pykis import KisObjectProtocol은(는) 
-deprecated되었습니다. 대신 'from pykis.types import KisObjectProtocol'을 
+DeprecationWarning: from vmkis import KisObjectProtocol은(는)
+deprecated되었습니다. 대신 'from vmkis.types import KisObjectProtocol'을
 사용하세요. 이 기능은 v3.0.0에서 제거될 예정입니다.
 ```
 
@@ -191,21 +191,21 @@ deprecated되었습니다. 대신 'from pykis.types import KisObjectProtocol'을
 
 ```python
 # Before (v2.1.7)
-from pykis import PyKis, KisAuth, KisQuoteResponse, KisIntegrationBalance
+from vmkis import VmKis, KisAuth, KisQuoteResponse, KisIntegrationBalance
 
 # After (v2.2.0+)
-from pykis import PyKis, KisAuth, Quote, Balance
+from vmkis import VmKis, KisAuth, Quote, Balance
 ```
 
 **고급 사용자 (내부 구조 확장)**:
 
 ```python
 # Before (v2.1.7)
-from pykis import KisObjectProtocol, KisQuotableProductMixin
+from vmkis import KisObjectProtocol, KisQuotableProductMixin
 
 # After (v2.2.0+)
-from pykis.types import KisObjectProtocol
-from pykis.adapter.product.quote import KisQuotableProductMixin
+from vmkis.types import KisObjectProtocol
+from vmkis.adapter.product.quote import KisQuotableProductMixin
 ```
 
 ### Step 4: 테스트 및 검증
@@ -222,8 +222,8 @@ mypy your_script.py
 
 **체크리스트**:
 - [ ] Deprecation 경고 모두 해결
-- [ ] 공개 API (`pykis.__init__.__all__`)만 사용
-- [ ] 내부 모듈은 명시적 경로 사용 (`pykis.types`, `pykis.adapter.*`)
+- [ ] 공개 API (`vmkis.__init__.__all__`)만 사용
+- [ ] 내부 모듈은 명시적 경로 사용 (`vmkis.types`, `vmkis.adapter.*`)
 - [ ] 테스트 통과 확인
 
 ---
@@ -234,11 +234,11 @@ mypy your_script.py
 
 | v2.1.7 | v2.2.0+ | v3.0.0+ | 비고 |
 |--------|---------|---------|------|
-| `from pykis import PyKis` | `from pykis import PyKis` | `from pykis import PyKis` | 변경 없음 |
-| `from pykis import KisAuth` | `from pykis import KisAuth` | `from pykis import KisAuth` | 변경 없음 |
-| `from pykis import KisQuoteResponse` | `from pykis import Quote` | `from pykis import Quote` | **별칭 사용** |
-| `from pykis import KisObjectProtocol` | `from pykis.types import KisObjectProtocol` | `from pykis.types import KisObjectProtocol` | **경로 변경** |
-| `from pykis import KisQuotableProductMixin` | `from pykis.adapter.product.quote import KisQuotableProductMixin` | `from pykis.adapter.product.quote import KisQuotableProductMixin` | **경로 변경** |
+| `from vmkis import VmKis` | `from vmkis import VmKis` | `from vmkis import VmKis` | 변경 없음 |
+| `from vmkis import KisAuth` | `from vmkis import KisAuth` | `from vmkis import KisAuth` | 변경 없음 |
+| `from vmkis import KisQuoteResponse` | `from vmkis import Quote` | `from vmkis import Quote` | **별칭 사용** |
+| `from vmkis import KisObjectProtocol` | `from vmkis.types import KisObjectProtocol` | `from vmkis.types import KisObjectProtocol` | **경로 변경** |
+| `from vmkis import KisQuotableProductMixin` | `from vmkis.adapter.product.quote import KisQuotableProductMixin` | `from vmkis.adapter.product.quote import KisQuotableProductMixin` | **경로 변경** |
 
 ### 타입 이름 변경
 
@@ -264,19 +264,19 @@ import re
 from pathlib import Path
 
 REPLACEMENTS = {
-    "from pykis import KisQuoteResponse": "from pykis import Quote",
-    "from pykis import KisIntegrationBalance": "from pykis import Balance",
-    "from pykis import KisOrder": "from pykis import Order",
-    "from pykis import KisObjectProtocol": "from pykis.types import KisObjectProtocol",
+    "from vmkis import KisQuoteResponse": "from vmkis import Quote",
+    "from vmkis import KisIntegrationBalance": "from vmkis import Balance",
+    "from vmkis import KisOrder": "from vmkis import Order",
+    "from vmkis import KisObjectProtocol": "from vmkis.types import KisObjectProtocol",
     # ... 추가
 }
 
 def migrate_file(file_path: Path):
     content = file_path.read_text(encoding="utf-8")
-    
+
     for old, new in REPLACEMENTS.items():
         content = content.replace(old, new)
-    
+
     file_path.write_text(content, encoding="utf-8")
     print(f"✅ Migrated: {file_path}")
 
@@ -308,7 +308,7 @@ python scripts/migrate_imports.py
 
 ### Q4: 왜 공개 API를 축소했나요?
 
-**A**: 
+**A**:
 - 초보자가 어떤 것을 import해야 할지 명확하게 하기 위함
 - IDE 자동완성 목록이 너무 길었음 (154개 → 20개)
 - 내부 구현과 공개 API의 경계를 명확히 하기 위함
@@ -319,10 +319,10 @@ python scripts/migrate_imports.py
 
 ```python
 # Before
-from pykis import KisObjectProtocol
+from vmkis import KisObjectProtocol
 
 # After
-from pykis.types import KisObjectProtocol
+from vmkis.types import KisObjectProtocol
 ```
 
 ### Q6: 테스트 코드도 업데이트해야 하나요?
@@ -335,13 +335,13 @@ from pykis.types import KisObjectProtocol
 
 ```python
 # 둘 다 동작 (v2.2.0+)
-from pykis.api.stock.quote import KisQuoteResponse  # 긴 이름
-from pykis import Quote                              # 짧은 별칭 (권장)
+from vmkis.api.stock.quote import KisQuoteResponse  # 긴 이름
+from vmkis import Quote                              # 짧은 별칭 (권장)
 ```
 
 ### Q8: `SimpleKIS`는 필수인가요?
 
-**A**: 아니요. 선택 사항입니다. 기존 `PyKis`를 계속 사용할 수 있습니다. `SimpleKIS`는 초보자를 위한 간소화된 인터페이스입니다.
+**A**: 아니요. 선택 사항입니다. 기존 `VmKis`를 계속 사용할 수 있습니다. `SimpleKIS`는 초보자를 위한 간소화된 인터페이스입니다.
 
 ---
 

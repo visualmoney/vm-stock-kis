@@ -2,7 +2,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Python-KIS를 더 좋게 만드는 데 도움을 주셔서 감사합니다! 🎉
+        VM-Stock-KIS를 더 좋게 만드는 데 도움을 주셔서 감사합니다! 🎉
         새로운 기능 제안을 자세히 설명해주세요.
 
   - type: textarea
@@ -31,7 +31,7 @@ body:
       placeholder: |
         예: subscribe() 메서드를 추가하여 실시간 데이터를 받을 수 있도록:
 
-        stock = pykis.stock("005930")
+        stock = vmkis.stock("005930")
         async for quote in stock.subscribe():
             print(quote.price)
       required: true

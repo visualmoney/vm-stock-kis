@@ -23,8 +23,8 @@
 
 ```bash
 # 저장소 클론
-git clone https://github.com/visualmoney/python-kis.git
-cd python-kis
+git clone https://github.com/visualmoney/vm-stock-kis.git
+cd vm-stock-kis
 
 # 가상 환경 생성 및 활성화
 python -m venv .venv
@@ -66,8 +66,8 @@ pip install -e .
 ### 프로젝트 구조 이해
 
 ```
-pykis/
-├── kis.py              # PyKis 메인 클래스 (800+ 줄)
+src/vmkis/
+├── kis.py              # VmKis 메인 클래스 (800+ 줄)
 ├── types.py            # 공개 타입 정의
 ├── logging.py          # 로깅 시스템
 │
@@ -127,21 +127,21 @@ pykis/
 
 ## 핵심 모듈 상세 가이드
 
-### 1. PyKis 클래스 (kis.py)
+### 1. VmKis 클래스 (kis.py)
 
 #### 초기화 패턴
 
 ```python
 # 패턴 1: 파일 기반
-kis = PyKis("secret.json")
+kis = VmKis("secret.json")
 
 # 패턴 2: KisAuth 객체
-from pykis import KisAuth
+from vmkis import KisAuth
 auth = KisAuth(id="...", appkey="...", secretkey="...", account="...")
-kis = PyKis(auth)
+kis = VmKis(auth)
 
 # 패턴 3: 직접 입력
-kis = PyKis(
+kis = VmKis(
     id="soju06",
     account="00000000-01",
     appkey="...",
@@ -149,7 +149,7 @@ kis = PyKis(
 )
 
 # 패턴 4: 모의투자
-kis = PyKis(
+kis = VmKis(
     "real_secret.json",
     "virtual_secret.json",
     keep_token=True
@@ -204,7 +204,7 @@ else:
 #### KisType 기반 클래스
 
 ```python
-from pykis.responses.dynamic import KisType, KisTypeMeta
+from vmkis.responses.dynamic import KisType, KisTypeMeta
 
 class KisInt(KisType[int], metaclass=KisTypeMeta[int]):
     """정수 타입"""
@@ -224,8 +224,8 @@ class KisDecimal(KisType[Decimal], metaclass=KisTypeMeta[Decimal]):
 #### KisObject 사용법
 
 ```python
-from pykis.responses.dynamic import KisObject, KisTransform
-from pykis.responses.response import KisResponse
+from vmkis.responses.dynamic import KisObject, KisTransform
+from vmkis.responses.response import KisResponse
 
 @dataclass
 class MyResponse(KisResponse):
@@ -262,7 +262,7 @@ class KisWebsocketClient:
     _connected: bool
     _subscriptions: set[KisWebsocketTR]
     _message_handlers: dict[str, Callable]
-    
+
     # 메서드
     async def connect()      # WebSocket 연결
     async def disconnect()   # WebSocket 해제
@@ -293,7 +293,7 @@ class KisWebsocketClient:
 ticket = stock.on("price", callback)
 
 # 또는 직접 사용
-from pykis.client.messaging import KisWebsocketTR
+from vmkis.client.messaging import KisWebsocketTR
 
 websocket = kis.websocket
 tr = KisWebsocketTR("H0STCNT0", "000660")
@@ -305,7 +305,7 @@ websocket.subscribe(tr, callback)
 #### 이벤트 핸들러
 
 ```python
-from pykis.event.handler import KisEventHandler
+from vmkis.event.handler import KisEventHandler
 
 # 핸들러 생성
 handler = KisEventHandler()
@@ -326,7 +326,7 @@ ticket.unsubscribe()
 #### 이벤트 필터
 
 ```python
-from pykis.event.filters.product import KisProductEventFilter
+from vmkis.event.filters.product import KisProductEventFilter
 
 # 특정 상품만 필터링
 filter = KisProductEventFilter("000660")
@@ -346,9 +346,9 @@ class KisAccount(
     ...
 ):
     """계좌 객체"""
-    
+
     account_number: KisAccountNumber
-    
+
     # Mixin에서 상속한 메서드
     def balance(self):       # 잔고 조회
     def pending_orders(self):# 미체결 주문
@@ -366,10 +366,10 @@ class KisStock(
     ...
 ):
     """주식 객체"""
-    
+
     symbol: str
     market: MARKET_TYPE
-    
+
     # Mixin에서 상속한 메서드
     def quote(self):         # 시세 조회
     def chart(self):         # 차트 조회
@@ -385,15 +385,15 @@ class KisStock(
 #### Step 1: API Response 타입 정의
 
 ```python
-# pykis/responses/my_response.py
+# src/vmkis/responses/my_response.py
 from dataclasses import dataclass
-from pykis.responses.response import KisResponse
-from pykis.responses.types import KisString, KisInt, KisDecimal
+from vmkis.responses.response import KisResponse
+from vmkis.responses.types import KisString, KisInt, KisDecimal
 
 @dataclass
 class KisMyData(KisResponse):
     """내 API 응답"""
-    
+
     symbol: str = KisString()
     price: Decimal = KisDecimal()
     volume: int = KisInt()
@@ -402,27 +402,27 @@ class KisMyData(KisResponse):
 #### Step 2: API 함수 구현
 
 ```python
-# pykis/api/my_api.py
+# src/vmkis/api/my_api.py
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from pykis.kis import PyKis
+    from vmkis.kis import VmKis
 
 def get_my_data(
-    kis: "PyKis",
+    kis: "VmKis",
     symbol: str,
     domain: Literal["real", "virtual"] = "real"
 ) -> KisMyData:
     """내 데이터 조회
-    
+
     Args:
-        kis: PyKis 인스턴스
+        kis: VmKis 인스턴스
         symbol: 종목코드
         domain: 도메인 ("real" 또는 "virtual")
-    
+
     Returns:
         KisMyData: 조회 결과
-    
+
     Raises:
         KisAPIError: API 에러
     """
@@ -440,29 +440,29 @@ def get_my_data(
 #### Step 3: Adapter Mixin 작성
 
 ```python
-# pykis/adapter/my_adapter.py
+# src/vmkis/adapter/my_adapter.py
 from typing import Protocol
 
 class KisMyApiCapable(Protocol):
     """내 API를 사용할 수 있는 객체"""
     @property
-    def kis(self) -> "PyKis":
+    def kis(self) -> "VmKis":
         ...
 
 class KisMyApiMixin(KisMyApiCapable):
     """내 API 기능 추가"""
-    
+
     def get_my_data(self) -> KisMyData:
         """내 데이터 조회"""
-        from pykis.api.my_api import get_my_data
+        from vmkis.api.my_api import get_my_data
         return get_my_data(self.kis, self.symbol)
 ```
 
 #### Step 4: Scope에 Mixin 추가
 
 ```python
-# pykis/scope/stock.py
-from pykis.adapter.my_adapter import KisMyApiMixin
+# src/vmkis/scope/stock.py
+from vmkis.adapter.my_adapter import KisMyApiMixin
 
 @dataclass
 class KisStock(
@@ -476,8 +476,8 @@ class KisStock(
 #### Step 5: 공개 API 노출
 
 ```python
-# pykis/__init__.py
-from pykis.responses.my_response import KisMyData
+# src/vmkis/__init__.py
+from vmkis.responses.my_response import KisMyData
 
 __all__ = [
     ...,
@@ -495,7 +495,7 @@ class KisSimpleQuote(KisResponse):
     price: Decimal = KisDecimal()
 
 # 2. API 함수
-def get_simple_quote(kis: "PyKis", symbol: str) -> KisSimpleQuote:
+def get_simple_quote(kis: "VmKis", symbol: str) -> KisSimpleQuote:
     return kis.api(
         "simple_quote_tr",
         params={"symbol": symbol},
@@ -526,7 +526,7 @@ quote = stock.simple_quote()
 tests/
 ├── __init__.py
 ├── conftest.py           # pytest 설정
-├── test_kis.py           # PyKis 테스트
+├── test_kis.py           # VmKis 테스트
 ├── test_scope.py         # Scope 테스트
 ├── test_api/             # API 테스트
 │   ├── test_stock_quote.py
@@ -545,22 +545,22 @@ tests/
 ```python
 # tests/test_kis.py
 import pytest
-from pykis import PyKis, KisAuth
-from pykis.client.exceptions import KisAPIError
+from vmkis import VmKis, KisAuth
+from vmkis.client.exceptions import KisAPIError
 
 @pytest.fixture
 def kis():
-    """테스트 PyKis 인스턴스"""
+    """테스트 VmKis 인스턴스"""
     auth = KisAuth(
         id="test_user",
         account="00000000-01",
         appkey="test_app_key" * 3,  # 36자
         secretkey="test_secret_key" * 6,  # 180자
     )
-    return PyKis(auth)
+    return VmKis(auth)
 
 def test_kis_initialization(kis):
-    """PyKis 초기화 테스트"""
+    """VmKis 초기화 테스트"""
     assert kis is not None
     assert kis.primary_account == "00000000-01"
 
@@ -585,19 +585,19 @@ from unittest.mock import Mock, patch
 
 @pytest.fixture
 def mock_kis(kis):
-    """Mock된 PyKis"""
+    """Mock된 VmKis"""
     kis.request = Mock()
     return kis
 
 def test_quote_with_mock(mock_kis):
     """시세 조회 Mock 테스트"""
-    from pykis.responses.types import KisQuote
-    
+    from vmkis.responses.types import KisQuote
+
     mock_kis.request.return_value = KisQuote(
         symbol="000660",
         price=Decimal("70000"),
     )
-    
+
     stock = mock_kis.stock("000660")
     # quote = stock.quote()  # 실제 구현 테스트
     # assert quote.price == Decimal("70000")
@@ -608,14 +608,14 @@ def test_quote_with_mock(mock_kis):
 ```python
 # tests/test_integration.py
 import pytest
-from pykis import PyKis
+from vmkis import VmKis
 
 @pytest.mark.integration
 def test_real_api_call(kis):
     """실제 API 호출 테스트 (개발 환경에서만)"""
     # 주의: 실제 계정으로 테스트 가능
     stock = kis.stock("000660")
-    
+
     # quote = stock.quote()
     # assert quote is not None
     # assert quote.symbol == "000660"
@@ -631,7 +631,7 @@ pytest
 pytest tests/test_kis.py
 
 # Coverage 포함
-pytest --cov=pykis --cov-report=html
+pytest --cov=vmkis --cov-report=html
 
 # 특정 마커
 pytest -m unit
@@ -694,23 +694,23 @@ def request(self) -> dict | KisResponse:
 ```python
 def quote(self, extended: bool = False) -> KisQuote:
     """주식 시세를 조회합니다.
-    
+
     Args:
         extended (bool, optional): 주간거래 포함 여부. 기본값 False.
-    
+
     Returns:
         KisQuote: 주식 시세 정보
-    
+
     Raises:
         KisAPIError: API 호출 실패 시
         KisMarketNotOpenedError: 시장 미개장 시
-    
+
     Examples:
         >>> stock = kis.stock("000660")
         >>> quote = stock.quote()
         >>> print(quote.price)
         70000
-    
+
     Note:
         실시간 시세는 on_price() 메서드를 사용하세요.
     """
@@ -732,7 +732,7 @@ from pathlib import Path
 from requests import Response   # 서드파티
 from typing_extensions import Protocol
 
-from pykis.kis import PyKis     # 로컬 모듈
+from vmkis.kis import VmKis     # 로컬 모듈
 ```
 
 ---
@@ -742,7 +742,7 @@ from pykis.kis import PyKis     # 로컬 모듈
 ### 로깅 설정
 
 ```python
-from pykis import logging
+from vmkis import logging
 
 # 로그 레벨 설정
 logging.setLevel("DEBUG")  # DEBUG, INFO, WARNING, ERROR, CRITICAL
@@ -776,7 +776,7 @@ kis_id = os.getenv("KIS_ID")
 
 ```python
 # 상세 에러 정보 활성화
-from pykis.__env__ import TRACE_DETAIL_ERROR
+from vmkis.__env__ import TRACE_DETAIL_ERROR
 
 # kis.py의 verbose 파라미터 활용
 response = kis.api(..., verbose=True)
@@ -800,9 +800,9 @@ logging.setLevel("DEBUG")
 ### 1. HTTP 연결 풀링
 
 ```python
-# PyKis는 자동으로 requests.Session을 재사용
+# VmKis는 자동으로 requests.Session을 재사용
 # 여러 요청: 같은 KisAccessToken 재사용
-kis = PyKis(...)
+kis = VmKis(...)
 for symbol in symbols:
     stock = kis.stock(symbol)
     quote = stock.quote()  # 같은 세션 재사용
@@ -814,7 +814,7 @@ for symbol in symbols:
 # 자동으로 관리됨
 # 하지만 대량 요청 시 최적화 가능
 
-from pykis.utils.rate_limit import RateLimiter
+from vmkis.utils.rate_limit import RateLimiter
 
 # 순차 요청 (자동 rate limit)
 for symbol in symbols:
@@ -860,7 +860,7 @@ for symbol in symbols[:40]:
 
 ```bash
 # 모드 가상 테스트 환경
-kis = PyKis("secret.json", "virtual_secret.json")
+kis = VmKis("secret.json", "virtual_secret.json")
 
 # 모의투자로 테스트 후 실전 전환
 ```
@@ -881,12 +881,12 @@ response._kis_property  # 동적 속성 확인
 ```bash
 # mypy를 이용한 타입 체크
 pip install mypy
-mypy pykis --strict
+mypy vmkis --strict
 
 # 또는 Pylance (VS Code)
 ```
 
 ---
 
-이 문서는 Python-KIS 개발자를 위한 완벽한 가이드입니다.
+이 문서는 VM-Stock-KIS 개발자를 위한 완벽한 가이드입니다.
 더 많은 정보는 소스코드의 docstring을 참조하세요.

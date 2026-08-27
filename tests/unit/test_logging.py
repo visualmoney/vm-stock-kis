@@ -5,8 +5,8 @@ import logging
 from io import StringIO
 
 import pytest
-from pykis import logging as pykis_logging
-from pykis.logging import (
+from vmkis import logging as vmkis_logging
+from vmkis.logging import (
     JsonFormatter,
     disable_json_logging,
     enable_json_logging,
@@ -57,7 +57,7 @@ class TestJsonFormatter:
         """기본 로그 레코드 JSON 포매팅."""
         formatter = JsonFormatter()
         record = logging.LogRecord(
-            name="pykis.test",
+            name="vmkis.test",
             level=logging.INFO,
             pathname="test.py",
             lineno=42,
@@ -70,7 +70,7 @@ class TestJsonFormatter:
         data = json.loads(result)
 
         assert data["level"] == "INFO"
-        assert data["logger"] == "pykis.test"
+        assert data["logger"] == "vmkis.test"
         assert data["message"] == "Test message"
         assert data["line"] == 42
         assert "timestamp" in data
@@ -86,7 +86,7 @@ class TestJsonFormatter:
             import sys
 
             record = logging.LogRecord(
-                name="pykis.test",
+                name="vmkis.test",
                 level=logging.ERROR,
                 pathname="test.py",
                 lineno=50,
@@ -107,7 +107,7 @@ class TestJsonFormatter:
         """추가 컨텍스트 데이터를 포함한 로그 레코드."""
         formatter = JsonFormatter()
         record = logging.LogRecord(
-            name="pykis.api",
+            name="vmkis.api",
             level=logging.WARNING,
             pathname="api.py",
             lineno=100,
@@ -133,16 +133,16 @@ class TestGetLogger:
 
     def test_get_child_logger(self):
         """자식 로거 획득."""
-        child_logger = get_logger("pykis.api")
-        assert child_logger.name == "pykis.api"
+        child_logger = get_logger("vmkis.api")
+        assert child_logger.name == "vmkis.api"
 
     def test_get_multiple_child_loggers(self):
         """여러 자식 로거 획득."""
-        api_logger = get_logger("pykis.api")
-        client_logger = get_logger("pykis.client")
+        api_logger = get_logger("vmkis.api")
+        client_logger = get_logger("vmkis.client")
 
-        assert api_logger.name == "pykis.api"
-        assert client_logger.name == "pykis.client"
+        assert api_logger.name == "vmkis.api"
+        assert client_logger.name == "vmkis.client"
         assert api_logger is not client_logger
 
 
@@ -196,7 +196,7 @@ def restore_log_level():
 
 
 class LogCapture:
-    """`pykis.logging.logger`의 핸들러 출력을 `StringIO`로 돌려 관측합니다."""
+    """`vmkis.logging.logger`의 핸들러 출력을 `StringIO`로 돌려 관측합니다."""
 
     def __init__(self) -> None:
         self.stream = StringIO()
@@ -227,7 +227,7 @@ def log_output():
 
     `capsys`/`capfd`를 쓰지 않는 이유:
 
-    `pykis.logging`의 기본 핸들러는 **모듈 import 시점**에
+    `vmkis.logging`의 기본 핸들러는 **모듈 import 시점**에
     `logging.StreamHandler(stream=sys.stdout)`으로 만들어지며 그 시점의
     `sys.stdout` 객체를 붙잡는다. pytest 실행 중에는 그 객체가 pytest가 세션
     시작 시 설치한 전역 캡처 스트림이다. 따라서
@@ -309,11 +309,11 @@ class TestLoggingIntegration:
 )
 def test_set_level(level_input, expected_level):
     """SetLevel 함수가 로거 레벨을 올바르게 설정하는지 테스트합니다."""
-    initial_level = pykis_logging.logger.level
+    initial_level = vmkis_logging.logger.level
 
     try:
-        pykis_logging.setLevel(level_input)
-        assert pykis_logging.logger.level == expected_level
+        vmkis_logging.setLevel(level_input)
+        assert vmkis_logging.logger.level == expected_level
     finally:
         # 테스트 후 원래 레벨로 복원
-        pykis_logging.logger.setLevel(initial_level)
+        vmkis_logging.logger.setLevel(initial_level)

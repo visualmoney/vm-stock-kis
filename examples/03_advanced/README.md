@@ -1,4 +1,4 @@
-# Python-KIS 고급 예제 (Advanced Examples)
+# VM-Stock-KIS 고급 예제 (Advanced Examples)
 
 고급 예제는 프로덕션 환경에서 사용되는 실전 기법과 엔터프라이즈급 패턴을 보여줍니다.
 
@@ -6,11 +6,11 @@
 
 ## 프로파일 사용
 
-예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `PYKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
+예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `VMKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
 
 예:
 ```bash
-PYKIS_PROFILE=real python examples/03_advanced/01_scope_api_trading.py
+VMKIS_PROFILE=real python examples/03_advanced/01_scope_api_trading.py
 # 또는
 python examples/03_advanced/01_scope_api_trading.py --profile virtual
 ```
@@ -20,7 +20,7 @@ python examples/03_advanced/01_scope_api_trading.py --profile virtual
 
 **난이도**: ⭐⭐⭐ 고급
 
-**목표**: PyKis의 Scope 기반 API를 직접 사용하여 정교한 거래 구현
+**목표**: VmKis의 Scope 기반 API를 직접 사용하여 정교한 거래 구현
 
 **학습 포인트**:
 - Stock Scope 객체 사용
@@ -154,7 +154,7 @@ trading.log - 모든 거래 및 에러 로그
 ## 🚀 추천 학습 순서
 
 1. **01_scope_api_trading.py**
-   - PyKis 직접 사용 학습
+   - VmKis 직접 사용 학습
    - Scope 패턴 이해
 
 2. **02_performance_analysis.py**
@@ -317,7 +317,7 @@ with ThreadPoolExecutor(max_workers=5) as executor:
 
 ## 📖 다음 단계
 
-- PyKis 공식 문서: [링크 필요]
+- VmKis 공식 문서: [링크 필요]
 - 한국투자증권 API 가이드
 - 고급 거래 전략 학습
 - 머신러닝 기반 거래 시스템

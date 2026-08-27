@@ -1,6 +1,6 @@
 import types
 
-from pykis.api.base import account as ab
+from vmkis.api.base import account as ab
 
 
 def test_account_property_calls_kis_account():

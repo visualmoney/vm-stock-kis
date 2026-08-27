@@ -2,10 +2,10 @@ import json
 
 import pytest
 
-from pykis.__env__ import APPKEY_LENGTH, SECRETKEY_LENGTH
-from pykis.client.auth import KisAuth
-from pykis.client.appkey import KisKey
-from pykis.client.account import KisAccountNumber
+from vmkis.__env__ import APPKEY_LENGTH, SECRETKEY_LENGTH
+from vmkis.client.auth import KisAuth
+from vmkis.client.appkey import KisKey
+from vmkis.client.account import KisAccountNumber
 
 
 def make_key(length: int) -> str:

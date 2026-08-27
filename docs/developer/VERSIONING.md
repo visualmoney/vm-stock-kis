@@ -1,12 +1,12 @@
 # 동적 버저닝 시스템 (Dynamic Versioning)
 
-이 문서는 Python-KIS의 현재 버전 관리 방식(현행)과 개선 방향(권장)을 설명합니다.
+이 문서는 VM-Stock-KIS의 현재 버전 관리 방식(현행)과 개선 방향(권장)을 설명합니다.
 
 ---
 
 ## 목표
 - 릴리스 자동화: Git 태그 기반으로 버전을 자동 주입
-- 일관성: 소스(`pykis/__env__.py`), 배포 메타데이터(`pyproject.toml`), 배포 아티팩트(휠/SDist) 간 동일 버전 보장
+- 일관성: 소스(`src/vmkis/__env__.py`), 배포 메타데이터(`pyproject.toml`), 배포 아티팩트(휠/SDist) 간 동일 버전 보장
 - 단순화: 수동 버전 갱신 제거 및 CI에서 재현 가능
 
 ---
@@ -25,8 +25,8 @@
 ### 구성 요소
 - `pyproject.toml`
   - `[project] dynamic = ["version"]`
-  - `[tool.setuptools.dynamic] version = { attr = "pykis.__env__.__version__" }`
-- `pykis/__env__.py`
+  - `[tool.setuptools.dynamic] version = { attr = "vmkis.__env__.__version__" }`
+- `src/vmkis/__env__.py`
   - `VERSION = "{{VERSION_PLACEHOLDER}}"` (CI에서 태그로 대체)
   - `__version__ = VERSION`
 - `setuptools-scm` (build-system에 선언)
@@ -37,7 +37,7 @@
 ### 동작 흐름
 1. 개발 중: `__env__.py` 내 `VERSION`은 `24+dev`로 동작 (placeholder 미치환)
 2. 릴리스 태그(v2.2.0 등) 생성 → CI에서 `VERSION_PLACEHOLDER`를 태그 값으로 치환
-3. `pip build`/`poetry build` 시 `[tool.setuptools.dynamic]`이 `pykis.__env__.__version__`를 읽어 프로젝트 버전 사용
+3. `pip build`/`poetry build` 시 `[tool.setuptools.dynamic]`이 `vmkis.__env__.__version__`를 읽어 프로젝트 버전 사용
 
 ### 장단점
 - 장점: 단일 소스(`__env__.py`)에서 런타임과 배포 메타 버전을 동기화
@@ -56,9 +56,9 @@
   - `pyproject.toml`
     - `[project] dynamic = ["version"]`
     - `setuptools-scm` 활성(기본값) → Git 태그에서 버전 자동 추론
-  - `pykis/__env__.py`
+  - `src/vmkis/__env__.py`
     - `from importlib.metadata import version as _dist_version`
-    - `__version__ = _dist_version("python-kis")`
+    - `__version__ = _dist_version("vm-stock-kis")`
     - 개발 환경(소스 실행)에서는 `try/except`로 `setuptools_scm.get_version()` fallback 사용
 - 이점:
   - 태그만으로 배포 버전, 런타임 버전 자동 일치
@@ -136,11 +136,11 @@ tagged-metadata = true
 
 3) 코드 측 (선택)
 
-`pykis/__env__.py`에서 런타임 버전을 배포 메타에서 읽도록 단순화:
+`src/vmkis/__env__.py`에서 런타임 버전을 배포 메타에서 읽도록 단순화:
 
 ```python
 from importlib.metadata import version as _dist_version
-__version__ = _dist_version("python-kis")
+__version__ = _dist_version("vm-stock-kis")
 ```
 
 4) CI 반영
@@ -251,7 +251,7 @@ jobs:
 **원칙**:
 - Git 태그를 단일 진실 공급원(SoT)으로 사용
 - 태그 표기 → PEP 440 매핑 규칙을 CI 스크립트로 정의
-- 런타임 버전은 배포 메타에서 읽음 (`importlib.metadata.version("python-kis")`)
+- 런타임 버전은 배포 메타에서 읽음 (`importlib.metadata.version("vm-stock-kis")`)
 
 **태그→PEP 440 매핑 예시**:
 - `v1.2.3` → `1.2.3`
@@ -296,7 +296,7 @@ jobs:
 - 매핑 스크립트 유지 필요, 비태그 커밋의 버전 정책(예: 빌드 금지 또는 `.devN`) 별도 정의 필요
 
 **도입 시 권장 조치**:
-- `pykis/__env__.py`는 `importlib.metadata.version()` 기반으로 단순화
+- `src/vmkis/__env__.py`는 `importlib.metadata.version()` 기반으로 단순화
 - 태그 없는 빌드는 릴리스 배포 금지, 필요시 프리뷰 빌드 규칙 문서화
 
 #### 비태그 커밋 버전 정책 (예시)
@@ -340,7 +340,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: python-kis-dev-dist
+          name: vm-stock-kis-dev-dist
           path: dist/*
 ```
 
@@ -418,7 +418,7 @@ jobs:
 ## 구현 가이드
 
 ### A안 (setuptools-scm 전환) 구현 체크리스트
-- [ ] `pykis/__env__.py`에서 placeholder 제거 및 `setuptools_scm` fallback 추가
+- [ ] `src/vmkis/__env__.py`에서 placeholder 제거 및 `setuptools_scm` fallback 추가
 - [ ] CI에서 태그가 없는 커밋은 `+devN` 형태 버전 허용
 - [ ] `tool.poetry.version` 제거(또는 문서화: 관리 대상 아님)
 - [ ] 배포 전 `git tag` 강제
@@ -426,11 +426,11 @@ jobs:
 추가(빌드 경로 명시):
 - [ ] 빌드는 `python -m build`(PEP 517)로 수행하고, `poetry build`는 사용하지 않음
 
-샘플 코드(`pykis/__env__.py`):
+샘플 코드(`src/vmkis/__env__.py`):
 ```python
 try:
     from importlib.metadata import version as _dist_version
-    __version__ = _dist_version("python-kis")
+    __version__ = _dist_version("vm-stock-kis")
 except Exception:
     try:
         from setuptools_scm import get_version
@@ -449,7 +449,7 @@ except Exception:
 $tag=${GITHUB_REF_NAME#v}
 python - <<'PY'
 from pathlib import Path
-p=Path('pykis/__env__.py')
+p=Path('src/vmkis/__env__.py')
 s=p.read_text(encoding='utf-8')
 s=s.replace('{{VERSION_PLACEHOLDER}}', '${tag}')
 p.write_text(s, encoding='utf-8')
@@ -473,7 +473,7 @@ PY
 - Q: 태그 없이 로컬에서 버전은?
   - A: A안은 `setuptools_scm`가 `0.0.0+dirty`/`+devN` 형식을 제공합니다. B안은 `24+dev` 등 개발 표식 유지. 옵션 C는 `strict=true`일 때 태그가 없으면 실패하므로, 로컬 스냅샷이 필요하면 프리릴리스 태그(`vX.Y.Z-dev.N`)를 만들거나 일시적으로 `poetry version "X.Y.Z.devN"`로 지정(커밋 금지)하거나 로컬에서만 `strict=false`로 낮춰 빌드합니다.
 - Q: 런타임에서 `__version__`은?
-  - A: 배포 패키지 설치 시 배포 메타에서 읽은 정확한 버전으로 노출됩니다. 옵션 C에서는 `importlib.metadata.version("python-kis")`가 플러그인 주입 버전과 동일하며, `__env__.py` placeholder 없이도 동작합니다.
+  - A: 배포 패키지 설치 시 배포 메타에서 읽은 정확한 버전으로 노출됩니다. 옵션 C에서는 `importlib.metadata.version("vm-stock-kis")`가 플러그인 주입 버전과 동일하며, `__env__.py` placeholder 없이도 동작합니다.
 
 - Q: 왜 `[tool.poetry].version`을 제거하면 `poetry build`가 실패하나요?
   - A: Poetry는 빌드 시 버전 필드가 필수입니다. 옵션 A(순수 `setuptools-scm`)로 전환하려면 빌드를 `python -m build`로 수행해야 하며, Poetry로 빌드를 유지하려면 옵션 C(플러그인) 또는 옵션 D(CI에서 `poetry version` 주입)로 버전을 설정해야 합니다. 옵션 C는 `version = "0.0.0"` placeholder를 두고 플러그인이 태그를 읽어 필드를 채우므로 빌드 요구 사항을 충족합니다.
@@ -488,10 +488,10 @@ PY
   - A: `pipx install build` 후 `python -m build`(또는 `pipx run build`)로 빌드합니다. 태그가 없으면 `setuptools-scm`가 `+dirty`/`+devN` 버전을 생성할 수 있습니다. 산출물의 메타데이터 버전을 확인해 일관성을 검증하세요. 옵션 C에서는 프리릴리스 태그를 만든 뒤 `poetry build`를 실행하면 플러그인이 메타데이터에 태그 기반 버전을 주입하므로 `dist/*`의 `Version:` 필드가 태그와 일치하는지 확인하면 됩니다.
 
 - Q: 빌드 산출물의 버전을 어떻게 검증하나요?
-  - A: `dist/*.whl`의 `METADATA` 파일을 열어 `Version:` 값을 확인하거나, 임시 가상환경에 설치 후 `python -c "import importlib.metadata as m; print(m.version('python-kis'))"`로 런타임 버전을 확인합니다. 옵션 C는 플러그인이 빌드 시점에 메타데이터를 덮어쓰므로 `Version:` 값이 Git 태그와 일치하는지 확인하면 충분합니다.
+  - A: `dist/*.whl`의 `METADATA` 파일을 열어 `Version:` 값을 확인하거나, 임시 가상환경에 설치 후 `python -c "import importlib.metadata as m; print(m.version('vm-stock-kis'))"`로 런타임 버전을 확인합니다. 옵션 C는 플러그인이 빌드 시점에 메타데이터를 덮어쓰므로 `Version:` 값이 Git 태그와 일치하는지 확인하면 충분합니다.
 
 - Q: 코드에서 버전 문자열을 안정적으로 읽는 방법은?
-  - A: 설치된 배포에서는 `importlib.metadata.version('python-kis')`를 사용합니다. 소스 실행에서 태그 기반 버전이 필요하면 `setuptools_scm.get_version()`을 보조로 사용하고, 실패 시 `0.0.0+unknown` 등의 안전한 기본값을 사용합니다. 옵션 C를 선택하면 런타임은 항상 배포 메타에 기록된 버전을 그대로 읽으므로 `__env__.py` placeholder 없이도 동일 동작을 기대할 수 있습니다.
+  - A: 설치된 배포에서는 `importlib.metadata.version('vm-stock-kis')`를 사용합니다. 소스 실행에서 태그 기반 버전이 필요하면 `setuptools_scm.get_version()`을 보조로 사용하고, 실패 시 `0.0.0+unknown` 등의 안전한 기본값을 사용합니다. 옵션 C를 선택하면 런타임은 항상 배포 메타에 기록된 버전을 그대로 읽으므로 `__env__.py` placeholder 없이도 동일 동작을 기대할 수 있습니다.
 
 - Q: 버전 소스 충돌을 피하려면 어떻게 해야 하나요?
   - A: 단일 경로만 유지하세요. 옵션 C를 선택하면 `[tool.poetry].version`을 플러그인으로 관리하고 `[tool.setuptools.dynamic]`(setuptools 경로)와 `__env__.py` placeholder는 제거합니다. 옵션 A를 선택하면 `[project] dynamic`+`setuptools-scm`만 남기고 Poetry 빌드는 사용하지 않습니다. 옵션 D를 선택하면 CI에서만 `poetry version`을 설정하여 중복 설정을 피합니다.

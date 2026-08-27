@@ -6,58 +6,58 @@ from decimal import Decimal
 import pytest
 from requests.exceptions import SSLError
 
-from pykis import PyKis
-from pykis.adapter.product.quote import KisQuotableProduct
-from pykis.api.stock.chart import KisChart, KisChartBar
-from pykis.api.stock.order_book import KisOrderbook, KisOrderbookItem
-from pykis.api.stock.quote import KisQuote
-from pykis.client.exceptions import KisHTTPError, KisAPIError
-from tests.env import load_pykis
+from vmkis import VmKis
+from vmkis.adapter.product.quote import KisQuotableProduct
+from vmkis.api.stock.chart import KisChart, KisChartBar
+from vmkis.api.stock.order_book import KisOrderbook, KisOrderbookItem
+from vmkis.api.stock.quote import KisQuote
+from vmkis.client.exceptions import KisHTTPError, KisAPIError
+from tests.env import load_vmkis
 
 
 pytestmark = pytest.mark.requires_api
 
 
 class ProductQuoteTests(TestCase):
-    pykis: PyKis
+    vmkis: VmKis
 
     @classmethod
     def setUpClass(cls) -> None:
         """클래스 레벨에서 한 번만 실행 - 토큰 발급 횟수 제한 방지"""
         import os
         # Control whether to run real integration tests via environment variable.
-        # Set PYKIS_RUN_REAL=1 (or true/yes) to exercise real network calls; otherwise use the mock fixture.
-        run_real = os.environ.get("PYKIS_RUN_REAL", "").lower() in ("1", "true", "yes")
+        # Set VMKIS_RUN_REAL=1 (or true/yes) to exercise real network calls; otherwise use the mock fixture.
+        run_real = os.environ.get("VMKIS_RUN_REAL", "").lower() in ("1", "true", "yes")
         if run_real:
-            cls.pykis = load_pykis("real", use_websocket=False)
+            cls.vmkis = load_vmkis("real", use_websocket=False)
         else:
-            # load a mocked/local pykis instance to make tests hermetic and not depend on network/credentials
-            cls.pykis = load_pykis("mock", use_websocket=False)
+            # load a mocked/local vmkis instance to make tests hermetic and not depend on network/credentials
+            cls.vmkis = load_vmkis("mock", use_websocket=False)
 
     def test_quotable(self):
         try:
-            self.assertTrue(isinstance(self.pykis.stock("005930"), KisQuotableProduct))
+            self.assertTrue(isinstance(self.vmkis.stock("005930"), KisQuotableProduct))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"API call failed: {e}")
 
     def test_krx_quote(self):
         try:
-            self.assertTrue(isinstance(self.pykis.stock("005930").quote(), KisQuote))
+            self.assertTrue(isinstance(self.vmkis.stock("005930").quote(), KisQuote))
             # https://github.com/Soju06/python-kis/issues/48
             # bstp_kor_isnm 필드 누락 대응
-            self.assertTrue(isinstance(self.pykis.stock("002170").quote(), KisQuote))
+            self.assertTrue(isinstance(self.vmkis.stock("002170").quote(), KisQuote))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"KRX quote API call failed: {e}")
 
     def test_nasd_quote(self):
         try:
-            self.assertTrue(isinstance(self.pykis.stock("NVDA").quote(), KisQuote))
+            self.assertTrue(isinstance(self.vmkis.stock("NVDA").quote(), KisQuote))
         except (KisHTTPError, KisAPIError, SSLError) as e:
             self.skipTest(f"NASD quote API call failed: {e}")
 
     def test_krx_orderbook(self):
         try:
-            orderbook = self.pykis.stock("005930").orderbook()
+            orderbook = self.vmkis.stock("005930").orderbook()
             self.assertTrue(isinstance(orderbook, KisOrderbook))
 
             for ask in orderbook.asks:
@@ -70,7 +70,7 @@ class ProductQuoteTests(TestCase):
 
     def test_nasd_orderbook(self):
         try:
-            orderbook = self.pykis.stock("NVDA").orderbook()
+            orderbook = self.vmkis.stock("NVDA").orderbook()
             self.assertTrue(isinstance(orderbook, KisOrderbook))
 
             for ask in orderbook.asks:
@@ -83,7 +83,7 @@ class ProductQuoteTests(TestCase):
 
     def test_krx_day_chart(self):
         try:
-            chart = self.pykis.stock("005930").day_chart()
+            chart = self.vmkis.stock("005930").day_chart()
             self.assertTrue(isinstance(chart, KisChart))
 
             for bar in chart.bars:
@@ -96,7 +96,7 @@ class ProductQuoteTests(TestCase):
         # Provide concrete classes that satisfy the runtime-checkable Protocols
         try:
             from datetime import timezone
-            from pykis.api.stock.chart import KisChartBase
+            from vmkis.api.stock.chart import KisChartBase
 
             class FakeBar:
                 def __init__(
@@ -153,7 +153,7 @@ class ProductQuoteTests(TestCase):
             sample_chart.timezone = timezone.utc
             sample_chart.bars = [bar1, bar2]
 
-            stock = self.pykis.stock("NVDA")
+            stock = self.vmkis.stock("NVDA")
             with patch.object(stock, "day_chart", return_value=sample_chart):
                 chart = stock.day_chart()
                 # Avoid `isinstance(chart, KisChart)` because Protocol runtime checks may
@@ -169,7 +169,7 @@ class ProductQuoteTests(TestCase):
 
     def test_krx_daily_chart(self):
         try:
-            stock = self.pykis.stock("005930")
+            stock = self.vmkis.stock("005930")
             daily_chart_1m = stock.daily_chart(start=date(2024, 6, 1), end=date(2024, 6, 30), period="day")
             weekly_chart_1m = stock.daily_chart(start=date(2024, 6, 1), end=date(2024, 6, 30), period="week")
 
@@ -188,7 +188,7 @@ class ProductQuoteTests(TestCase):
             self.skipTest(f"KRX daily_chart API call failed: {e}")
     def test_nasd_daily_chart(self):
         try:
-            stock = self.pykis.stock("NVDA")
+            stock = self.vmkis.stock("NVDA")
             daily_chart_1m = stock.daily_chart(start=date(2024, 6, 1), end=date(2024, 6, 30), period="day")
             weekly_chart_1m = stock.daily_chart(start=date(2024, 6, 1), end=date(2024, 6, 30), period="week")
 
@@ -207,7 +207,7 @@ class ProductQuoteTests(TestCase):
             self.skipTest(f"NASD daily_chart API call failed: {e}")
     def test_krx_chart(self):
         try:
-            stock = self.pykis.stock("005930")
+            stock = self.vmkis.stock("005930")
             yearly_chart = stock.chart("30y", period="year")
             self.assertTrue(isinstance(yearly_chart, KisChart))
             # Allow a small variance in the number of yearly bars to handle holiday/market differences.
@@ -219,7 +219,7 @@ class ProductQuoteTests(TestCase):
             self.skipTest(f"KRX chart API call failed: {e}")
     def test_nasd_chart(self):
         try:
-            stock = self.pykis.stock("NVDA")
+            stock = self.vmkis.stock("NVDA")
             yearly_chart = stock.chart("15y", period="year")
             self.assertTrue(isinstance(yearly_chart, KisChart))
             # Allow a small variance in the number of yearly bars to handle holiday/market differences.

@@ -2,9 +2,9 @@ import pytest
 
 from types import SimpleNamespace
 
-import pykis.responses.websocket as wsmod
-from pykis.responses.websocket import KisWebsocketResponse
-from pykis.responses.dynamic import KisNoneValueError, empty
+import vmkis.responses.websocket as wsmod
+from vmkis.responses.websocket import KisWebsocketResponse
+from vmkis.responses.dynamic import KisNoneValueError, empty
 
 
 def test_parse_no_fields_calls_pre_and_post_init_and_sets_data():

@@ -3,7 +3,7 @@ import types
 
 import pytest
 
-from pykis.api.account import orderable_amount as oa
+from vmkis.api.account import orderable_amount as oa
 
 
 def test__domestic_orderable_amount_calls_fetch_and_uses_quote(monkeypatch):

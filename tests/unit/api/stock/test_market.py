@@ -1,6 +1,6 @@
 from zoneinfo import ZoneInfo
 
-from pykis.api.stock import market
+from vmkis.api.stock import market
 
 
 def test_get_market_code_and_type():

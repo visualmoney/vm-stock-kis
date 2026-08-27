@@ -4,7 +4,7 @@
     "python.envFile": "${workspaceFolder}/.env",
     "python.testing.pytestArgs": [
         "tests",
-        "--cov=pykis",
+        "--cov=vmkis",
         "--cov-report=term-missing",
         "--cov-report=html:reports/htmlcov",
         "--cov-report=xml:reports/coverage.xml",
@@ -22,7 +22,7 @@
     "cSpell.words": [
         "htmlcov",
         "junitxml",
-        "pykis"
+        "vmkis"
     ],
     "files.exclude": {
       "**/__pycache__": true,

@@ -2,7 +2,7 @@ import types
 
 import pytest
 
-from pykis.api.auth import websocket as ws
+from vmkis.api.auth import websocket as ws
 
 
 def test_websocket_approval_key_real_calls_fetch_and_returns(monkeypatch):

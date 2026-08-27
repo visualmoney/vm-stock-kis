@@ -4,7 +4,7 @@ import types
 
 import pytest
 
-from pykis.api.account import order_profit as op
+from vmkis.api.account import order_profit as op
 
 
 def make_order(buy_amount, sell_amount, exchange_rate=1, symbol="AAA", time_kst=None):

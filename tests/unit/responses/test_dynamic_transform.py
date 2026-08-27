@@ -5,9 +5,9 @@ from dataclasses import dataclass
 from decimal import Decimal
 from typing import List, Optional
 
-from pykis.responses.dynamic import KisObject, KisList, KisTransform
-from pykis.responses.response import KisResponse
-from pykis.responses.types import KisString, KisInt, KisDecimal, KisBool
+from vmkis.responses.dynamic import KisObject, KisList, KisTransform
+from vmkis.responses.response import KisResponse
+from vmkis.responses.types import KisString, KisInt, KisDecimal, KisBool
 
 
 pytestmark = pytest.mark.unit

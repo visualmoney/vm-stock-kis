@@ -2,7 +2,7 @@ from datetime import datetime, date, time
 from decimal import Decimal
 import sys
 
-from pykis.api.stock import chart
+from vmkis.api.stock import chart
 
 
 class _Bar:

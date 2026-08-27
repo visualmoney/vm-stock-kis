@@ -24,6 +24,9 @@ repos:
       # ci.yml 파싱 실패 사고의 직접적 방지책.
       - id: check-yaml
       - id: check-json
+        # .vscode/*.json은 JSONC(주석 허용)라 표준 JSON 파서가 거부합니다.
+        # VS Code가 공식적으로 허용하는 형식이므로 검사 대상에서 뺍니다.
+        exclude: ^\.vscode/
       - id: check-toml
       - id: check-merge-conflict
       - id: check-added-large-files

@@ -1,7 +1,7 @@
 from decimal import Decimal
 import pytest
 
-from pykis.api.account import order as order_mod
+from vmkis.api.account import order as order_mod
 
 
 def test_ensure_price_quantize():

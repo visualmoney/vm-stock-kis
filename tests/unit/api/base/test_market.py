@@ -1,10 +1,10 @@
 import types
 
-from pykis.api.base import market as mb
+from vmkis.api.base import market as mb
 
 
 def test_market_name_calls_get_market_name(monkeypatch):
-    monkeypatch.setattr("pykis.api.stock.market.get_market_name", lambda m: f"NAME-{m}")
+    monkeypatch.setattr("vmkis.api.stock.market.get_market_name", lambda m: f"NAME-{m}")
 
     m = mb.KisMarketBase()
     m.market = "KRX"
@@ -14,7 +14,7 @@ def test_market_name_calls_get_market_name(monkeypatch):
 
 def test_foreign_and_domestic_and_currency(monkeypatch):
     # patch MARKET_TYPE_MAP to control foreign/domestic behavior
-    monkeypatch.setattr("pykis.api.stock.info.MARKET_TYPE_MAP", {"KRX": ["KRX"]}, raising=False)
+    monkeypatch.setattr("vmkis.api.stock.info.MARKET_TYPE_MAP", {"KRX": ["KRX"]}, raising=False)
 
     m = mb.KisMarketBase()
     m.market = "KRX"
@@ -28,5 +28,5 @@ def test_foreign_and_domestic_and_currency(monkeypatch):
     assert m.domestic is False
 
     # currency property calls get_market_currency
-    monkeypatch.setattr("pykis.api.stock.market.get_market_currency", lambda x: "USD")
+    monkeypatch.setattr("vmkis.api.stock.market.get_market_currency", lambda x: "USD")
     assert m.currency == "USD"

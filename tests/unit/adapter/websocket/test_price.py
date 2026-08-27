@@ -1,11 +1,11 @@
-"""Unit tests for pykis.adapter.websocket.price."""
+"""Unit tests for vmkis.adapter.websocket.price."""
 
 from types import SimpleNamespace
 
 
 def test_websocket_quotable_product_mixin_on_price():
     """KisWebsocketQuotableProductMixin.on should forward to on_product_price for 'price' event."""
-    from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     calls = []
 
@@ -33,7 +33,7 @@ def test_websocket_quotable_product_mixin_on_price():
 
 def test_websocket_quotable_product_mixin_on_orderbook():
     """KisWebsocketQuotableProductMixin.on should forward to on_product_order_book for 'orderbook' event."""
-    from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     calls = []
 
@@ -61,7 +61,7 @@ def test_websocket_quotable_product_mixin_on_orderbook():
 
 def test_mixin_on_raises_for_unknown_event():
     """Mixin.on should raise ValueError for unknown event types."""
-    from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     class TestProduct(KisWebsocketQuotableProductMixin):
         pass
@@ -78,7 +78,7 @@ def test_mixin_on_raises_for_unknown_event():
 
 def test_websocket_quotable_product_mixin_once_price():
     """KisWebsocketQuotableProductMixin.once should call on_product_price with once=True."""
-    from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     calls = []
 
@@ -104,7 +104,7 @@ def test_websocket_quotable_product_mixin_once_price():
 
 def test_websocket_quotable_product_mixin_once_orderbook():
     """KisWebsocketQuotableProductMixin.once should call on_product_order_book with once=True."""
-    from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     calls = []
 
@@ -130,7 +130,7 @@ def test_websocket_quotable_product_mixin_once_orderbook():
 
 def test_once_raises_for_unknown_event():
     """Mixin.once should raise ValueError for unknown event types."""
-    from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     class TestProduct(KisWebsocketQuotableProductMixin):
         def __init__(self):
@@ -160,7 +160,7 @@ def test_once_raises_for_unknown_event():
 # ---------------------------------------------------------------------------
 
 import pytest
-from pykis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
 
 class Product(KisWebsocketQuotableProductMixin):
@@ -170,8 +170,8 @@ class Product(KisWebsocketQuotableProductMixin):
 @pytest.fixture
 def spy(monkeypatch):
     """지연 import되는 하위 등록 함수를 기록용으로 교체합니다."""
-    import pykis.api.websocket.order_book as order_book_module
-    import pykis.api.websocket.price as price_module
+    import vmkis.api.websocket.order_book as order_book_module
+    import vmkis.api.websocket.price as price_module
 
     calls = {}
 

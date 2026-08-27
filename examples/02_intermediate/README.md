@@ -1,4 +1,4 @@
-# Python-KIS 중급 예제 (Intermediate Examples)
+# VM-Stock-KIS 중급 예제 (Intermediate Examples)
 
 중급 예제는 실전에서 자주 사용되는 거래 전략과 포트폴리오 관리 기법을 보여줍니다.
 
@@ -6,11 +6,11 @@
 
 ## 프로파일 사용
 
-예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `PYKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
+예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `VMKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
 
 예:
 ```bash
-PYKIS_PROFILE=real python examples/02_intermediate/01_multiple_symbols.py
+VMKIS_PROFILE=real python examples/02_intermediate/01_multiple_symbols.py
 # 또는
 python examples/02_intermediate/01_multiple_symbols.py --profile virtual
 ```
@@ -81,7 +81,7 @@ MAX_DURATION = 300          # 최대 모니터링 시간 (초)
 ✅ 매도 주문 완료: ORDER_ID
 ```
 
-⚠️ **주의**: 
+⚠️ **주의**:
 - 실계좌에서 실행하지 마세요 (실제 주문 발생!)
 - 반드시 모의투자 모드(`virtual=true`)에서 먼저 테스트하세요
 

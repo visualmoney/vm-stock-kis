@@ -20,10 +20,10 @@
 
 ```bash
 # pip을 이용한 설치
-pip install python-kis
+pip install vm-stock-kis
 
 # 또는 git에서 직접 설치
-pip install git+https://github.com/visualmoney/python-kis.git
+pip install git+https://github.com/visualmoney/vm-stock-kis.git
 ```
 
 ### 사전 준비
@@ -43,10 +43,10 @@ pip install git+https://github.com/visualmoney/python-kis.git
 ### 첫 번째 실행
 
 ```python
-from pykis import PyKis, KisAuth
+from vmkis import VmKis, KisAuth
 
 # 방법 1: 직접 입력
-kis = PyKis(
+kis = VmKis(
     id="YOUR_HTS_ID",           # HTS 로그인 ID
     account="00000000-01",       # 계좌번호
     appkey="YOUR_APP_KEY",       # App Key 36자
@@ -67,10 +67,10 @@ kis.close()  # 또는 with 문 사용
 ### 가장 간단한 예제
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-# 1. PyKis 객체 생성
-kis = PyKis("secret.json", keep_token=True)
+# 1. VmKis 객체 생성
+kis = VmKis("secret.json", keep_token=True)
 
 # 2. 주식 시세 조회
 stock = kis.stock("000660")      # SK하이닉스
@@ -93,9 +93,9 @@ kis.close()
 ### Context Manager 사용 (권장)
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-with PyKis("secret.json", keep_token=True) as kis:
+with VmKis("secret.json", keep_token=True) as kis:
     # 자동으로 정리됨
     stock = kis.stock("000660")
     quote = stock.quote()
@@ -111,7 +111,7 @@ with PyKis("secret.json", keep_token=True) as kis:
 #### Step 1: 인증 정보 파일 생성
 
 ```python
-from pykis import KisAuth
+from vmkis import KisAuth
 
 # 인증 정보 생성
 auth = KisAuth(
@@ -128,15 +128,15 @@ auth.save("secret.json")
 #### Step 2: 저장된 파일 불러오기
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
 # 저장된 파일 불러오기
-kis = PyKis("secret.json", keep_token=True)
+kis = VmKis("secret.json", keep_token=True)
 
 # 또는
-from pykis import KisAuth
+from vmkis import KisAuth
 auth = KisAuth.load("secret.json")
-kis = PyKis(auth)
+kis = VmKis(auth)
 ```
 
 ### 2. 환경 변수 사용
@@ -149,13 +149,13 @@ KIS_SECRETKEY=your_secret_key
 KIS_ACCOUNT=your_account
 
 # Python 코드
-from pykis import PyKis
+from vmkis import VmKis
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-kis = PyKis(
+kis = VmKis(
     id=os.getenv("KIS_ID"),
     appkey=os.getenv("KIS_APPKEY"),
     secretkey=os.getenv("KIS_SECRETKEY"),
@@ -166,10 +166,10 @@ kis = PyKis(
 ### 3. 모의투자 설정
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
 # 실전 + 모의투자
-kis = PyKis(
+kis = VmKis(
     "real_secret.json",      # 실전 계정
     "virtual_secret.json",   # 모의 계정
     keep_token=True
@@ -188,16 +188,16 @@ virtual_balance = virtual_account.balance()
 ### 4. 토큰 관리
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
 # 토큰 자동 저장 (권장)
-kis = PyKis("secret.json", keep_token=True)
+kis = VmKis("secret.json", keep_token=True)
 
 # 토큰 자동 저장 비활성화
-kis = PyKis("secret.json", keep_token=False)
+kis = VmKis("secret.json", keep_token=False)
 
 # 커스텀 저장 경로
-kis = PyKis("secret.json", keep_token="~/.my_kis_tokens/")
+kis = VmKis("secret.json", keep_token="~/.my_kis_tokens/")
 ```
 
 ---
@@ -207,9 +207,9 @@ kis = PyKis("secret.json", keep_token="~/.my_kis_tokens/")
 ### 1. 국내 주식 시세
 
 ```python
-from pykis import PyKis
+from vmkis import VmKis
 
-kis = PyKis("secret.json")
+kis = VmKis("secret.json")
 stock = kis.stock("000660")  # SK하이닉스
 
 # 현재 시세
@@ -448,7 +448,7 @@ for execution in executions:
 ### 1. 실시간 시세
 
 ```python
-from pykis import KisSubscriptionEventArgs, KisRealtimePrice
+from vmkis import KisSubscriptionEventArgs, KisRealtimePrice
 
 stock = kis.stock("000660")
 
@@ -535,21 +535,21 @@ for ticket in tickets:
 ### 1. 로깅 설정
 
 ```python
-from pykis import logging
+from vmkis import logging
 
 # 로그 레벨 설정
 logging.setLevel("DEBUG")  # DEBUG, INFO, WARNING, ERROR, CRITICAL
 
 # 상세 에러 정보 표시
-from pykis.__env__ import TRACE_DETAIL_ERROR
+from vmkis.__env__ import TRACE_DETAIL_ERROR
 # TRACE_DETAIL_ERROR = True  # 주의: 앱키 노출될 수 있음
 ```
 
 ### 2. 에러 처리
 
 ```python
-from pykis.client.exceptions import KisAPIError, KisHTTPError
-from pykis.responses.exceptions import KisMarketNotOpenedError
+from vmkis.client.exceptions import KisAPIError, KisHTTPError
+from vmkis.responses.exceptions import KisMarketNotOpenedError
 
 try:
     stock = kis.stock("000660")
@@ -585,8 +585,8 @@ for symbol in symbols:
 ### 4. 성능 최적화
 
 ```python
-# 동일한 PyKis 인스턴스 재사용
-kis = PyKis("secret.json")
+# 동일한 VmKis 인스턴스 재사용
+kis = VmKis("secret.json")
 
 # 여러 요청에서 재사용
 for symbol in symbols:
@@ -605,8 +605,8 @@ for symbol in symbols:
 - 장 시작 시간을 확인하세요:
 
 ```python
-from pykis import PyKis
-kis = PyKis("secret.json")
+from vmkis import VmKis
+kis = VmKis("secret.json")
 
 # 장 운영 시간 확인
 trading_hours = kis.trading_hours()
@@ -622,12 +622,12 @@ import os
 assert os.path.exists("secret.json"), "파일 없음"
 
 # 2. 파일 내용 확인
-from pykis import KisAuth
+from vmkis import KisAuth
 auth = KisAuth.load("secret.json")
 print(auth)  # id, account 확인
 
 # 3. 직접 입력
-kis = PyKis(
+kis = VmKis(
     id="your_id",           # 확인
     appkey="..." * 2 + "...",  # 36자 확인
     secretkey="..." * 6,    # 180자 확인
@@ -640,7 +640,7 @@ kis = PyKis(
 **A:** 요청 속도를 줄이세요:
 ```python
 # 자동 rate limiting 확인
-from pykis import logging
+from vmkis import logging
 logging.setLevel("DEBUG")  # 대기 시간 확인
 
 # 대량 요청은 시간 간격을 두고
@@ -679,12 +679,12 @@ orders = account.pending_orders()  # 미체결 주문 재조회
 ### 1. 모듈 임포트 실패
 
 ```python
-# ImportError: cannot import name 'PyKis'
+# ImportError: cannot import name 'VmKis'
 # 해결: 설치 확인
-pip list | grep python-kis
+pip list | grep vm-stock-kis
 
 # 재설치
-pip install --upgrade python-kis
+pip install --upgrade vm-stock-kis
 ```
 
 ### 2. 토큰 관련 에러
@@ -694,7 +694,7 @@ pip install --upgrade python-kis
 import os
 import shutil
 
-token_dir = os.path.expanduser("~/.pykis/")
+token_dir = os.path.expanduser("~/.vmkis/")
 if os.path.exists(token_dir):
     shutil.rmtree(token_dir)
 
@@ -705,7 +705,7 @@ if os.path.exists(token_dir):
 
 ```python
 # WebSocket 비활성화로 테스트
-kis = PyKis("secret.json", use_websocket=False)
+kis = VmKis("secret.json", use_websocket=False)
 
 # 또는 나중에 웹소켓 사용
 websocket = kis.websocket  # 필요시만
@@ -714,7 +714,7 @@ websocket = kis.websocket  # 필요시만
 ### 4. 로그 파일 위치
 
 ```python
-from pykis.utils.workspace import get_cache_path
+from vmkis.utils.workspace import get_cache_path
 
 cache_dir = get_cache_path()
 print(f"캐시 경로: {cache_dir}")
@@ -738,7 +738,7 @@ for symbol in symbols:
 
 ## 추가 자료
 
-- 🔗 [GitHub Repository](https://github.com/visualmoney/python-kis)
+- 🔗 [GitHub Repository](https://github.com/visualmoney/vm-stock-kis)
 - 📖 [API 아키텍처 문서](../architecture/ARCHITECTURE.md)
 - 👨‍💻 [개발자 가이드](../developer/DEVELOPER_GUIDE.md)
 - 📋 [한국투자증권 공식 API](https://apiportal.koreainvestment.com/)

@@ -32,7 +32,6 @@ real_secret.json
 virtual_secret.json
 
 .venv/
-.python-version
 .coverage
 /htmlcov/
 /reports/

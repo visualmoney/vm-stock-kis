@@ -1,6 +1,6 @@
 import pytest
 
-from pykis.event.handler import (
+from vmkis.event.handler import (
     KisEventArgs,
     KisLambdaEventFilter,
     KisMultiEventFilter,

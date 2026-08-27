@@ -1,7 +1,7 @@
 import pytest
 from datetime import timedelta
 
-from pykis.utils.timex import parse_timex, timex
+from vmkis.utils.timex import parse_timex, timex
 
 
 @pytest.mark.parametrize(

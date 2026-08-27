@@ -3,8 +3,8 @@ from decimal import Decimal
 from unittest.mock import MagicMock, Mock, patch
 import pytest
 
-from pykis.api.stock import day_chart
-from pykis.utils.timezone import TIMEZONE
+from vmkis.api.stock import day_chart
+from vmkis.utils.timezone import TIMEZONE
 
 
 class _MockBar:
@@ -22,7 +22,7 @@ class _MockBar:
         self.volume = volume
         self.amount = Decimal(str(amount))
         self.change = Decimal(str(change))
-    
+
     @property
     def sign(self):
         """전일대비 부호"""
@@ -41,13 +41,13 @@ class _MockBar:
     @property
     def rate(self):
         """등락률 (-100 ~ 100)"""
-        from pykis.utils.math import safe_divide
+        from vmkis.utils.math import safe_divide
         return safe_divide(self.change, self.prev_price) * 100
 
     @property
     def sign_name(self):
         """대비부호명"""
-        from pykis.api.stock.quote import STOCK_SIGN_TYPE_KOR_MAP
+        from vmkis.api.stock.quote import STOCK_SIGN_TYPE_KOR_MAP
         return STOCK_SIGN_TYPE_KOR_MAP[self.sign]
 
 
@@ -71,7 +71,7 @@ class TestDropAfter:
         chart = _MockChart([b4, b3, b2, b1])
 
         result = day_chart.drop_after(chart, start=time(10, 0, 0), end=time(11, 0, 0))
-        
+
         # drop_after reverses the output, keeping bars that match filters
         assert len(result.bars) == 2
         assert result.bars[0].time.time() == time(10, 0, 0)
@@ -85,7 +85,7 @@ class TestDropAfter:
         chart = _MockChart([b1, b2, b3])
 
         result = day_chart.drop_after(chart, start=timedelta(hours=1))
-        
+
         # Should keep bars within 1 hour from the first bar (12:00)
         assert len(result.bars) >= 1
 
@@ -95,7 +95,7 @@ class TestDropAfter:
         chart = _MockChart(bars)
 
         result = day_chart.drop_after(chart, period=3)
-        
+
         # Should keep every 3rd bar
         assert len(result.bars) == 4  # indices 0, 3, 6, 9
 
@@ -106,7 +106,7 @@ class TestDropAfter:
         chart = _MockChart([b1, b2])
 
         result = day_chart.drop_after(chart)
-        
+
         assert len(result.bars) == 2
         # Bars should be reversed
         assert result.bars[0] == b2
@@ -153,7 +153,7 @@ class TestKisDomesticDayChartBar:
         bar_rise = _MockBar(datetime(2020, 1, 1, 9, 0, 0), change=1)
         bar_decline = _MockBar(datetime(2020, 1, 1, 9, 0, 0), change=-1)
         bar_steady = _MockBar(datetime(2020, 1, 1, 9, 0, 0), change=0)
-        
+
         assert bar_rise.sign_name in ["상승", "상한", "상한가"]
         assert bar_decline.sign_name in ["하락", "하한", "하한가"]
         assert bar_steady.sign_name == "보합"
@@ -166,26 +166,26 @@ class TestDomesticDayChart:
     def test_validates_empty_symbol(self):
         """domestic_day_chart raises ValueError for empty symbol."""
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             day_chart.domestic_day_chart(fake_kis, "")
 
     def test_validates_invalid_period(self):
         """domestic_day_chart raises ValueError for invalid period."""
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="간격은 1분 이상이어야 합니다"):
             day_chart.domestic_day_chart(fake_kis, "005930", period=0)
 
     def test_validates_start_after_end(self):
         """domestic_day_chart raises ValueError when start is after end."""
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="시작 시간은 종료 시간보다 이전이어야 합니다"):
             day_chart.domestic_day_chart(
-                fake_kis, 
-                "005930", 
-                start=time(15, 0, 0), 
+                fake_kis,
+                "005930",
+                start=time(15, 0, 0),
                 end=time(9, 0, 0)
             )
 
@@ -197,9 +197,9 @@ class TestDomesticDayChart:
             _MockBar(datetime(2020, 1, 1, 9, 30, 0)),
         ])
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.domestic_day_chart(fake_kis, "005930")
-        
+
         assert fake_kis.fetch.called
         assert result == mock_chart
 
@@ -212,13 +212,13 @@ class TestDomesticDayChart:
             _MockBar(datetime(2020, 1, 1, 10, 0, 0)),
         ])
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.domestic_day_chart(
-            fake_kis, 
-            "005930", 
+            fake_kis,
+            "005930",
             start=timedelta(hours=1)
         )
-        
+
         assert result is not None
 
 
@@ -229,65 +229,65 @@ class TestForeignDayChart:
     def test_validates_empty_symbol(self):
         """foreign_day_chart raises ValueError for empty symbol."""
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             day_chart.foreign_day_chart(fake_kis, "", "NAS")
 
     def test_validates_invalid_period(self):
         """foreign_day_chart raises ValueError for invalid period."""
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="간격은 1분 이상이어야 합니다"):
             day_chart.foreign_day_chart(fake_kis, "AAPL", "NAS", period=0)
 
     def test_validates_krx_market(self):
         """foreign_day_chart raises ValueError for KRX market."""
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="국내 시장은 domestic_chart"):
             day_chart.foreign_day_chart(fake_kis, "005930", "KRX")
 
-    @patch('pykis.api.stock.quote.quote')
+    @patch('vmkis.api.stock.quote.quote')
     def test_fetches_with_quote_for_prev_price(self, mock_quote):
         """foreign_day_chart fetches quote to get prev_price."""
         fake_kis = Mock()
         mock_quote_result = Mock()
         mock_quote_result.prev_price = Decimal("150.0")
         mock_quote.return_value = mock_quote_result
-        
+
         mock_chart = Mock()
         mock_chart.bars = [_MockBar(datetime(2020, 1, 1, 10, 0, 0))]
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.foreign_day_chart(
-            fake_kis, 
-            "AAPL", 
-            "NASDAQ", 
+            fake_kis,
+            "AAPL",
+            "NASDAQ",
             once=True
         )
-        
+
         mock_quote.assert_called_once_with(fake_kis, "AAPL", "NASDAQ")
         assert fake_kis.fetch.called
 
-    @patch('pykis.api.stock.quote.quote')
+    @patch('vmkis.api.stock.quote.quote')
     def test_handles_once_parameter(self, mock_quote):
         """foreign_day_chart respects once parameter."""
         fake_kis = Mock()
         mock_quote_result = Mock()
         mock_quote_result.prev_price = Decimal("150.0")
         mock_quote.return_value = mock_quote_result
-        
+
         mock_chart = Mock()
         mock_chart.bars = [_MockBar(datetime(2020, 1, 1, 10, 0, 0))]
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.foreign_day_chart(
-            fake_kis, 
-            "AAPL", 
-            "NASDAQ", 
+            fake_kis,
+            "AAPL",
+            "NASDAQ",
             once=True
         )
-        
+
         # Should only fetch once when once=True
         assert fake_kis.fetch.call_count == 1
 
@@ -296,25 +296,25 @@ class TestForeignDayChart:
 class TestDayChart:
     """Tests for day_chart wrapper function."""
 
-    @patch('pykis.api.stock.day_chart.domestic_day_chart')
+    @patch('vmkis.api.stock.day_chart.domestic_day_chart')
     def test_routes_to_domestic_for_krx(self, mock_domestic):
         """day_chart routes to domestic_day_chart for KRX market."""
         fake_kis = Mock()
         mock_domestic.return_value = _MockChart()
-        
+
         result = day_chart.day_chart(fake_kis, "005930", "KRX")
-        
+
         mock_domestic.assert_called_once()
         assert result is not None
 
-    @patch('pykis.api.stock.day_chart.foreign_day_chart')
+    @patch('vmkis.api.stock.day_chart.foreign_day_chart')
     def test_routes_to_foreign_for_non_krx(self, mock_foreign):
         """day_chart routes to foreign_day_chart for non-KRX markets."""
         fake_kis = Mock()
         mock_foreign.return_value = Mock()
-        
+
         result = day_chart.day_chart(fake_kis, "AAPL", "NASDAQ")
-        
+
         mock_foreign.assert_called_once()
         assert result is not None
 
@@ -323,7 +323,7 @@ class TestDayChart:
 class TestProductDayChart:
     """Tests for product_day_chart function."""
 
-    @patch('pykis.api.stock.day_chart.day_chart')
+    @patch('vmkis.api.stock.day_chart.day_chart')
     def test_calls_day_chart_with_product_attributes(self, mock_day_chart):
         """product_day_chart calls day_chart with product's symbol and market."""
         mock_product = Mock()
@@ -331,14 +331,14 @@ class TestProductDayChart:
         mock_product.symbol = "005930"
         mock_product.market = "KRX"
         mock_day_chart.return_value = _MockChart()
-        
+
         result = day_chart.product_day_chart(
             mock_product,
             start=time(9, 0, 0),
             end=time(15, 30, 0),
             period=5
         )
-        
+
         mock_day_chart.assert_called_once_with(
             mock_product.kis,
             symbol="005930",
@@ -387,7 +387,7 @@ class TestDropAfterEdgeCases:
         """drop_after with timedelta handles boundary conditions."""
         b1 = _MockBar(datetime(2020, 1, 1, 0, 30, 0))
         chart = _MockChart([b1])
-        
+
         # When timedelta is larger than time elapsed since midnight
         result = day_chart.drop_after(chart, start=timedelta(hours=2))
         assert len(result.bars) >= 0
@@ -399,26 +399,26 @@ class TestDomesticDayChartEdgeCases:
     def test_domestic_day_chart_multiple_pages(self):
         """domestic_day_chart fetches multiple pages until exhausted."""
         fake_kis = Mock()
-        
+
         # First page with data
         chart1 = _MockChart([
             _MockBar(datetime(2020, 1, 1, 15, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 14, 0, 0)),
         ])
-        
+
         # Second page with data
         chart2 = _MockChart([
             _MockBar(datetime(2020, 1, 1, 13, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 12, 0, 0)),
         ])
-        
+
         # Third page empty
         chart3 = _MockChart([])
-        
+
         fake_kis.fetch.side_effect = [chart1, chart2, chart3]
-        
+
         result = day_chart.domestic_day_chart(fake_kis, "005930")
-        
+
         assert fake_kis.fetch.call_count == 3
         assert len(result.bars) == 4
 
@@ -430,103 +430,103 @@ class TestDomesticDayChartEdgeCases:
             _MockBar(datetime(2020, 1, 1, 10, 0, 0)),
         ])
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.domestic_day_chart(
-            fake_kis, 
-            "005930", 
+            fake_kis,
+            "005930",
             end=time(14, 0, 0)
         )
-        
+
         assert result is not None
 
 
 class TestForeignDayChartEdgeCases:
     """Additional edge cases for foreign_day_chart."""
 
-    @patch('pykis.api.stock.quote.quote')
+    @patch('vmkis.api.stock.quote.quote')
     def test_foreign_day_chart_multiple_periods(self, mock_quote):
         """foreign_day_chart fetches multiple periods."""
         fake_kis = Mock()
         mock_quote_result = Mock()
         mock_quote_result.prev_price = Decimal("150.0")
         mock_quote.return_value = mock_quote_result
-        
+
         # Create charts for different periods - need enough for potential multiple iterations
         def create_chart():
             mock_chart = Mock()
             mock_chart.bars = [_MockBar(datetime(2020, 1, 1, 10, 0, 0))]
             return mock_chart
-        
+
         # Make fetch return charts indefinitely
         fake_kis.fetch.return_value = create_chart()
-        
+
         result = day_chart.foreign_day_chart(
-            fake_kis, 
-            "AAPL", 
+            fake_kis,
+            "AAPL",
             "NASDAQ",
             once=True
         )
-        
+
         assert result is not None
         # Should call at least once
         assert fake_kis.fetch.call_count == 1
 
-    @patch('pykis.api.stock.quote.quote')
+    @patch('vmkis.api.stock.quote.quote')
     def test_foreign_day_chart_with_time_filters(self, mock_quote):
         """foreign_day_chart applies time filtering."""
         fake_kis = Mock()
         mock_quote_result = Mock()
         mock_quote_result.prev_price = Decimal("150.0")
         mock_quote.return_value = mock_quote_result
-        
+
         mock_chart = Mock()
         mock_chart.bars = [
             _MockBar(datetime(2020, 1, 1, 12, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 10, 0, 0)),
         ]
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.foreign_day_chart(
-            fake_kis, 
-            "AAPL", 
+            fake_kis,
+            "AAPL",
             "NASDAQ",
             start=time(11, 0, 0),
             end=time(13, 0, 0),
             once=True
         )
-        
+
         assert result is not None
 
-    @patch('pykis.api.stock.quote.quote')
+    @patch('vmkis.api.stock.quote.quote')
     def test_foreign_day_chart_with_period(self, mock_quote):
         """foreign_day_chart applies period filtering."""
         fake_kis = Mock()
         mock_quote_result = Mock()
         mock_quote_result.prev_price = Decimal("150.0")
         mock_quote.return_value = mock_quote_result
-        
+
         mock_chart = Mock()
         mock_chart.bars = [_MockBar(datetime(2020, 1, 1, 10 + i, 0, 0)) for i in range(10)]
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.foreign_day_chart(
-            fake_kis, 
-            "AAPL", 
+            fake_kis,
+            "AAPL",
             "NASDAQ",
             period=5,
             once=True
         )
-        
+
         assert result is not None
 
-    @patch('pykis.api.stock.quote.quote')
+    @patch('vmkis.api.stock.quote.quote')
     def test_foreign_day_chart_with_empty_bars_and_timedelta(self, mock_quote):
         """foreign_day_chart handles timedelta with start parameter."""
         fake_kis = Mock()
         mock_quote_result = Mock()
         mock_quote_result.prev_price = Decimal("150.0")
         mock_quote.return_value = mock_quote_result
-        
+
         # Return chart with bars to test timedelta logic
         mock_chart = Mock()
         mock_chart.bars = [
@@ -534,15 +534,15 @@ class TestForeignDayChartEdgeCases:
             _MockBar(datetime(2020, 1, 1, 11, 0, 0)),
         ]
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.foreign_day_chart(
-            fake_kis, 
-            "AAPL", 
+            fake_kis,
+            "AAPL",
             "NASDAQ",
             start=timedelta(hours=2),
             once=True
         )
-        
+
         assert result is not None
 
 
@@ -573,7 +573,7 @@ class TestDomesticDayChartIntegration:
     def test_domestic_day_chart_respects_start_time(self):
         """domestic_day_chart filters by start time correctly."""
         fake_kis = Mock()
-        
+
         chart1 = _MockChart([
             _MockBar(datetime(2020, 1, 1, 15, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 14, 0, 0)),
@@ -586,15 +586,15 @@ class TestDomesticDayChartIntegration:
             _MockBar(datetime(2020, 1, 1, 11, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 10, 0, 0)),
         ])
-        
+
         fake_kis.fetch.side_effect = [chart1, chart2, chart3]
-        
+
         result = day_chart.domestic_day_chart(
-            fake_kis, 
+            fake_kis,
             "005930",
             start=time(11, 30, 0)
         )
-        
+
         assert result is not None
         # Should break when reaching start time
         assert fake_kis.fetch.call_count >= 1
@@ -605,13 +605,13 @@ class TestDomesticDayChartIntegration:
         bars = [_MockBar(datetime(2020, 1, 1, 9, i, 0)) for i in range(0, 60, 1)]
         mock_chart = _MockChart(bars)
         fake_kis.fetch.return_value = mock_chart
-        
+
         result = day_chart.domestic_day_chart(
-            fake_kis, 
+            fake_kis,
             "005930",
             period=5
         )
-        
+
         assert result is not None
 
 
@@ -631,7 +631,7 @@ class TestKisDomesticDayChartBarIntegration:
             "cntg_vol": "1000",
             "acml_tr_pbmn": "100000.0"
         }
-        
+
         # Test that the bar can be initialized
         bar = day_chart.KisDomesticDayChartBar()
         # Manually set attributes for testing
@@ -644,7 +644,7 @@ class TestKisDomesticDayChartBarIntegration:
         bar.volume = 1000
         bar.amount = Decimal("100000.0")
         bar.change = Decimal("5.0")
-        
+
         # Test properties
         assert bar.sign == "rise"
         assert bar.price == Decimal("105.0")
@@ -668,7 +668,7 @@ class TestKisForeignDayChartBarIntegration:
         bar.volume = 5000
         bar.amount = Decimal("750000.0")
         bar.change = Decimal("5.0")
-        
+
         # Test properties
         assert bar.sign == "rise"
         assert bar.price == Decimal("155.0")
@@ -690,32 +690,32 @@ class TestDomesticDayChartCursorLogic:
     def test_cursor_breaks_on_start_time(self):
         """Test that cursor stops fetching when start time is reached."""
         fake_kis = Mock()
-        
+
         # Create bars that go back in time
         chart1 = _MockChart([
             _MockBar(datetime(2020, 1, 1, 15, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 14, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 13, 0, 0)),
         ])
-        
+
         chart2 = _MockChart([
             _MockBar(datetime(2020, 1, 1, 12, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 11, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 10, 0, 0)),
         ])
-        
+
         # Third fetch returns empty to stop pagination
         chart3 = _MockChart([])
-        
+
         fake_kis.fetch.side_effect = [chart1, chart2, chart3]
-        
+
         result = day_chart.domestic_day_chart(
             fake_kis,
             "005930",
             start=time(11, 0, 0),
             end=time(15, 30, 0)
         )
-        
+
         assert result is not None
         assert fake_kis.fetch.call_count >= 2
 
@@ -726,22 +726,22 @@ class TestDomesticDayChartLoopTermination:
     def test_cursor_less_than_last_time(self):
         """Test pagination stops when cursor is before last bar time."""
         fake_kis = Mock()
-        
+
         # First fetch returns bars
         chart1 = _MockChart([
             _MockBar(datetime(2020, 1, 1, 15, 0, 0)),
             _MockBar(datetime(2020, 1, 1, 14, 30, 0)),
         ])
-        
+
         # Set up end time after first bar to trigger early cursor break
         fake_kis.fetch.return_value = chart1
-        
+
         result = day_chart.domestic_day_chart(
             fake_kis,
             "005930",
             end=time(14, 0, 0)  # Before the last bar
         )
-        
+
         assert result is not None
     # other runtime behaviors require a real `fetch` method on the client; skip here
 
@@ -753,9 +753,9 @@ class TestKisDomesticDailyChartBar:
 
     def test_properties_integration(self):
         """Test all properties work correctly via KisObject.transform_."""
-        from pykis.api.stock.daily_chart import KisDomesticDailyChartBar
-        from pykis.responses.dynamic import KisObject
-        
+        from vmkis.api.stock.daily_chart import KisDomesticDailyChartBar
+        from vmkis.responses.dynamic import KisObject
+
         # Create mock API response data
         bar_data = {
             "stck_bsop_date": "20231201",
@@ -770,9 +770,9 @@ class TestKisDomesticDailyChartBar:
             "flng_cls_code": "00",
             "prtt_rate": "0",
         }
-        
+
         bar = KisObject.transform_(bar_data, KisDomesticDailyChartBar)
-        
+
         # Test properties
         assert bar.price == Decimal("66500")
         assert bar.prev_price == Decimal("65000")
@@ -784,10 +784,10 @@ class TestKisDomesticDailyChartBar:
 
     def test_ex_date_type_mapping(self):
         """Test ExDateType mapping from code."""
-        from pykis.api.stock.daily_chart import KisDomesticDailyChartBar
-        from pykis.responses.dynamic import KisObject
-        from pykis.api.stock.market import ExDateType
-        
+        from vmkis.api.stock.daily_chart import KisDomesticDailyChartBar
+        from vmkis.responses.dynamic import KisObject
+        from vmkis.api.stock.market import ExDateType
+
         # Test rights ex-date (code "01" = EX_RIGHTS)
         bar_data_rights = {
             "stck_bsop_date": "20231201",
@@ -802,10 +802,10 @@ class TestKisDomesticDailyChartBar:
             "flng_cls_code": "01",  # EX_RIGHTS
             "prtt_rate": "0",
         }
-        
+
         bar = KisObject.transform_(bar_data_rights, KisDomesticDailyChartBar)
         assert bar.ex_date_type == ExDateType.EX_RIGHTS
-        
+
         # Test dividend ex-date (code "02" = EX_DIVIDEND)
         bar_data_dividend = bar_data_rights.copy()
         bar_data_dividend["flng_cls_code"] = "02"
@@ -814,9 +814,9 @@ class TestKisDomesticDailyChartBar:
 
     def test_sign_mapping(self):
         """Test sign type mapping."""
-        from pykis.api.stock.daily_chart import KisDomesticDailyChartBar
-        from pykis.responses.dynamic import KisObject
-        
+        from vmkis.api.stock.daily_chart import KisDomesticDailyChartBar
+        from vmkis.responses.dynamic import KisObject
+
         base_data = {
             "stck_bsop_date": "20231201",
             "stck_oprc": "65000",
@@ -829,14 +829,14 @@ class TestKisDomesticDailyChartBar:
             "flng_cls_code": "00",
             "prtt_rate": "0",
         }
-        
+
         # Test rise (2)
         bar_data_rise = base_data.copy()
         bar_data_rise["prdy_vrss_sign"] = "2"
         bar_rise = KisObject.transform_(bar_data_rise, KisDomesticDailyChartBar)
         assert bar_rise.sign == "rise"
         assert bar_rise.sign_name in ["상승", "상한", "상한가"]
-        
+
         # Test decline (5)
         bar_data_decline = base_data.copy()
         bar_data_decline["prdy_vrss_sign"] = "5"
@@ -844,7 +844,7 @@ class TestKisDomesticDailyChartBar:
         bar_decline = KisObject.transform_(bar_data_decline, KisDomesticDailyChartBar)
         assert bar_decline.sign == "decline"
         assert bar_decline.sign_name in ["하락", "하한", "하한가"]
-        
+
         # Test steady (3)
         bar_data_steady = base_data.copy()
         bar_data_steady["prdy_vrss_sign"] = "3"
@@ -859,8 +859,8 @@ class TestKisDomesticDailyChart:
 
     def test_initialization(self):
         """Test chart initialization."""
-        from pykis.api.stock.daily_chart import KisDomesticDailyChart
-        
+        from vmkis.api.stock.daily_chart import KisDomesticDailyChart
+
         chart = KisDomesticDailyChart(symbol="005930")
         assert chart.symbol == "005930"
         assert chart.market == "KRX"
@@ -868,10 +868,10 @@ class TestKisDomesticDailyChart:
 
     def test_pre_init_filters_empty_bars(self):
         """Test that __pre_init__ filters out empty bars."""
-        from pykis.api.stock.daily_chart import KisDomesticDailyChart
-        
+        from vmkis.api.stock.daily_chart import KisDomesticDailyChart
+
         chart = KisDomesticDailyChart(symbol="005930")
-        
+
         # Mock data with some empty items - must include rt_cd for KisResponse
         data = {
             "rt_cd": "0",  # Success code required by KisResponse
@@ -891,14 +891,14 @@ class TestKisDomesticDailyChart:
                  "flng_cls_code": "00", "prtt_rate": "0"},
             ]
         }
-        
+
         chart.__pre_init__(data)
         # Should have filtered out None and empty dict
         assert len(data["output2"]) == 2
 
     @pytest.mark.skip(reason="raise_not_found는 __response__ 필드를 필요로 하므로 실제 API 호출 과정에서만 테스트 가능")
     def test_pre_init_raises_not_found(self):
-        """Test __pre_init__ raises error when no data. (SKIPPED: Needs full API response structure)"""        
+        """Test __pre_init__ raises error when no data. (SKIPPED: Needs full API response structure)"""
         pass
 
 
@@ -907,9 +907,9 @@ class TestKisForeignDailyChartBar:
 
     def test_properties_integration(self):
         """Test all properties work correctly via KisObject.transform_."""
-        from pykis.api.stock.daily_chart import KisForeignDailyChartBar
-        from pykis.responses.dynamic import KisObject
-        
+        from vmkis.api.stock.daily_chart import KisForeignDailyChartBar
+        from vmkis.responses.dynamic import KisObject
+
         # Create mock API response data
         bar_data = {
             "xymd": "20231201",
@@ -922,16 +922,16 @@ class TestKisForeignDailyChartBar:
             "diff": "1.50",
             "sign": "2",  # Rise
         }
-        
+
         bar = KisObject.transform_(bar_data, KisForeignDailyChartBar)
-        
+
         # Test properties
         assert bar.price == Decimal("152.00")
         assert bar.prev_price == Decimal("150.50")
         assert bar.change == Decimal("1.50")
         assert bar.sign == "rise"
         assert bar.sign_name in ["상승", "상한", "상한가"]
-        
+
         # Test decline case
         bar_data_decline = bar_data.copy()
         bar_data_decline["sign"] = "5"
@@ -946,18 +946,18 @@ class TestKisForeignDailyChart:
 
     def test_initialization(self):
         """Test chart initialization."""
-        from pykis.api.stock.daily_chart import KisForeignDailyChart
-        
+        from vmkis.api.stock.daily_chart import KisForeignDailyChart
+
         chart = KisForeignDailyChart(symbol="AAPL", market="NASDAQ")
         assert chart.symbol == "AAPL"
         assert chart.market == "NASDAQ"
 
     def test_pre_init_sets_timezone(self):
         """Test __pre_init__ sets timezone from market."""
-        from pykis.api.stock.daily_chart import KisForeignDailyChart
-        
+        from vmkis.api.stock.daily_chart import KisForeignDailyChart
+
         chart = KisForeignDailyChart(symbol="AAPL", market="NASDAQ")
-        
+
         data = {
             "rt_cd": "0",  # Required by KisResponse
             "msg_cd": "MCA00000",
@@ -975,9 +975,9 @@ class TestKisForeignDailyChart:
                  "tamt": "670000000", "diff": "1.00", "sign": "2"},
             ]
         }
-        
+
         chart.__pre_init__(data)
-        
+
         # Should slice to nrec count
         assert len(data["output2"]) == 2
         assert chart.timezone is not None
@@ -989,22 +989,22 @@ class TestKisForeignDailyChart:
 
     def test_post_init_sets_timezones(self):
         """Test __post_init__ sets bar timezones."""
-        from pykis.api.stock.daily_chart import KisForeignDailyChart
-        
+        from vmkis.api.stock.daily_chart import KisForeignDailyChart
+
         chart = KisForeignDailyChart(symbol="AAPL", market="NASDAQ")
-        
+
         # Create mock bars
         from datetime import datetime
         bar1 = Mock()
         bar1.time = datetime(2023, 12, 1, 9, 30, 0)
         bar2 = Mock()
         bar2.time = datetime(2023, 11, 30, 9, 30, 0)
-        
+
         chart.bars = [bar1, bar2]
         chart.timezone = TIMEZONE
-        
+
         chart.__post_init__()
-        
+
         # Verify timezone conversion was attempted
         assert hasattr(bar1, 'time_kst')
         assert hasattr(bar2, 'time_kst')
@@ -1015,9 +1015,9 @@ class TestDropAfterWithDate:
 
     def test_drop_after_with_date_start(self):
         """Test drop_after with date start parameter."""
-        from pykis.api.stock.daily_chart import drop_after
+        from vmkis.api.stock.daily_chart import drop_after
         from datetime import date as dt_date
-        
+
         bars = [
             _MockBar(datetime(2023, 12, 5, 9, 0, 0)),
             _MockBar(datetime(2023, 12, 4, 9, 0, 0)),
@@ -1026,26 +1026,26 @@ class TestDropAfterWithDate:
             _MockBar(datetime(2023, 12, 1, 9, 0, 0)),
         ]
         chart = _MockChart(bars)
-        
+
         result = drop_after(chart, start=dt_date(2023, 12, 3), end=dt_date(2023, 12, 5))
-        
+
         # Should keep bars from Dec 3-5
         assert len(result.bars) == 3
 
     def test_drop_after_with_date_end_only(self):
         """Test drop_after with only end date."""
-        from pykis.api.stock.daily_chart import drop_after
+        from vmkis.api.stock.daily_chart import drop_after
         from datetime import date as dt_date
-        
+
         bars = [
             _MockBar(datetime(2023, 12, 5, 9, 0, 0)),
             _MockBar(datetime(2023, 12, 4, 9, 0, 0)),
             _MockBar(datetime(2023, 12, 3, 9, 0, 0)),
         ]
         chart = _MockChart(bars)
-        
+
         result = drop_after(chart, end=dt_date(2023, 12, 4))
-        
+
         # Should keep bars up to Dec 4
         assert len(result.bars) <= 3
 
@@ -1055,150 +1055,150 @@ class TestDomesticDailyChart:
 
     def test_validates_empty_symbol(self):
         """Test validation of empty symbol."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
-        
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
+
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             domestic_daily_chart(fake_kis, "")
 
     def test_datetime_conversion(self):
         """Test start/end datetime conversion to date."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
-        
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([
             _MockBar(datetime(2023, 12, 1, 9, 0, 0)),
         ])
         fake_kis.fetch.return_value = chart
-        
+
         result = domestic_daily_chart(
             fake_kis,
             "005930",
             start=datetime(2023, 11, 1, 0, 0, 0),
             end=datetime(2023, 12, 1, 23, 59, 59)
         )
-        
+
         assert result is not None
 
     def test_start_end_swap(self):
         """Test that start and end are swapped if start > end."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
         from datetime import date as dt_date
-        
+
         fake_kis = Mock()
         chart = _MockChart([
             _MockBar(datetime(2023, 12, 1, 9, 0, 0)),
         ])
         fake_kis.fetch.return_value = chart
-        
+
         result = domestic_daily_chart(
             fake_kis,
             "005930",
             start=dt_date(2023, 12, 1),  # Later date
             end=dt_date(2023, 11, 1)     # Earlier date
         )
-        
+
         assert result is not None
         # Verify fetch was called (dates should be swapped internally)
         assert fake_kis.fetch.called
 
     def test_period_mapping(self):
         """Test period parameter mapping."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
-        
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_kis.fetch.return_value = chart
-        
+
         # Test week period
         result = domestic_daily_chart(fake_kis, "005930", period="week")
         assert fake_kis.fetch.call_args[1]["params"]["FID_PERIOD_DIV_CODE"] == "W"
-        
+
         fake_kis.reset_mock()
         fake_kis.fetch.return_value = chart
-        
+
         # Test month period
         result = domestic_daily_chart(fake_kis, "005930", period="month")
         assert fake_kis.fetch.call_args[1]["params"]["FID_PERIOD_DIV_CODE"] == "M"
-        
+
         fake_kis.reset_mock()
         fake_kis.fetch.return_value = chart
-        
+
         # Test year period
         result = domestic_daily_chart(fake_kis, "005930", period="year")
         assert fake_kis.fetch.call_args[1]["params"]["FID_PERIOD_DIV_CODE"] == "Y"
 
     def test_adjust_parameter(self):
         """Test adjust price parameter."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
-        
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_kis.fetch.return_value = chart
-        
+
         # Test with adjust=True
         result = domestic_daily_chart(fake_kis, "005930", adjust=True)
         assert fake_kis.fetch.call_args[1]["params"]["FID_ORG_ADJ_PRC"] == "0"
-        
+
         fake_kis.reset_mock()
         fake_kis.fetch.return_value = chart
-        
+
         # Test with adjust=False
         result = domestic_daily_chart(fake_kis, "005930", adjust=False)
         assert fake_kis.fetch.call_args[1]["params"]["FID_ORG_ADJ_PRC"] == "1"
 
     def test_pagination_logic(self):
         """Test pagination with multiple fetches."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
         from datetime import date as dt_date
-        
+
         fake_kis = Mock()
-        
+
         # First fetch
         chart1 = _MockChart([
             _MockBar(datetime(2023, 12, 5, 9, 0, 0)),
             _MockBar(datetime(2023, 12, 4, 9, 0, 0)),
         ])
-        
+
         # Second fetch
         chart2 = _MockChart([
             _MockBar(datetime(2023, 12, 3, 9, 0, 0)),
             _MockBar(datetime(2023, 12, 2, 9, 0, 0)),
         ])
-        
+
         # Third fetch - empty to stop
         chart3 = _MockChart([])
-        
+
         fake_kis.fetch.side_effect = [chart1, chart2, chart3]
-        
+
         result = domestic_daily_chart(
             fake_kis,
             "005930",
             start=dt_date(2023, 12, 1),
             end=dt_date(2023, 12, 5)
         )
-        
+
         assert result is not None
         assert fake_kis.fetch.call_count >= 2
 
     def test_timedelta_start_calculation(self):
         """Test timedelta start parameter calculation."""
-        from pykis.api.stock.daily_chart import domestic_daily_chart
-        
+        from vmkis.api.stock.daily_chart import domestic_daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([
             _MockBar(datetime(2023, 12, 5, 9, 0, 0)),
             _MockBar(datetime(2023, 12, 4, 9, 0, 0)),
         ])
         fake_kis.fetch.return_value = chart
-        
+
         result = domestic_daily_chart(
             fake_kis,
             "005930",
             start=timedelta(days=5)
         )
-        
+
         assert result is not None
 
 
@@ -1207,21 +1207,21 @@ class TestForeignDailyChart:
 
     def test_validates_empty_symbol(self):
         """Test validation of empty symbol."""
-        from pykis.api.stock.daily_chart import foreign_daily_chart
-        
+        from vmkis.api.stock.daily_chart import foreign_daily_chart
+
         fake_kis = Mock()
-        
+
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             foreign_daily_chart(fake_kis, "", "NYSE")
 
     def test_datetime_conversion(self):
         """Test datetime to date conversion."""
-        from pykis.api.stock.daily_chart import foreign_daily_chart
-        
+        from vmkis.api.stock.daily_chart import foreign_daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_kis.fetch.return_value = chart
-        
+
         result = foreign_daily_chart(
             fake_kis,
             "AAPL",
@@ -1229,41 +1229,41 @@ class TestForeignDailyChart:
             start=datetime(2023, 11, 1),
             end=datetime(2023, 12, 1)
         )
-        
+
         assert result is not None
 
     def test_period_mapping(self):
         """Test period parameter mapping."""
-        from pykis.api.stock.daily_chart import foreign_daily_chart
-        
+        from vmkis.api.stock.daily_chart import foreign_daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_kis.fetch.return_value = chart
-        
+
         # Test day
         result = foreign_daily_chart(fake_kis, "AAPL", "NASDAQ", period="day")
         assert fake_kis.fetch.call_args[1]["params"]["GUBN"] == "0"
-        
+
         fake_kis.reset_mock()
         fake_kis.fetch.return_value = chart
-        
+
         # Test week
         result = foreign_daily_chart(fake_kis, "AAPL", "NASDAQ", period="week")
         assert fake_kis.fetch.call_args[1]["params"]["GUBN"] == "1"
-        
+
         fake_kis.reset_mock()
         fake_kis.fetch.return_value = chart
-        
+
         # Test month
         result = foreign_daily_chart(fake_kis, "AAPL", "NASDAQ", period="month")
         assert fake_kis.fetch.call_args[1]["params"]["GUBN"] == "2"
 
     def test_year_period_aggregation(self):
         """Test year period aggregation logic."""
-        from pykis.api.stock.daily_chart import foreign_daily_chart
-        
+        from vmkis.api.stock.daily_chart import foreign_daily_chart
+
         fake_kis = Mock()
-        
+
         # Mock bars spanning multiple years
         chart = _MockChart([
             _MockBar(datetime(2023, 12, 31, 9, 0, 0)),
@@ -1273,14 +1273,14 @@ class TestForeignDailyChart:
             _MockBar(datetime(2021, 12, 31, 9, 0, 0)),
         ])
         fake_kis.fetch.return_value = chart
-        
+
         result = foreign_daily_chart(
             fake_kis,
             "AAPL",
             "NASDAQ",
             period="year"
         )
-        
+
         # Should aggregate to yearly bars
         assert result is not None
         # Year aggregation should reduce bar count
@@ -1292,33 +1292,33 @@ class TestDailyChartDispatcher:
 
     def test_routes_to_domestic(self):
         """Test routing to domestic_daily_chart for KRX."""
-        from pykis.api.stock.daily_chart import daily_chart
-        
+        from vmkis.api.stock.daily_chart import daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_kis.fetch.return_value = chart
-        
-        with patch('pykis.api.stock.daily_chart.domestic_daily_chart') as mock_domestic:
+
+        with patch('vmkis.api.stock.daily_chart.domestic_daily_chart') as mock_domestic:
             mock_domestic.return_value = chart
-            
+
             result = daily_chart(fake_kis, "005930", "KRX")
-            
+
             assert mock_domestic.called
             assert mock_domestic.call_args[0][1] == "005930"
 
     def test_routes_to_foreign(self):
         """Test routing to foreign_daily_chart for non-KRX."""
-        from pykis.api.stock.daily_chart import daily_chart
-        
+        from vmkis.api.stock.daily_chart import daily_chart
+
         fake_kis = Mock()
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_kis.fetch.return_value = chart
-        
-        with patch('pykis.api.stock.daily_chart.foreign_daily_chart') as mock_foreign:
+
+        with patch('vmkis.api.stock.daily_chart.foreign_daily_chart') as mock_foreign:
             mock_foreign.return_value = chart
-            
+
             result = daily_chart(fake_kis, "AAPL", "NASDAQ")
-            
+
             assert mock_foreign.called
             assert mock_foreign.call_args[0][1] == "AAPL"
             assert mock_foreign.call_args[0][2] == "NASDAQ"
@@ -1329,20 +1329,20 @@ class TestProductDailyChart:
 
     def test_calls_daily_chart_with_product_attributes(self):
         """Test that product method calls daily_chart with correct args."""
-        from pykis.api.stock.daily_chart import product_daily_chart
+        from vmkis.api.stock.daily_chart import product_daily_chart
         from datetime import date as dt_date
-        
+
         fake_product = Mock()
         fake_product.kis = Mock()
         fake_product.symbol = "TSLA"
         fake_product.market = "NASDAQ"
-        
+
         chart = _MockChart([_MockBar(datetime(2023, 12, 1, 9, 0, 0))])
         fake_product.kis.fetch.return_value = chart
-        
-        with patch('pykis.api.stock.daily_chart.daily_chart') as mock_daily_chart:
+
+        with patch('vmkis.api.stock.daily_chart.daily_chart') as mock_daily_chart:
             mock_daily_chart.return_value = chart
-            
+
             result = product_daily_chart(
                 fake_product,
                 start=dt_date(2023, 11, 1),
@@ -1350,7 +1350,7 @@ class TestProductDailyChart:
                 period="week",
                 adjust=True
             )
-            
+
             assert mock_daily_chart.called
             call_args = mock_daily_chart.call_args
             assert call_args[0][0] == fake_product.kis
