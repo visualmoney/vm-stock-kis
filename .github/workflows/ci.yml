@@ -6,6 +6,10 @@ on:
   pull_request:
   workflow_dispatch:
 
+# 기본을 읽기 전용으로 둡니다. 쓰기가 필요한 잡에서만 개별적으로 올립니다.
+permissions:
+  contents: read
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -21,19 +25,33 @@ jobs:
         # 1인 프로젝트에서 중간 버전과 OS 매트릭스는 한계효용이 낮고 피드백만 느려집니다.
         python-version: ['3.10', '3.13']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # hatch-vcs는 git 태그에서 버전을 만듭니다. 기본 shallow clone에는 태그가
           # 없어 fallback-version("0.0.0")으로 떨어집니다.
           fetch-depth: 0
 
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10
         with:
           enable-cache: true
+          cache-dependency-glob: uv.lock
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
         run: uv sync --locked --group dev
+
+      # fetch-depth를 잃어버리는 회귀를 즉시 잡습니다. 이게 없으면 버전이 조용히
+      # 0.0.0이 되고, 그대로 publish.yml을 타면 0.0.0 휠이 PyPI에 올라갑니다.
+      - name: Version sanity
+        run: |
+          version=$(uv run python -c "import vmkis.__env__ as e; print(e.__version__)")
+          echo "resolved version: $version"
+          case "$version" in
+            0.0.0*)
+              echo "::error::hatch-vcs가 git 태그를 찾지 못했습니다 (checkout fetch-depth 확인)"
+              exit 1
+              ;;
+          esac
 
       # 수집 단계 실패(구문 오류 등)를 테스트 실패와 구분해 표면화합니다.
       # pytest는 수집 오류 시 exit 2로 죽지만, 스텝을 나눠 두면 어느 단계에서
@@ -54,19 +72,43 @@ jobs:
       - name: Coverage gate
         run: uv run coverage report
 
-  # 워크플로 파일 자신의 문법 검사.
-  #
-  # CI는 자기 파일이 깨졌는지 스스로 알 수 없다. ci.yml이 YAML 파싱에 실패하면
-  # 잡이 아예 생성되지 않고 0초짜리 failure만 남는다. 실제로 이 저장소의 ci.yml은
-  # 2025-12-20부터 8개월간 그 상태였다. 그래서 이 검사는 pre-commit 훅에도 함께 둔다.
-  #
-  # NOTE: ruff는 아직 여기에 넣지 않는다. 현재 코드베이스에 ruff 오류 1003건,
-  # 미포맷 120개 파일이 남아 있어 지금 넣으면 CI가 항상 빨갛다. 일괄 포맷 정리를
-  # 별도 작업으로 끝낸 뒤 이 잡에 ruff 스텝을 추가할 것.
-  lint-workflows:
-    name: Lint workflows
+  lint:
+    name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
+      # 워크플로 파일 자신의 문법 검사.
+      #
+      # CI는 자기 파일이 깨졌는지 스스로 알 수 없습니다. ci.yml이 YAML 파싱에
+      # 실패하면 잡이 아예 생성되지 않고 0초짜리 failure만 남습니다. 실제로 이
+      # 저장소의 ci.yml은 2025-12-20부터 8개월간 그 상태였습니다.
+      # 그래서 이 검사는 pre-commit 훅에도 함께 둡니다.
       - uses: raven-actions/actionlint@v2
+
+      - uses: astral-sh/setup-uv@v10
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      # pyproject.toml과 uv.lock이 어긋난 채 머지되는 것을 막습니다.
+      - name: Lockfile is up to date
+        run: uv lock --check
+
+  # 브랜치 보호에 등록할 단일 집계 잡.
+  #
+  # 매트릭스 잡 이름은 버전을 바꿀 때마다 달라지므로 보호 규칙이 매번 깨집니다.
+  # 이 잡 하나만 필수 체크로 걸면 됩니다.
+  ci-ok:
+    name: CI OK
+    if: always()
+    needs: [test, lint]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify all jobs succeeded
+        run: |
+          echo "test: ${{ needs.test.result }}"
+          echo "lint: ${{ needs.lint.result }}"
+          if [ "${{ needs.test.result }}" != "success" ] || [ "${{ needs.lint.result }}" != "success" ]; then
+            exit 1
+          fi
