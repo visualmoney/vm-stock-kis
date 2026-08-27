@@ -14,7 +14,6 @@
 - [SECURITY.md](./SECURITY.md) ([English](./SECURITY.en.md)) — 자격증명 취급 방식과 취약점 신고
 - 예제 모음: [examples/01_basic](./examples/01_basic) (hello_world, 시세/잔고, 주문, 실시간 체결가)
 
-
 ### 1.1. 라이브러리 특징
 
 <details>
@@ -51,7 +50,7 @@
 
 ![image](https://user-images.githubusercontent.com/34199905/193738291-c9c663fd-8ab4-43da-acb6-6a2f7846a79d.png)
 
-2. 서비스를 신청이 완료되면, 아래와 같이 앱 키를 발급 받을 수 있습니다.
+1. 서비스를 신청이 완료되면, 아래와 같이 앱 키를 발급 받을 수 있습니다.
 
 ![image](https://user-images.githubusercontent.com/34199905/193740291-53f282ee-c40c-40b9-874e-2df39543cb66.png)
 </details>
@@ -67,12 +66,13 @@ pip install vm-stock-kis
 <details>
 <summary>사용된 모듈 보기</summary>
 
-```
+```text
 requests>=2.32.3
 websocket-client>=1.8.0
 cryptography>=43.0.0
 colorlog>=6.8.2
 ```
+
 </details>
 
 <hr>
@@ -84,6 +84,7 @@ colorlog>=6.8.2
 1. 시크릿 키를 파일로 관리하는 방법 (권장)
 
    먼저 시크릿 키를 파일로 저장합니다.
+
    ```python
     from vmkis import KisAuth
 
@@ -117,7 +118,9 @@ colorlog>=6.8.2
     kis = VmKis("secret.json", "virtual_secret.json", keep_token=True)
     kis = VmKis(KisAuth.load("secret.json"), KisAuth.load("virtual_secret.json"), keep_token=True)
     ```
+
 2. 시크릿 키를 직접 입력하는 방법
+
     ```python
     from vmkis import VmKis
 
@@ -255,7 +258,6 @@ for order in account.pending_orders():
     order.cancel()
 ```
 
-
 #### 2.2.4. 실시간 체결가 조회
 
 국내주식 및 해외주식의 실시간 체결가 조회는 `stock.on("price", callback)` 함수를 이용하여 수신할 수 있습니다.
@@ -316,7 +318,6 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
   - [4.3. 실시간 호가 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#43-실시간-호가-조회)
   - [4.4. 실시간 체결내역 조회](https://github.com/visualmoney/vm-stock-kis/wiki/Tutorial#44-실시간-체결내역-조회)
 
-
 ## 4. Changelog ✨
 
 ### ver 2.1.3
@@ -327,7 +328,6 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 ### ver 2.1.2
 
 - [fix: SyntaxError: f-string: expecting '}' but got "}"](https://github.com/Soju06/python-kis/pull/57) 파이썬 3.11 이하에서 SyntaxError 오류가 발생하는 문제를 해결했습니다. by @tasoo-oos
-
 
 ### ver 2.1.1
 
@@ -406,7 +406,6 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 - API 초당 요청 제한을 넘어버리는 버그를 수정하였습니다.
 - `period_price` 응답 데이터의 `stck_fcam`값 `float`으로 변경하였습니다.
 - `utils.KRXMarketOpen` 공휴일 데이터가 1개인 경우 오류 발생하는 버그 수정하였습니다.
-
 
 ### License
 

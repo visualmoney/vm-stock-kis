@@ -1,7 +1,7 @@
 # Prompt 001: 테스트 커버리지 개선 및 스킵된 테스트 구현
 
-**작성일**: 2025-12-17  
-**프롬프트 제목**: test_daily_chart.py 및 test_info.py의 스킵된 테스트 리뷰 및 구현  
+**작성일**: 2025-12-17
+**프롬프트 제목**: test_daily_chart.py 및 test_info.py의 스킵된 테스트 리뷰 및 구현
 **상태**: ✅ 완료
 
 ---
@@ -20,10 +20,12 @@
 #### 테스트 스킵 사유가 부정확함
 
 **원래 주장**:
+
 - "클래스를 직접 인스턴스화할 수 없다"
 - "KisAPIResponse 상속 클래스는 mock 필요"
 
 **실제 상황**:
+
 - `KisObject.transform_()` 메서드로 API 응답 데이터를 자동 변환 가능
 - Mock 응답 객체에 `__data__` 속성 추가 시 완벽하게 작동
 - 명시적인 인스턴스 생성 불필요
@@ -89,6 +91,7 @@ result = KisDomesticDailyChartBar.transform_(mock_response.__data__)
 #### 핵심 설계: 마켓 코드 반복 로직
 
 **MARKET_TYPE_MAP 구조**:
+
 ```python
 MARKET_TYPE_MAP = {
     "KR": ["300"],                    # 단일 코드 (국내)
@@ -98,11 +101,13 @@ MARKET_TYPE_MAP = {
 ```
 
 **테스트 시사점**:
+
 - `rt_cd=7 재시도 테스트`는 반드시 **"US" 마켓 사용** (여러 코드로 재시도 가능)
 - `"KR" 마켓은 사용 불가` (단일 코드 = 재시도 불가)
 
 **rt_cd=7 에러 흐름**:
-```
+
+```text
 첫 번째 fetch() 호출 (코드 512)
     ↓
 rt_cd=7 에러 반환
@@ -128,7 +133,7 @@ rt_cd=7 에러 반환
 
 ### 커버리지 개선
 
-```
+```text
 이전: 832 passed, 13 skipped, 94% coverage
 이후: 840 passed, 5 skipped, 94% coverage
 
@@ -169,10 +174,10 @@ def test_kis_domestic_daily_chart_bar():
         },
         "__response__": Mock()
     }
-    
+
     # KisObject.transform_()로 자동 변환
     result = KisDomesticDailyChartBar.transform_(mock_response.__data__)
-    
+
     assert result.std_code == "005930"
     assert result.price == 65000
 ```
@@ -184,23 +189,23 @@ def test_continues_on_rt_cd_7_error():
     """테스트: rt_cd=7 에러 시 다음 시장 코드로 재시도"""
     fake_kis = Mock()
     fake_kis.cache.get.return_value = None
-    
+
     # 첫 번째 호출: rt_cd=7 에러
     api_error = KisAPIError(
         data={"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": Mock()},
         response=mock_http_response
     )
     api_error.rt_cd = 7
-    
+
     # 두 번째 호출: 성공
     mock_info = Mock()
-    
+
     fake_kis.fetch.side_effect = [api_error, mock_info]
-    
+
     # US 마켓 사용 (3개 코드로 재시도 가능)
     with patch('pykis.api.stock.info.quotable_market', return_value="US"):
         result = info(fake_kis, "AAPL", market="US", use_cache=False, quotable=True)
-    
+
     assert result == mock_info
     assert fake_kis.fetch.call_count == 2  # 2개 마켓 코드 시도
 ```

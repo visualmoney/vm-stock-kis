@@ -31,7 +31,7 @@ VM-Stock-KIS의 모든 공개 API는 다음 중 하나의 안정성 레벨을 �
 
 ### 2.1 의미론적 버전 (Semantic Versioning)
 
-```
+```text
 Major.Minor.Patch-PreRelease+Metadata
 ^      ^     ^
 |      |     └─ Patch 증가: 버그 수정 (호환성 보장)
@@ -86,7 +86,7 @@ Breaking Change는 **기존 코드를 수정하지 않으면 작동하지 않게
 
 ### 4.1 Deprecation 프로세스
 
-```
+```text
 준비 → 경고 → 마이그레이션 → 제거
 Release: v2.x → v2.x~v2.9.x → v3.0 → (제거됨)
 ```
@@ -99,6 +99,7 @@ Release: v2.x → v2.x~v2.9.x → v3.0 → (제거됨)
 - 🔴 경고 없음 (기존 코드 정상 작동)
 
 **예시**:
+
 ```python
 # v2.1: 신규 기능 추가
 from vmkis.types import KisObjectProtocol  # 신규 경로
@@ -114,6 +115,7 @@ from vmkis import KisObjectProtocol  # 기존 경로
 - ✅ 기존 코드 계속 작동
 
 **예시**:
+
 ```python
 # v2.2~v2.9: Deprecation 경고
 from vmkis import KisObjectProtocol
@@ -131,6 +133,7 @@ from vmkis import KisObjectProtocol
 - ❌ 기존 경로 작동 불가
 
 **예시**:
+
 ```python
 # v3.0: Deprecation 경로 완전 제거
 from vmkis import KisObjectProtocol  # ❌ 에러!
@@ -142,7 +145,7 @@ from vmkis.types import KisObjectProtocol
 
 ### 4.3 마이그레이션 타임라인
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────┐
 │ Breaking Change 제거 프로세스 (공개 API)                     │
 ├─────────────────────────────────────────────────────────────┤
@@ -178,12 +181,14 @@ quote = kis.stock("005930").quote()  # Always works
 ```
 
 **보장 범위**:
+
 - 공개 API 메서드 이름
 - 반환 타입 구조
 - 파라미터 순서
 - 기본 기능
 
 **보장 안 하는 범위**:
+
 - 내부 구현 (vmkis._internal)
 - 성능 특성
 - 에러 메시지 정확한 문구
@@ -192,6 +197,7 @@ quote = kis.stock("005930").quote()  # Always works
 ### 5.2 Minor 버전 내 추가 사항
 
 **호환성 유지 변경**:
+
 - ✅ 선택적 파라미터 추가
 - ✅ 새로운 클래스/함수 추가
 - ✅ 새로운 예외 타입 추가
@@ -199,6 +205,7 @@ quote = kis.stock("005930").quote()  # Always works
 - ✅ 버그 수정
 
 **예시**:
+
 ```python
 # v2.0
 quote = kis.stock("005930").quote()
@@ -227,7 +234,7 @@ quote = kis.stock("005930").quote()
 
 ### 6.2 업그레이드 계획
 
-```
+```text
 ✅ 프로덕션 환경:
 1. v2.0 → v2.9.x: 안전 (호환성 보장)
 2. v2.9.x → v3.0: 마이그레이션 가이드 필요
@@ -247,7 +254,7 @@ quote = kis.stock("005930").quote()
 
 ### 7.1 버전별 지원 기간
 
-```
+```text
 v1.x  ════════════════════════════ (END-OF-LIFE, 2025년 이전)
       0개월 지원 (이미 종료)
 
@@ -349,6 +356,7 @@ quote = kis.stock("005930").quote()
 ### 9.2 v2.x → v3.x 마이그레이션 (향후)
 
 **주요 변경**:
+
 - 공개 API 축소 (154개 → 15개)
 - Protocol import 변경
 - Breaking Change 일부

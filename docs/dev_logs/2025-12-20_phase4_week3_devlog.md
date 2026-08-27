@@ -1,8 +1,8 @@
 # Phase 4 Week 3-4 개발 일지 (Development Log)
 
-**작성일**: 2025-12-20  
-**완료일**: 2025-12-20  
-**기간**: Phase 4 Week 3-4 (12월 20-31일)  
+**작성일**: 2025-12-20
+**완료일**: 2025-12-20
+**기간**: Phase 4 Week 3-4 (12월 20-31일)
 **상태**: ✅ 완료 (All Tasks)
 
 ---
@@ -10,11 +10,13 @@
 ## 작업 요약
 
 ### 목표
+
 - ✅ 튜토리얼 영상 스크립트 작성
 - ✅ GitHub Discussions 설정 가이드 작성
 - ✅ PlantUML API 비교 다이어그램 생성
 
 ### 결과
+
 - **3개 파일 생성**
 - **약 2,000 라인 코드/문서**
 - **4시간 집중 작업**
@@ -25,12 +27,14 @@
 ## 1. 튜토리얼 영상 스크립트
 
 ### 파일명
+
 `docs/guidelines/VIDEO_SCRIPT.md`
 
 ### 작업 내용
 
 #### 1.1 스크립트 구조
-```
+
+```text
 총 분량:      5분 (280초)
 Scene 수:     5개
 음성 언어:    한국어 (기본)
@@ -38,6 +42,7 @@ Scene 수:     5개
 ```
 
 **Scene 분해**:
+
 | Scene | 제목 | 시간 | 내용 |
 |-------|------|------|------|
 | 1 | 인트로 | 0:00-0:30 | Python-KIS 소개 |
@@ -49,7 +54,8 @@ Scene 수:     5개
 #### 1.2 핵심 콘텐츠
 
 **음성 스크립트**:
-```
+
+```text
 한국어 자연스러운 발성
 - 속도: 보통 (너무 빠르지 않음)
 - 톤: 친절하고 전문적
@@ -57,6 +63,7 @@ Scene 수:     5개
 ```
 
 **코드 예제**:
+
 ```python
 # Scene 2: 설치
 $ pip install pykis
@@ -78,6 +85,7 @@ print(f"삼성전자 가격: {quote.price}")
 ```
 
 **시각 요소**:
+
 - Scene별 화면 캡처 지침 명시
 - 배경 이미지, 로고 애니메이션
 - 코드 하이라이팅
@@ -86,12 +94,14 @@ print(f"삼성전자 가격: {quote.price}")
 #### 1.3 기술 사양
 
 **배경음악**:
+
 - 유형: Tech/Upbeat (저작권 자유)
 - 음량: 낮음 (음성을 방해하지 않을 수준)
 - 길이: 0:00 ~ 4:40 전체
 
 **색상 스킴**:
-```
+
+```text
 주색상:   파란색 (#007BFF)
 강조색:   초록색 (#51CF66)
 텍스트:   흰색 (#FFFFFF)
@@ -99,6 +109,7 @@ print(f"삼성전자 가격: {quote.price}")
 ```
 
 **자막 설정**:
+
 ```yaml
 폰트:      명조체 (40pt)
 색상:      하얀색 (검은색 테두리)
@@ -112,7 +123,8 @@ print(f"삼성전자 가격: {quote.price}")
 > "Python-KIS: 5분 안에 거래 시작하기 | 한국투자증권 API"
 
 **설명** (500자):
-```
+
+```text
 Python-KIS는 한국투자증권 API를 쉽게 사용할 수 있는 라이브러리입니다.
 이 영상에서는 설치부터 첫 거래까지 5분만에 완성하는 방법을 보여드립니다.
 
@@ -138,17 +150,19 @@ Python-KIS는 한국투자증권 API를 쉽게 사용할 수 있는 라이브러
 ```
 
 **태그**:
-```
+
+```text
 python, trading, api, korea, kis, finance, tutorial, beginner
 ```
 
-**카테고리**: 교육  
-**언어**: 한국어  
+**카테고리**: 교육
+**언어**: 한국어
 **자막**: 영어
 
 #### 1.5 촬영 체크리스트
 
 **사전 준비**:
+
 - ✅ 배경 정리
 - ✅ 마이크 테스트
 - ✅ 조명 확인
@@ -156,6 +170,7 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 - ✅ 시스템 설치 완료
 
 **촬영** (5개 Scene):
+
 - ✅ Scene 1: 인트로 (30초)
 - ✅ Scene 2: 설치 (60초)
 - ✅ Scene 3: 설정 (60초)
@@ -163,6 +178,7 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 - ✅ Scene 5: 아웃트로 (50초)
 
 **편집**:
+
 - ✅ 음성 싱크
 - ✅ 자막 추가
 - ✅ 배경음악 삽입
@@ -170,6 +186,7 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 - ✅ 색상 보정
 
 **배포**:
+
 - ✅ YouTube 업로드
 - ✅ README에 링크 추가
 - ✅ Discussions 공지
@@ -178,7 +195,8 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 #### 1.6 예상 성과
 
 **YouTube 지표** (2주 후):
-```
+
+```text
 조회수:       500+
 좋아요:       50+
 댓글:         20+
@@ -186,7 +204,8 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 ```
 
 ### 파일 통계
-```
+
+```text
 파일명:  VIDEO_SCRIPT.md
 줄 수:   600+ 라인
 섹션:    8개 (개요, Scene 5개, 배포, 체크리스트)
@@ -199,6 +218,7 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 ## 2. GitHub Discussions 설정 가이드
 
 ### 파일명
+
 `docs/guidelines/GITHUB_DISCUSSIONS_SETUP.md`
 
 ### 작업 내용
@@ -206,6 +226,7 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 #### 2.1 설정 가이드 구조
 
 **총 8 단계**:
+
 1. Discussions 활성화 (GitHub 설정)
 2. Discussion 카테고리 생성 (4개)
 3. Discussion 템플릿 생성 (3개 .yml)
@@ -227,7 +248,8 @@ python, trading, api, korea, kis, finance, tutorial, beginner
 | Ideas | 💡 | 기능 제안 | 모두 |
 
 **예시 Topics**:
-```
+
+```text
 Announcements:
   - "v2.3.0 출시: 새로운 기능 5개 추가"
   - "예정된 유지보수: 12월 25일 18:00~22:00"
@@ -246,6 +268,7 @@ Ideas:
 **3개 YAML 템플릿** (`.github/DISCUSSION_TEMPLATE/`):
 
 **1) question.yml** (Q&A 템플릿)
+
 ```yaml
 - 질문 내용 (필수)
 - 재현 코드 (선택)
@@ -255,6 +278,7 @@ Ideas:
 ```
 
 **2) feature-request.yml** (아이디어 템플릿)
+
 ```yaml
 - 기능 요약 (필수)
 - 현재 문제점 (필수)
@@ -264,6 +288,7 @@ Ideas:
 ```
 
 **3) general.yml** (일반 토론)
+
 ```yaml
 - 내용 (필수)
 - 추가 정보 (선택)
@@ -272,20 +297,23 @@ Ideas:
 #### 2.4 모더레이션 정책
 
 **응답 시간**:
-```
+
+```text
 🔴 긴급 (API 버그, 보안)    → 24시간 내
 🟡 높음 (설치, 주요 기능)   → 48시간 내
 🟢 일반 (제안, 경험 공유)   → 1주 내
 ```
 
 **금지 항목**:
+
 - ❌ 광고, 마케팅
 - ❌ 욕설, 모욕
 - ❌ 스팸 링크
 - ❌ 중복 질문 (리다이렉트)
 
 **조치**:
-```
+
+```text
 1차 위반  → 경고 댓글
 2차 위반  → Discussion 잠금
 지속적    → 사용자 차단
@@ -294,14 +322,16 @@ Ideas:
 #### 2.5 레이블 시스템
 
 **상태 레이블**:
-```
+
+```text
 needs-reply    (답변 필요)
 answered       (답변됨)
 needs-triage   (검토 필요)
 ```
 
 **카테고리 레이블**:
-```
+
+```text
 installation   (설치)
 authentication (인증)
 api-bug        (버그)
@@ -310,7 +340,8 @@ documentation  (문서)
 ```
 
 **우선순위 레이블**:
-```
+
+```text
 priority-high
 priority-medium
 priority-low
@@ -321,15 +352,17 @@ priority-low
 **2개 초기 핀**:
 
 1️⃣ **"🎯 Python-KIS 시작하기"**
-   - 빠른 시작 링크
-   - FAQ, 문서, 예제
-   - 커뮤니티 카테고리 설명
+
+- 빠른 시작 링크
+- FAQ, 문서, 예제
+- 커뮤니티 카테고리 설명
 
 2️⃣ **"📋 커뮤니티 행동 강령"**
-   - 커뮤니티 가치
-   - 행동 지침
-   - 금지 행위
-   - 보고 방법
+
+- 커뮤니티 가치
+- 행동 지침
+- 금지 행위
+- 보고 방법
 
 #### 2.7 자동화
 
@@ -347,7 +380,7 @@ schedule: (매주 월요일)
 
 #### 2.8 런칭 체크리스트
 
-```
+```text
 ✅ Discussions 활성화
 ✅ 4개 카테고리 생성
 ✅ 3개 템플릿 .yml 추가
@@ -363,21 +396,24 @@ schedule: (매주 월요일)
 #### 2.9 초기 활성화 계획
 
 **Week 1**:
-```
+
+```text
 Day 1     Discussions 활성화
 Day 2-3   체크리스트 완료
 Day 4-7   초기 핀 Discussion 5-7개
 ```
 
 **Week 2+**:
-```
+
+```text
 커뮤니티 리더 선정
 GitHub Discussions 라이브 스트림
 주간 Q&A 세션
 ```
 
 ### 파일 통계
-```
+
+```text
 파일명:  GITHUB_DISCUSSIONS_SETUP.md
 줄 수:   700+ 라인
 섹션:    8개 (활성화, 카테고리, 템플릿, 모더레이션, 등)
@@ -390,6 +426,7 @@ GitHub Discussions 라이브 스트림
 ## 3. PlantUML API 비교 다이어그램
 
 ### 파일명
+
 `docs/diagrams/api_size_comparison.puml`
 
 ### 작업 내용
@@ -397,6 +434,7 @@ GitHub Discussions 라이브 스트림
 #### 3.1 다이어그램 개요
 
 **목표**:
+
 - Python-KIS의 API 단순화 시각화
 - 154개 → 20개 메서드 감소 표현
 - 설계 철학 전달
@@ -406,7 +444,8 @@ GitHub Discussions 라이브 스트림
 **3개 섹션**:
 
 **1️⃣ 기존 방식 (Before)**
-```
+
+```text
 Client 클래스
 - 154개 메서드
 - 평면적 구조
@@ -423,7 +462,8 @@ Client 클래스
 ```
 
 **2️⃣ Python-KIS (After)**
-```
+
+```text
 PyKis (3개 메서드)
 ├── Account (3개)
 │   └── Balance (1개)
@@ -435,7 +475,8 @@ PyKis (3개 메서드)
 ```
 
 **3️⃣ 감소 효과**
-```
+
+```text
 - API 크기: 154 → 20 (87% 감소)
 - 학습곡선: 88% 단축
 - 인지 부하: 79% 감소
@@ -444,7 +485,7 @@ PyKis (3개 메서드)
 
 #### 3.3 설계 원칙
 
-```
+```text
 ✓ 80/20 법칙 (20%의 메서드로 80%의 작업)
 ✓ 객체 지향 설계 (메서드 체이닝)
 ✓ 관례 우선 설정 (기본값 제공)
@@ -454,14 +495,16 @@ PyKis (3개 메서드)
 #### 3.4 시각 요소
 
 **색상**:
-```
+
+```text
 기존 방식:  #FFE6E6 (연한 빨강)
 Python-KIS: #E6F2FF (연한 파랑)
 성과:      #E6FFE6 (연한 초록)
 ```
 
 **관계**:
-```
+
+```text
 PyKis --(1)-- Account
 PyKis --(many)-- Stock
 Stock --(many)-- Order
@@ -469,14 +512,16 @@ Account --(1)-- Balance
 ```
 
 **범례**:
-```
+
+```text
 |<#FFE6E6> 기존: 평면적, 메서드 기반 |
 |<#E6F2FF> Python-KIS: 계층적, 객체 기반 |
 |<#E6FFE6> 성과: 87% 감소 |
 ```
 
 ### 파일 통계
-```
+
+```text
 파일명:     api_size_comparison.puml
 줄 수:      90 라인 (PlantUML)
 다이어그램: 클래스 다이어그램
@@ -499,7 +544,7 @@ Account --(1)-- Balance
 
 ### 작업량 분석
 
-```
+```text
 작업 항목          예상 시간    실제 시간    효율성
 =========================================================
 영상 스크립트       2시간        1.5시간     125%
@@ -511,7 +556,7 @@ PlantUML 다이어그램 1시간        0.5시간     200%
 
 ### 코드 예제 수
 
-```
+```text
 VIDEO_SCRIPT.md:           4개
 GITHUB_DISCUSSIONS_SETUP:   5개 (YAML/마크다운)
 PlantUML:                  1개 (다이어그램)
@@ -521,7 +566,7 @@ PlantUML:                  1개 (다이어그램)
 
 ### 표/이미지/시각화
 
-```
+```text
 비교 표:        8개
 체크리스트:     3개
 다이어그램:     1개 (PlantUML)
@@ -536,18 +581,21 @@ PlantUML:                  1개 (다이어그램)
 ## 핵심 성과
 
 ### 1. 영상 제작 준비
+
 - ✅ 스크립트 완성 (5분, 1400자)
 - ✅ 화면 캡처 가이드 (5개 Scene)
 - ✅ YouTube 배포 패키지 (제목, 설명, 태그)
 - ✅ 촬영 체크리스트 (3개 단계)
 
 ### 2. 커뮤니티 구축
+
 - ✅ 4개 Discussion 카테고리
 - ✅ 3개 Discussion 템플릿 (.yml)
 - ✅ 모더레이션 가이드 (우선순위, 정책)
 - ✅ 8개 실행 단계
 
 ### 3. 아키텍처 시각화
+
 - ✅ PlantUML 다이어그램 (API 비교)
 - ✅ 87% 감소 효과 시각화
 - ✅ 설계 원칙 명시
@@ -557,7 +605,8 @@ PlantUML:                  1개 (다이어그램)
 ## 다음 단계
 
 ### 즉시 실행 (1주일)
-```
+
+```text
 1. YouTube 스튜디오에서 영상 촬영/편집
 2. GitHub Settings에서 Discussions 활성화
 3. .github/DISCUSSION_TEMPLATE/ 폴더 생성 & 템플릿 추가
@@ -565,7 +614,8 @@ PlantUML:                  1개 (다이어그램)
 ```
 
 ### 1개월
-```
+
+```text
 1. YouTube 영상 업로드 (한국어 + 영어 자막)
 2. GitHub Discussions 라이브 (첫 공지사항)
 3. 소셜 미디어 홍보 (트위터, 페이스북)
@@ -573,7 +623,8 @@ PlantUML:                  1개 (다이어그램)
 ```
 
 ### Phase 5
-```
+
+```text
 1. 영어 더빙 버전 (YouTube)
 2. 중국어/일본어 자막
 3. 고급 튜토리얼 영상 (주문, 실시간 업데이트)
@@ -585,7 +636,8 @@ PlantUML:                  1개 (다이어그램)
 ## 기술 스택
 
 ### 사용된 기술
-```
+
+```text
 마크다운 (Markdown):      .md 문서 작성
 YAML:                    GitHub Actions 템플릿
 PlantUML:                다이어그램 작성
@@ -594,7 +646,8 @@ GitHub Actions:          자동화 (선택사항)
 ```
 
 ### 도구
-```
+
+```text
 텍스트 에디터:  VS Code
 다이어그램:     PlantUML Online
 영상 제작:      OBS (무료), Camtasia (유료)
@@ -606,6 +659,7 @@ GitHub Actions:          자동화 (선택사항)
 ## 품질 보증
 
 ### 검토 항목
+
 - ✅ 마크다운 문법 (모든 .md 파일)
 - ✅ YAML 문법 (모든 .yml 템플릿)
 - ✅ PlantUML 문법 (다이어그램)
@@ -613,6 +667,7 @@ GitHub Actions:          자동화 (선택사항)
 - ✅ 스펠링 & 문법 (한국어, 영어)
 
 ### 테스트 완료
+
 - ✅ GitHub 마크다운 렌더링
 - ✅ PlantUML 온라인 컴파일 (UML 문법 검증)
 - ✅ 상대 경로 확인
@@ -634,8 +689,7 @@ Phase 4 Week 3-4의 3가지 주요 작업을 모두 완료했습니다:
 
 ---
 
-**작성자**: Python-KIS 개발팀  
-**완료일**: 2025-12-20  
-**검토 상태**: ✅ 품질 보증 완료  
+**작성자**: Python-KIS 개발팀
+**완료일**: 2025-12-20
+**검토 상태**: ✅ 품질 보증 완료
 **다음 체크포인트**: 2025-12-31 (Phase 4 최종 완료)
-

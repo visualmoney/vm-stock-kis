@@ -1,8 +1,8 @@
 # 2025-12-20 - Phase 4 Week 3-4: 튜토리얼 영상 스크립트 & 커뮤니티 설정
 
-**작성일**: 2025-12-20  
-**담당자**: Claude AI  
-**우선순위**: 🔴 높음  
+**작성일**: 2025-12-20
+**담당자**: Claude AI
+**우선순위**: 🔴 높음
 **상태**: 🟡 진행 중
 
 ---
@@ -11,7 +11,7 @@
 
 Phase 4 Week 3-4 작업을 시작하라는 승인
 
-```
+```text
 1. 튜토리얼 영상 스크립트 ⏳ (필수)
 2. GitHub Discussions 설정 ⏳ (필수)
 3. API 크기 비교 다이어그램 🟡 (선택, 1시간)
@@ -34,13 +34,16 @@ Phase 4 Week 3-4 작업을 시작하라는 승인
 ### 생성될 파일
 
 **스크립트** (docs/prompts/ 및 docs/guidelines/):
+
 - ✅ 튜토리얼 영상 스크립트 (docs/guidelines/VIDEO_SCRIPT.md)
 - ✅ Discussions 템플릿 (docs/guidelines/DISCUSSIONS_TEMPLATES.md)
 
 **다이어그램** (docs/diagrams/):
+
 - ✅ api_size_comparison.puml (1개만)
 
 **개발 문서** (docs/dev_logs/ & docs/reports/):
+
 - ✅ 개발 일지
 - ✅ 완료 보고서
 
@@ -53,6 +56,7 @@ Phase 4 Week 3-4 작업을 시작하라는 승인
 **파일**: `docs/guidelines/VIDEO_SCRIPT.md`
 
 **내용**:
+
 - 영상 개요 (5분, 1080p)
 - 시나리오 구성 (5개 장면)
 - 스크립트 텍스트 (대사)
@@ -60,6 +64,7 @@ Phase 4 Week 3-4 작업을 시작하라는 승인
 - 음성 안내 가이드
 
 **목표**:
+
 - 신규 사용자 온보딩 (한 번에 5분으로 완성)
 - YouTube 업로드 준비 완료
 - 자막 추가 가능
@@ -69,12 +74,14 @@ Phase 4 Week 3-4 작업을 시작하라는 승인
 **파일**: `docs/guidelines/GITHUB_DISCUSSIONS_SETUP.md`
 
 **내용**:
+
 - Discussions 카테고리 정의
 - 토론 템플릿 (3-4가지)
 - 모더레이션 정책
 - 커뮤니티 가이드라인
 
 **목표**:
+
 - GitHub 토론 활성화
 - 커뮤니티 질문 수집
 - 피드백 시스템 구축
@@ -84,11 +91,13 @@ Phase 4 Week 3-4 작업을 시작하라는 승인
 **파일**: `docs/diagrams/api_size_comparison.puml`
 
 **내용**:
+
 - 현재 API (154개)
 - 개선 후 API (20개)
 - 개선 효과 시각화
 
 **목표**:
+
 - Phase 1 가치 강조
 - 신규 사용자 이해도 향상
 
@@ -130,14 +139,16 @@ Phase 4 Week 3-4 작업을 시작하라는 승인
 ## 다음 단계
 
 ### Phase 4 최종 (Week 4)
+
 - 최종 보고서 작성
 - Git 커밋
 
 ### Phase 5 (예정)
+
 - 중국어/일본어 번역
 - 플러그인 시스템 (선택)
 
 ---
 
-**상태**: 🟡 진행 중  
+**상태**: 🟡 진행 중
 **다음**: Step 1 - 튜토리얼 영상 스크립트

@@ -1,4 +1,5 @@
 **규칙 (Rules)**
+
 - **테스트 실행:** `poetry run pytest` 또는 `.venv\Scripts\python.exe -m pytest`
 - **커버리지 HTML 위치:** `--cov-report=html:reports/coverage_html`로 출력 폴더 지정
 - **인증 객체:** `KisAuth`는 `virtual` 필드를 명시적으로 전달해야 함 (현재 구현)

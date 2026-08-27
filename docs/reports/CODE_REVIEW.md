@@ -15,15 +15,18 @@
 ### 1.1 우수한 아키텍처 설계
 
 ✅ **계층화 아키텍처의 명확한 분리**
+
 - API 계층, Scope 계층, Adapter 계층의 명확한 구분
 - 각 계층의 책임이 명확하게 정의됨
 - 새로운 기능 추가 시 확장성이 우수함
 
 ✅ **Protocol 기반 설계**
+
 - `KisObjectProtocol`, `KisResponseProtocol` 등으로 느슨한 결합
 - 타입 안전성과 동시에 유연성 제공
 
 ✅ **Mixin 패턴의 효과적 활용**
+
 - `KisQuotableProductMixin`, `KisOrderableOrderMixin` 등
 - 기능 추가 시 상속 체계를 복잡하게 하지 않음
 - 코드 재사용성 우수
@@ -31,11 +34,13 @@
 ### 1.2 동적 타입 시스템
 
 ✅ **KisType/KisObject 시스템**
+
 - API 응답의 자동 변환
 - 스키마 변경 시 대응이 용이
 - 실시간 타입 검증 가능
 
 ✅ **Type Hint 완벽 지원**
+
 - 모든 함수와 클래스에 타입 힌팅
 - IDE 자동완성 완벽 지원
 - 런타임 에러 사전 방지
@@ -43,11 +48,13 @@
 ### 1.3 WebSocket 재연결 기능
 
 ✅ **자동 재연결 및 복구**
+
 - 네트워크 끊김 시 자동 재연결
 - 구독 상태 자동 복구
 - 데이터 손실 최소화
 
 ✅ **GC 기반 구독 관리**
+
 - 이벤트 티켓이 GC에 의해 자동 정리
 - 메모리 누수 방지
 - 명시적 정리 필요 없음
@@ -55,10 +62,12 @@
 ### 1.4 보안 고려사항
 
 ✅ **토큰 암호화 저장**
+
 - 로컬 토큰 암호화 저장
 - 신뢰할 수 없는 환경에서는 비활성화 가능
 
 ✅ **Rate Limiting 자동 관리**
+
 - API 호출 제한 자동 준수
 - DDoS 방지
 
@@ -69,12 +78,14 @@
 ### 2.1 문서화 개선
 
 ⚠️ **현재 상태**
+
 - README.md는 사용법 중심
 - 각 모듈별 docstring은 충실하지만 고수준 설계 문서 부재
 - 아키텍처 다이어그램 없음
 
 ✅ **개선방안**
-```
+
+```text
 docs/
 ├── architecture/         # 새로 추가
 │   ├── ARCHITECTURE.md   # 시스템 전체 설계
@@ -99,12 +110,14 @@ docs/
 ### 2.2 테스트 커버리지 강화
 
 ⚠️ **현재 상태**
-```
+
+```text
 pytest --cov=pykis
 coverage: 72% (추정)
 ```
 
 ✅ **개선방안**
+
 1. **단위 테스트 확충**
    - `KisObject.transform_()` 엣지 케이스 테스트
    - `RateLimiter` 정확성 테스트
@@ -149,6 +162,7 @@ tests/
 ### 2.3 로깅 시스템 개선
 
 ⚠️ **현재 상태**
+
 - 기본 로깅만 구현
 - 구조화된 로깅 없음 (JSON 로그 미지원)
 - 성능 분석 로그 부재
@@ -156,6 +170,7 @@ tests/
 ✅ **개선방안**
 
 1. **구조화된 로깅 도입**
+
 ```python
 # 현재
 logger.debug("API [usdh1]: params -> rt_cd:0 (성공)")
@@ -171,7 +186,8 @@ logger.info("api_call", extra={
 })
 ```
 
-2. **성능 로깅**
+1. **성능 로깅**
+
 ```python
 # Rate limit 대기 시간 기록
 logger.debug("rate_limit_wait", extra={"wait_ms": 50})
@@ -180,7 +196,8 @@ logger.debug("rate_limit_wait", extra={"wait_ms": 50})
 logger.debug("websocket_latency", extra={"latency_ms": 120})
 ```
 
-3. **로그 레벨 계층화**
+1. **로그 레벨 계층화**
+
 - DEBUG: 상세 API 호출, 파라미터
 - INFO: 주문 실행, 구독 상태
 - WARNING: Rate limit 근처, 재연결
@@ -193,6 +210,7 @@ logger.debug("websocket_latency", extra={"latency_ms": 120})
 ### 2.4 에러 처리 강화
 
 ⚠️ **현재 상태**
+
 ```python
 # 현재 예외 계층
 KisException
@@ -202,6 +220,7 @@ KisException
 ```
 
 ⚠️ **문제점**
+
 - `KisAPIError` 세분화 부족
 - 재시도 로직 미제공
 - 부분 장애 처리 (일부 주문만 실패) 미흡
@@ -232,7 +251,7 @@ class RetryableError(KisException):
     """재시도 가능한 에러"""
     def can_retry(self) -> bool:
         return True
-    
+
     @property
     def retry_after_seconds(self) -> float:
         return 1.0  # 1초 후 재시도 권장
@@ -245,6 +264,7 @@ class RetryableError(KisException):
 ### 2.5 비동기 지원 (선택적)
 
 ⚠️ **현재 상태**
+
 - 완전히 동기적 구현
 - 비동기 작업 불가능
 
@@ -279,6 +299,7 @@ async with PyKisAsync(...) as kis:
 ### 2.6 모니터링 및 대시보드
 
 ⚠️ **현재 상태**
+
 - 모니터링 기능 없음
 - 헬스 체크 미제공
 
@@ -311,6 +332,7 @@ metrics.rate_limit_wait_seconds.observe(0.05)
 ### 3.1 토큰 만료 처리
 
 ⚠️ **현재 상태**
+
 ```python
 # kis.py에서 토큰 자동 재발급 처리 있음
 if response.status_code == 401:
@@ -318,6 +340,7 @@ if response.status_code == 401:
 ```
 
 ✅ **개선사항**
+
 - 토큰 만료 전 사전 갱신 추가
 - 만료까지 남은 시간 추적
 - 동시 요청 시 race condition 처리 강화
@@ -328,7 +351,7 @@ class KisAccessToken:
     def expires_in_seconds(self) -> float:
         """만료까지 남은 시간 (초)"""
         return self.expires_at.timestamp() - time.time()
-    
+
     @property
     def should_refresh(self) -> bool:
         """갱신 필요 여부 (만료 10분 전)"""
@@ -342,6 +365,7 @@ class KisAccessToken:
 ### 3.2 WebSocket 구독 제한 처리
 
 ⚠️ **현재 상태**
+
 ```python
 # 최대 40개 구독 제한 체크 있음
 if len(subscriptions) >= 40:
@@ -349,15 +373,17 @@ if len(subscriptions) >= 40:
 ```
 
 ⚠️ **문제점**
+
 - 특정 구독 실패 시 다른 구독도 함께 실패할 수 있음
 - 부분 성공 처리 미흡
 
 ✅ **개선방안**
+
 ```python
 class SubscriptionResult:
     successful: list[KisWebsocketTR]
     failed: dict[KisWebsocketTR, Exception]
-    
+
 def subscribe_batch(self, trs: list[KisWebsocketTR]) -> SubscriptionResult:
     """일괄 구독 (부분 실패 허용)"""
     result = SubscriptionResult()
@@ -377,10 +403,12 @@ def subscribe_batch(self, trs: list[KisWebsocketTR]) -> SubscriptionResult:
 ### 3.3 메모리 누수 위험
 
 ⚠️ **현재 상태**
+
 - GC 기반 구독 관리
 - 순환 참조 가능성 있음
 
 ✅ **개선방안**
+
 ```python
 # 정기적인 메모리 프로파일링
 import tracemalloc
@@ -399,10 +427,12 @@ print(f"Peak: {peak / 1024 / 1024}MB")
 ### 3.4 거래 시간대 처리
 
 ⚠️ **현재 상태**
+
 - 시간대 정보가 하드코딩되어 있음
 - DST(일광절약시간) 미지원
 
 ✅ **개선방안**
+
 ```python
 from zoneinfo import ZoneInfo
 from datetime import datetime
@@ -428,12 +458,14 @@ def get_market_time(market: str) -> datetime:
 ### 4.1 HTTP 연결 풀 최적화
 
 📊 **현재 상태**
+
 ```python
 # requests.Session 사용 중
 session = requests.Session()
 ```
 
 ✅ **개선방안**
+
 ```python
 # Keep-Alive 타임아웃 조정
 adapter = HTTPAdapter(
@@ -451,9 +483,11 @@ session.mount("https://", adapter)
 ### 4.2 WebSocket 메시지 배치 처리
 
 ⚠️ **현재 상태**
+
 - 메시지 하나씩 처리
 
 ✅ **개선방안**
+
 ```python
 # 메시지 배치 수집 후 처리
 class BatchedWebsocketClient:
@@ -461,14 +495,14 @@ class BatchedWebsocketClient:
         """일정 시간 내 도착 메시지 배치 처리"""
         batch = []
         deadline = time.time() + timeout_ms / 1000
-        
+
         while time.time() < deadline:
             try:
                 msg = self._queue.get(timeout=0.01)
                 batch.append(msg)
             except Empty:
                 continue
-        
+
         return batch
 ```
 
@@ -479,14 +513,16 @@ class BatchedWebsocketClient:
 ### 4.3 응답 변환 캐싱
 
 ⚠️ **현재 상태**
+
 - 매번 동적 변환
 
 ✅ **개선방안**
+
 ```python
 # 스키마 캐시
 class KisObject:
     _schema_cache: dict[type, dict] = {}
-    
+
     @classmethod
     def _get_schema(cls, response_type):
         if response_type not in cls._schema_cache:
@@ -503,10 +539,12 @@ class KisObject:
 ### 5.1 함수 길이
 
 ⚠️ **현재 상태**
+
 - `PyKis.__init__()`: ~100줄
 - `KisWebsocketClient.connect()`: ~80줄
 
 ✅ **개선방안**
+
 ```python
 # 함수 분리
 class PyKis:
@@ -515,7 +553,7 @@ class PyKis:
         self._initialize_tokens()
         self._initialize_sessions()
         self._initialize_websocket()
-    
+
     def _validate_auth(self): ...
     def _initialize_tokens(self): ...
 ```
@@ -527,9 +565,11 @@ class PyKis:
 ### 5.2 순환 임포트
 
 ⚠️ **현재 상태**
+
 - TYPE_CHECKING 활용으로 완화되었으나 여전히 복잡
 
 ✅ **개선방안**
+
 ```python
 # 의존성 주입 강화
 class KisAccountQuotableProductMixin:
@@ -542,9 +582,11 @@ class KisAccountQuotableProductMixin:
 ### 5.3 타입 힌트 개선
 
 ✅ **현재 상태**
+
 - 이미 우수한 타입 힌팅
 
 ⚠️ **개선 기회**
+
 - `**kwargs` 사용 최소화
 - TypeVar 활용 확대
 
@@ -584,6 +626,7 @@ def api(self, ..., response_type: type[T]) -> T:
 ## 7. 3개월 로드맵 (Roadmap)
 
 ### Phase 1: 문서화 (1개월)
+
 - ✅ 아키텍처 문서 작성
 - ✅ 개발자 가이드 작성
 - ✅ 사용자 가이드 작성
@@ -591,12 +634,14 @@ def api(self, ..., response_type: type[T]) -> T:
 - 튜토리얼 비디오 (선택사항)
 
 ### Phase 2: 테스트 강화 (1개월)
+
 - 테스트 커버리지 72% → 90%+
 - 통합 테스트 추가
 - 성능 테스트 구축
 - CI/CD 개선
 
 ### Phase 3: 기능 개선 (1개월)
+
 - 에러 처리 세분화
 - 로깅 시스템 개선
 - 토큰 갱신 로직 강화
@@ -609,18 +654,21 @@ def api(self, ..., response_type: type[T]) -> T:
 Python-KIS는 **우수한 아키텍처와 설계를 갖춘 성숙한 라이브러리**입니다.
 
 ### 주요 강점
-✅ 명확한 계층 구조  
-✅ Type-safe 설계  
-✅ WebSocket 재연결 기능  
-✅ Mixin 기반 확장성  
+
+✅ 명확한 계층 구조
+✅ Type-safe 설계
+✅ WebSocket 재연결 기능
+✅ Mixin 기반 확장성
 
 ### 개선 우선순위
+
 1. **문서화 강화** (사용자 만족도 향상)
 2. **테스트 커버리지** (안정성 향상)
 3. **에러 처리** (신뢰성 향상)
 4. **로깅 개선** (운영 편의성 향상)
 
 ### 예상 효과
+
 - 사용자 채택율 증가
 - 유지보수 비용 감소
 - 버그 발생율 감소
@@ -628,6 +676,6 @@ Python-KIS는 **우수한 아키텍처와 설계를 갖춘 성숙한 라이브�
 
 ---
 
-**문서 작성**: 2024년 12월 10일  
-**개선안 수**: 15개 (우선순위별 분류)  
+**문서 작성**: 2024년 12월 10일
+**개선안 수**: 15개 (우선순위별 분류)
 **예상 완료 기간**: 3개월

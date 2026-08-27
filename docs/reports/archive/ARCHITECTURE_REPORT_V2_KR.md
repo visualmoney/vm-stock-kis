@@ -1,5 +1,6 @@
 # Python-KIS 아키텍처 종합 분석 보고서
-### 4.1 커버리지 종합
+
+## 4.1 커버리지 종합
 
 **최신 커버리지 데이터** (2025-12-17, 단위 테스트 기준):
 
@@ -24,6 +25,7 @@
 - `responses`: 95.0% (✅ 목표 70%+ 달성)
 - `event`: 93.6% (✅ 목표 70%+ 달성)
 - 나머지 주요 모듈 역시 90% 이상으로 유지 중이며, 통합/성능 테스트 커버리지는 추후 통합 실행 시 재산출 예정
+
 ### 주요 개선 필요 사항 ⚠️
 
 1. **테스트 커버리지 개선**: 94% (단위 기준, 목표 90% 달성)
@@ -51,12 +53,12 @@
 | **버전** | 2.1.7 |
 | **Python 요구사항** | 3.10+ |
 | **라이센스** | MIT |
-| **저장소** | https://github.com/Soju06/python-kis |
-| **유지보수자** | Soju06 (qlskssk@gmail.com) |
+| **저장소** | <https://github.com/Soju06/python-kis> |
+| **유지보수자** | Soju06 (<qlskssk@gmail.com>) |
 
 ### 1.2 코드 규모
 
-```
+```text
 프로젝트 전체 구조:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📦 python-kis/
@@ -88,6 +90,7 @@
 ### 1.3 의존성 분석
 
 #### 프로덕션 의존성 (7개)
+
 ```python
 requests >= 2.32.3           # HTTP 클라이언트 (필수)
 websocket-client >= 1.8.0    # WebSocket 클라이언트 (필수)
@@ -99,6 +102,7 @@ python-dotenv >= 1.2.1       # 환경 변수 관리
 ```
 
 #### 개발 의존성 (4개)
+
 ```python
 pytest ^9.0.1                # 테스트 프레임워크
 pytest-cov ^7.0.0            # 커버리지 측정
@@ -114,7 +118,7 @@ pytest-asyncio ^1.3.0        # 비동기 테스트
 
 ### 2.1 계층화 아키텍처
 
-```
+```text
 ┌─────────────────────────────────────────────────────────┐
 │  Application Layer (사용자 코드)                          │
 │  kis = PyKis("secret.json")                            │
@@ -154,6 +158,7 @@ pytest-asyncio ^1.3.0        # 비동기 테스트
 ```
 
 **아키텍처 평가**: 🟢 **4.5/5.0 - 우수**
+
 - ✅ 명확한 계층 분리
 - ✅ 단일 책임 원칙 준수
 - ✅ 의존성 역전 원칙 (Protocol 사용)
@@ -174,6 +179,7 @@ class KisObjectProtocol(Protocol):
 ```
 
 **장점**:
+
 - ✅ 덕 타이핑 지원
 - ✅ 타입 안전성 보장
 - ✅ IDE 자동완성 완벽 지원
@@ -198,11 +204,13 @@ class KisOrderableAccount:
 ```
 
 **장점**:
+
 - ✅ 기능 단위로 모듈화
 - ✅ 코드 재사용성 높음
 - ✅ 다중 상속으로 기능 조합 가능
 
 **단점**:
+
 - ⚠️ Mixin 클래스 자체가 사용자에게 노출됨
 - ⚠️ 초보자가 Mixin 개념 이해 필요
 
@@ -221,6 +229,7 @@ class KisDynamic:
 ```
 
 **장점**:
+
 - ✅ 유연한 응답 처리
 - ✅ 타입 안전성 유지
 - ✅ 코드 중복 최소화
@@ -244,6 +253,7 @@ class KisEventHandler:
 ```
 
 **장점**:
+
 - ✅ 비동기 이벤트 처리
 - ✅ GC에 의한 자동 구독 해제
 - ✅ 멀티캐스트 지원
@@ -252,9 +262,10 @@ class KisEventHandler:
 
 ### 2.3 모듈 구조 분석
 
-#### 2.3.1 pykis/__init__.py 분석
+#### 2.3.1 pykis/**init**.py 분석
 
 **현재 상태**:
+
 ```python
 __all__ = [
     # 총 154개 항목 export
@@ -267,6 +278,7 @@ __all__ = [
 ```
 
 **문제점**:
+
 - 🔴 150개 이상의 클래스가 패키지 루트에 노출
 - 🔴 내부 구현(Protocol, Adapter)까지 공개 API로 노출
 - 🔴 사용자가 어떤 것을 import해야 할지 혼란
@@ -277,6 +289,7 @@ __all__ = [
 #### 2.3.2 pykis/types.py 분석
 
 **현재 상태**:
+
 ```python
 # pykis/types.py
 __all__ = [
@@ -288,6 +301,7 @@ __all__ = [
 ```
 
 **문제점**:
+
 - 🔴 `__init__.py`와 완전히 중복
 - 🔴 유지보수 이중 부담
 - 🔴 공개 API 경로가 불명확
@@ -422,7 +436,7 @@ __all__ = [
 
 #### 4.3.2 테스트 구조 분석
 
-```
+```text
 tests/
 ├── unit/                        (~650 tests)
 │   ├── api/                    (~250 tests) ✅
@@ -440,6 +454,7 @@ tests/
 ```
 
 **문제점**:
+
 - 🔴 단위 테스트 위주 (통합 테스트 부족)
 - 🔴 Integration 테스트 대부분 실패
 - 🔴 Performance 테스트 거의 실패
@@ -463,7 +478,7 @@ tests/
 
 ### 5.1 문서 구조
 
-```
+```text
 docs/
 ├── README.md                    (416 lines) ✅
 ├── architecture/
@@ -517,16 +532,19 @@ docs/
 #### 이슈 #1: 테스트 커버리지 부족
 
 **현황**:
+
 - 최근 실행(2025-12-17): 전체 테스트 실행 결과 — **840 passed, 5 skipped**; 측정된 커버리지 **94% (unit 기준)**.
 - 목표 커버리지: 80%+ → 달성 (유지 단계)
 - 상태: 통합/성능 테스트는 아직 부분 실행 상태이나, 단위 기준 94%를 달성했으며 향후 통합 실행 시 회귀 검증만 필요
 
 **영향**:
+
 - 🔴 버그 발견 지연
 - 🔴 리팩토링 위험 증가
 - 🔴 품질 보증 어려움
 
 **해결 방안**:
+
 ```python
 우선순위 1: client 모듈 (41.14% → 70%+)
 우선순위 2: utils 모듈 (34.08% → 70%+)
@@ -537,19 +555,22 @@ docs/
 **예상 소요 시간**: 2~3일 (통합 의존성 설치, 시그니처 불일치 조사·수정, 모킹 보강 및 전체 테스트 재실행 포함)
 
 **추가 검증(2025-12-17)**:
+
 - 단위 테스트 기준 실행: **840 passed, 5 skipped**, 커버리지 **94%**
 - 통합 테스트: 의존성(`requests-mock`) 설치 후 별도 회귀 예정 (단위 기준에서 목표 달성)
 
 **권장 대응 (우선순위)**:
+
 1. 통합 테스트 의존성(`requests-mock`)을 설치하고 통합 테스트를 실행하여 전체 커버리지를 재측정합니다.
 2. `tests/unit/test_account_balance.py::AccountBalanceTests::test_balance` 실패 원인을 조사(모킹 누락 또는 환경 변수)하고 수정합니다.
 3. 전체 테스트가 통과하면 전체 커버리지 리포트를 재생성하고 이 보고서의 커버리지 수치를 갱신합니다.
 
 **예상 소요 시간**: 2~3일 (의존성 설치 + 통합 테스트 실행 및 실패 원인 수정 포함)
 
-#### 이슈 #2: __init__.py 과다 노출
+#### 이슈 #2: **init**.py 과다 노출
 
 **현황**:
+
 ```python
 __all__ = [
     # 154개 항목 export
@@ -563,11 +584,13 @@ __all__ = [
 ```
 
 **영향**:
+
 - 🔴 초보자 혼란
 - 🔴 IDE 자동완성 목록 과다
 - 🔴 하위 호환성 관리 부담
 
 **해결 방안**:
+
 ```python
 # 개선 후 (20개 이하)
 __all__ = [
@@ -593,10 +616,12 @@ __all__ = [
 #### 이슈 #3: types.py 중복 정의
 
 **현황**
+
 - `__init__.py`와 `types.py`가 동일한 154개 심벌을 중복 export → 공개 API 경로가 불명확하고 관리 비용이 2배 발생
 - 과거 문서(ARCHITECTURE_REPORT_KR v1.x)에서도 동일 문제가 지적됨
 
 **영향**
+
 - 🔴 유지보수 이중 부담: 두 파일 동시 수정 필요 → 누락 시 하위 호환성 깨짐
 - 🔴 불일치 리스크: 한쪽만 갱신되면 import 경로마다 다른 시그니처/Docstring 노출 가능
 - 🔴 사용자 혼란: `from pykis import X` vs `from pykis.types import X` 어떤 것이 공식인지 불명확
@@ -604,6 +629,7 @@ __all__ = [
 **개선 방안 (3단계, 하위 호환 유지)**
 
 1) 단기: public_types 분리 + Deprecation 경고
+
 ```python
 # pykis/public_types.py (신규, 사용자용)
 __all__ = ["Quote", "Balance", "Order", "Chart", "Orderbook"]
@@ -622,20 +648,23 @@ from .public_types import *  # 사용자 노출 지점
 __all__ = ["PyKis", "KisAuth", "Quote", "Balance", "Order", "Chart", "Orderbook", "SimpleKIS", "create_client"]
 ```
 
-2) 중기: deprecated 경로 유지하되 자동 리다이렉트
+1) 중기: deprecated 경로 유지하되 자동 리다이렉트
+
 ```python
 # pykis/types.py
 from .public_types import Quote, Balance, Order
 __all__ = ["Quote", "Balance", "Order"]
 ```
 
-3) 장기: deprecated 경로 제거 (v3.0.0)
+1) 장기: deprecated 경로 제거 (v3.0.0)
+
 ```python
 # pykis/types.py
 raise ImportError("pykis.types는 제거되었습니다. pykis.public_types를 사용하세요.")
 ```
 
 **테스트 샘플 (단위)**
+
 ```python
 def test_public_imports():
     from pykis import Quote, Balance, Order
@@ -656,16 +685,19 @@ def test_types_import_warns():
 #### 이슈 #4: 초보자 진입 장벽
 
 **현황**
+
 - Protocol/Mixin 이해가 필요하고, 진입용 문서·예제가 부족(ARCHITECTURE_REPORT_KR v1.x에서도 동일 지적)
 - 설치→인증→첫 API 호출까지 “경험 경로”가 분산됨
 
 **영향**
+
 - 🟡 온보딩 실패로 문의/이탈 증가
 - 🟡 기본 기능을 시도하기 전에 학습 코스트 발생
 
 **개선 방안 (UX 퍼널 단축)**
 
 1) QUICKSTART.md (5분 완주)
+
 ```markdown
 1) 설치: pip install python-kis
 2) 인증: export KIS_APPKEY=...; export KIS_APPSECRET=...
@@ -675,7 +707,8 @@ def test_types_import_warns():
    print(kis.stock("005930").quote())
 ```
 
-2) 초보자 Facade / Helpers
+1) 초보자 Facade / Helpers
+
 ```python
 # pykis/simple.py
 from . import PyKis
@@ -693,14 +726,16 @@ kis = create_client()
 quote = kis.stock("005930").quote()
 ```
 
-3) 예제 번들 (복사-붙여넣기 실행)
+1) 예제 번들 (복사-붙여넣기 실행)
+
 - `examples/01_basic/hello_world.py`
 - `examples/01_basic/get_quote.py`
 - `examples/01_basic/get_balance.py`
 - `examples/01_basic/place_order.py`
 - `examples/01_basic/realtime_price.py` (WebSocket)
 
-4) Onboarding 테스트 (가이드 품질 보증)
+1) Onboarding 테스트 (가이드 품질 보증)
+
 ```python
 def test_quickstart_snippet_runs(monkeypatch):
     monkeypatch.setenv("KIS_APPKEY", "demo")
@@ -715,16 +750,19 @@ def test_quickstart_snippet_runs(monkeypatch):
 #### 이슈 #5: 통합 테스트 부족
 
 **현황**:
+
 - 단위 테스트: 650+ (양호)
 - 통합 테스트: 25 (대부분 실패)
 - 전체 플로우 검증 부족
 
 **영향**:
+
 - 🟡 API 변경 감지 지연
 - 🟡 실제 사용 시나리오 미검증
 - 🟡 배포 후 버그 발견
 
 **해결 방안**:
+
 ```python
 tests/integration/
 ├── conftest.py              # 공통 fixture
@@ -743,6 +781,7 @@ tests/integration/
 #### 이슈 #6: 문서 부족
 
 **부족한 문서**:
+
 - ❌ QUICKSTART.md
 - ❌ CONTRIBUTING.md
 - ❌ CHANGELOG.md
@@ -755,6 +794,7 @@ tests/integration/
 **현황**: 수동 테스트 실행
 
 **개선안**:
+
 - GitHub Actions 설정
 - 자동 테스트 실행
 - 커버리지 자동 리포트
@@ -771,12 +811,14 @@ tests/integration/
 #### Phase 1: 긴급 개선 (1개월)
 
 **Week 1: 테스트 커버리지 개선**
+
 - [x] client 모듈 커버리지 70%+ (현재 96.9%)
 - [x] utils 모듈 커버리지 70%+ (현재 94.0%)
 - [x] responses 모듈 커버리지 70%+ (현재 95.0%)
 - [x] event 모듈 커버리지 70%+ (현재 93.6%)
 
 **Week 2: API 정리**
+
 - [ ] `pykis/public_types.py` 생성
 - [ ] `__init__.py` export 20개로 축소
 - [ ] `types.py` 역할 재정의
@@ -784,18 +826,21 @@ tests/integration/
 - [ ] 테스트 작성 및 검증
 
 **Week 3: 사용성 개선**
+
 - [ ] `QUICKSTART.md` 작성
 - [ ] `examples/01_basic/` 5개 예제
 - [ ] `pykis/simple.py` Facade 구현
 - [ ] `pykis/helpers.py` 헬퍼 함수
 
 **Week 4: 통합 테스트**
+
 - [ ] `tests/integration/` 구조 생성
 - [ ] 주요 API 플로우 테스트 5개
 - [ ] WebSocket 재연결 테스트
 - [ ] 예외 처리 경로 테스트
 
 **목표 달성 시 지표**:
+
 - ✅ 테스트 커버리지 80%+
 - ✅ 공개 API 20개 이하
 - ✅ 5분 내 시작 가능
@@ -804,6 +849,7 @@ tests/integration/
 #### Phase 2: 품질 향상 (2개월)
 
 **Month 2: 문서화 완성**
+
 - [ ] `CONTRIBUTING.md` 작성
 - [ ] `CHANGELOG.md` 생성
 - [ ] `MIGRATION.md` 작성
@@ -812,6 +858,7 @@ tests/integration/
 - [ ] API Reference 자동 생성
 
 **Month 3: 자동화**
+
 - [ ] GitHub Actions CI/CD 설정
 - [ ] 자동 테스트 실행
 - [ ] 커버리지 자동 리포트
@@ -819,6 +866,7 @@ tests/integration/
 - [ ] 의존성 라이센스 자동 체크
 
 **목표 달성 시 지표**:
+
 - ✅ 문서 10개 이상
 - ✅ 예제 코드 15개 이상
 - ✅ CI/CD 파이프라인 구축
@@ -835,7 +883,7 @@ tests/integration/
 
 ### 7.2 우선순위 매트릭스
 
-```
+```text
 영향도 ↑
 │
 │  🔴 긴급                 🔴 중요
@@ -897,6 +945,7 @@ tests/integration/
 | **전체 프로젝트 커버리지** | 94% (2025-12-17, 단위 기준) | 🟢 유지 |
 
 **완료된 작업**:
+
 1. ✅ test_daily_chart.py: 4개 테스트 구현 (모두 통과)
 2. ✅ test_info.py: 8개 테스트 구현 (모두 통과)
 3. ✅ test_info.py: 마켓 코드 반복 로직 완벽히 검증
@@ -945,6 +994,7 @@ mock_response.request.body = None
 ##### c) 마켓 코드 반복 로직 이해
 
 **MARKET_TYPE_MAP 구조**:
+
 ```python
 # 단일 코드 마켓 (재시도 불가)
 "KR": ["300"]           # 국내만
@@ -958,10 +1008,12 @@ mock_response.request.body = None
 ```
 
 **테스트 선택 원칙**:
+
 - 재시도 로직 검증: US/HK/VN/CN/None 사용 (다중 코드)
 - 마켓 소진 검증: KR/KRX/NASDAQ 사용 (단일 코드)
 
 **선택 실수로 인한 테스트 실패 사례**:
+
 ```python
 # ❌ 불가능한 조합 (재시도 테스트에 KR 사용)
 fake_kis.fetch.side_effect = [api_error, mock_info]  # 2회 호출 예상
@@ -977,6 +1029,7 @@ with patch('quotable_market', return_value="US"):     # 3개 코드 가능
 ```
 
 **실제 로직**:
+
 - rt_cd=7 (no data): 다음 마켓 코드로 자동 재시도
 - 다른 rt_cd (error): 즉시 예외 발생
 - 모든 코드 소진: KisNotFoundError 발생
@@ -984,6 +1037,7 @@ with patch('quotable_market', return_value="US"):     # 3개 코드 가능
 **영향**: 앞으로 마켓 관련 테스트 작성 시 정확한 선택 보장
 
 **실행 계획** (향후 개선):
+
 ```python
 다음 우선순위 (아직 미개선):
 Week 1: client 모듈 (41% → 70%)
@@ -993,15 +1047,17 @@ Week 4: event 모듈 (54% → 70%)
 ```
 
 **예상 효과**:
+
 - 버그 조기 발견
 - 안전한 리팩토링
 - 품질 보증
 
-#### 2. __init__.py Export 정리 (긴급) 🔴
+#### 2. **init**.py Export 정리 (긴급) 🔴
 
 **목표**: 154개 → 20개 이하
 
 **실행 계획**:
+
 ```python
 # Day 1: public_types.py 생성
 # Day 2: __init__.py 리팩토링
@@ -1010,6 +1066,7 @@ Week 4: event 모듈 (54% → 70%)
 ```
 
 **예상 효과**:
+
 - 명확한 공개 API
 - 초보자 혼란 감소
 - 유지보수 부담 감소
@@ -1019,6 +1076,7 @@ Week 4: event 모듈 (54% → 70%)
 **목표**: 5분 내 시작 가능
 
 **내용**:
+
 ```markdown
 1. 설치 (pip install)
 2. 인증 설정 (3줄)
@@ -1027,6 +1085,7 @@ Week 4: event 모듈 (54% → 70%)
 ```
 
 **예상 효과**:
+
 - 초보자 이탈률 감소
 - 빠른 시작 경험
 - 문의 감소
@@ -1036,7 +1095,8 @@ Week 4: event 모듈 (54% → 70%)
 **목표**: 15개 예제 코드
 
 **구조**:
-```
+
+```text
 examples/
 ├── 01_basic/ (5개)
 ├── 02_intermediate/ (5개)
@@ -1044,6 +1104,7 @@ examples/
 ```
 
 **예상 효과**:
+
 - 학습 곡선 완화
 - 실전 사용법 제공
 - 커뮤니티 기여 증가
@@ -1053,6 +1114,7 @@ examples/
 **목표**: 10개 통합 테스트
 
 **범위**:
+
 ```python
 - 주문 전체 플로우
 - 잔고 조회 플로우
@@ -1062,6 +1124,7 @@ examples/
 ```
 
 **예상 효과**:
+
 - 실제 시나리오 검증
 - API 변경 감지
 - 배포 전 버그 발견
@@ -1110,26 +1173,26 @@ examples/
    - 5분 시작 가능하도록
    - README.md에 링크
 
-3. **__init__.py 정리 계획 수립**
+3. ****init**.py 정리 계획 수립**
    - public_types.py 설계
    - 마이그레이션 전략 수립
    - 하위 호환성 보장 방안
 
 #### 다음 주까지
 
-4. **예제 코드 3개 작성**
+1. **예제 코드 3개 작성**
    - hello_world.py
    - get_quote.py
    - place_order.py
 
-5. **통합 테스트 구조 생성**
+2. **통합 테스트 구조 생성**
    - tests/integration/ 폴더
    - conftest.py 작성
    - 첫 통합 테스트 1개
 
 #### 한 달 안에
 
-6. **Phase 1 완료**
+1. **Phase 1 완료**
    - 테스트 커버리지 80%+
    - 공개 API 20개 이하
    - 예제 코드 10개
@@ -1159,9 +1222,9 @@ examples/
 
 ### C. 연락처
 
-- **원본 저장소**: https://github.com/Soju06/python-kis
-- **개발 저장소**: https://github.com/visualmoney/python-kis
-- **메인 개발자**: Soju06 (qlskssk@gmail.com)
+- **원본 저장소**: <https://github.com/Soju06/python-kis>
+- **개발 저장소**: <https://github.com/visualmoney/python-kis>
+- **메인 개발자**: Soju06 (<qlskssk@gmail.com>)
 
 ---
 
@@ -1173,6 +1236,7 @@ examples/
 *다음 리뷰: 2026년 1월 16일*
 
 **주요 변경내용 (2025-12-17)**
+
 - 단위 테스트 실행: 840 passed, 5 skipped. 단위 테스트 기준 전체 커버리지: 94% (unit-only).
 - 통합 테스트 실행 시 의존성 누락(`requests-mock`)으로 전체 테스트 실행 실패 — 통합 테스트 미실행 상태.
 - `이슈 #1: 테스트 커버리지 부족` 섹션에 검증 결과 및 권장 조치 항목을 추가함.

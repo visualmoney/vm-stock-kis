@@ -26,8 +26,8 @@
 
 ## 1. 계정 준비 (최초 1회)
 
-1. **PyPI 계정 생성**: https://pypi.org/account/register/
-2. **TestPyPI 계정 생성**: https://test.pypi.org/account/register/
+1. **PyPI 계정 생성**: <https://pypi.org/account/register/>
+2. **TestPyPI 계정 생성**: <https://test.pypi.org/account/register/>
    - PyPI와 **별개 계정**입니다. 비밀번호/2FA를 따로 설정해야 합니다.
 3. **2FA 활성화 (필수)**: PyPI는 모든 업로드 계정에 2FA를 요구합니다.
    - Account settings → Two factor authentication → TOTP 앱(예: Google Authenticator) 등록
@@ -42,7 +42,7 @@ API 토큰을 저장소 시크릿에 넣지 않고, GitHub Actions가 OIDC로 �
 
 ### 2-1. PyPI 쪽 (프로젝트가 아직 없으므로 "pending publisher")
 
-https://pypi.org/manage/account/publishing/ 에서 **Add a new pending publisher**:
+<https://pypi.org/manage/account/publishing/> 에서 **Add a new pending publisher**:
 
 | 필드 | 값 |
 |------|-----|
@@ -58,7 +58,7 @@ https://pypi.org/manage/account/publishing/ 에서 **Add a new pending publisher
 
 TestPyPI는 PyPI와 완전히 분리된 시스템입니다. 계정·2FA·게시자 등록을 모두 따로 해야 합니다.
 
-https://test.pypi.org/manage/account/publishing/ → GitHub 탭 → **Add a new pending publisher**:
+<https://test.pypi.org/manage/account/publishing/> → GitHub 탭 → **Add a new pending publisher**:
 
 | 필드 | 값 |
 |------|-----|
@@ -167,7 +167,7 @@ VIRTUAL_ENV=/tmp/vmkis-test uv pip install \
 ```
 
 프로젝트 페이지에서 README 렌더링을 눈으로 확인합니다:
-https://test.pypi.org/project/vm-stock-kis/
+<https://test.pypi.org/project/vm-stock-kis/>
 
 ### 정리
 
@@ -218,7 +218,7 @@ VIRTUAL_ENV=/tmp/vmkis-prod /tmp/vmkis-prod/bin/python -c \
   "import vmkis; print(vmkis.__version__)"
 ```
 
-- 프로젝트 페이지: https://pypi.org/project/vm-stock-kis/
+- 프로젝트 페이지: <https://pypi.org/project/vm-stock-kis/>
 - GitHub Releases 에 릴리스 노트 작성
 - `docs/dev_logs/` 에 배포 일지 기록
 

@@ -1,4 +1,5 @@
 """
+
 # FAQ (자주 묻는 질문)
 
 VmKis 사용 중 자주 묻는 질문과 답변입니다.
@@ -38,6 +39,7 @@ A: 한국투자증권 공식 웹사이트에서 다음 단계를 따르세요:
 A: 네, 가능합니다. 두 가지 방법이 있습니다:
 
 **방법 1: 환경 변수 사용**
+
 ```bash
 export VMKIS_REAL_TRADING=false  # Linux/macOS
 set VMKIS_REAL_TRADING=false     # Windows CMD
@@ -45,6 +47,7 @@ $env:VMKIS_REAL_TRADING = "false" # Windows PowerShell
 ```
 
 **방법 2: 코드에서 설정**
+
 ```python
 from vmkis import VmKis
 
@@ -57,17 +60,19 @@ kis = VmKis(
 )
 ```
 
-### Q4: "401 Unauthorized" 에러가 발생합니다.
+### Q4: "401 Unauthorized" 에러가 발생합니다
 
 A: 다음을 확인하세요:
 
 1. **AppKey와 AppSecret이 정확한가요?**
+
    ```python
    print(f"AppKey: {kis.account.appkey}")  # 마스킹됨
    print(f"Account: {kis.account.account}")
    ```
 
 2. **토큰이 만료되었나요?**
+
    ```python
    # 토큰 자동 갱신
    kis.authenticate()
@@ -77,7 +82,7 @@ A: 다음을 확인하세요:
    - 모의: `virtual=True` 설정
    - 실전: `virtual=False` (기본값)
 
-### Q5: "429 Too Many Requests" 에러가 발생합니다.
+### Q5: "429 Too Many Requests" 에러가 발생합니다
 
 A: API 호출 제한을 초과했습니다. 해결 방법:
 
@@ -93,6 +98,7 @@ quote = fetch_quote("005930")
 ```
 
 **또는 직접 대기:**
+
 ```python
 import time
 time.sleep(5)  # 5초 대기 후 재시도
@@ -267,7 +273,7 @@ print(f"수익: {profit:,}원 ({profit_rate:.2f}%)")
 
 ## 에러 처리
 
-### Q14: 연결이 자주 끊깁니다.
+### Q14: 연결이 자주 끊깁니다
 
 A: 재연결 로직을 추가하세요:
 
@@ -289,7 +295,7 @@ except Exception as e:
     print(f"최종 실패: {e}")
 ```
 
-### Q15: "MarketNotOpenedError" 에러가 발생합니다.
+### Q15: "MarketNotOpenedError" 에러가 발생합니다
 
 A: 주식 시장이 닫혀있을 때 발생합니다. 장 시간을 확인하세요:
 
@@ -406,7 +412,8 @@ A: 다음 단계를 따르세요:
 4. 제출
 
 **좋은 버그 리포트 예제:**
-```
+
+```text
 Title: 401 에러 발생 시 재시도 불가능
 
 Description:
@@ -442,6 +449,7 @@ A: 다음 단계를 따르세요:
 6. Pull Request 생성
 
 **기여 가이드라인:**
+
 - PEP 8 준수
 - 테스트 추가 (커버리지 90%+ 유지)
 - 문서 업데이트
@@ -451,7 +459,7 @@ A: 다음 단계를 따르세요:
 
 ## 문제 해결
 
-### Q21: Windows에서 "인코딩" 에러가 발생합니다.
+### Q21: Windows에서 "인코딩" 에러가 발생합니다
 
 A: 다음과 같이 해결하세요:
 
@@ -491,7 +499,8 @@ CMD ["python", "main.py"]
 ```
 
 **requirements.txt:**
-```
+
+```text
 vmkis>=2.1.0
 pyyaml>=6.0
 python-dotenv>=1.2.0
@@ -502,6 +511,7 @@ python-dotenv>=1.2.0
 A: 다음 팁을 참고하세요:
 
 1. **배치 요청 사용** (가능하면)
+
 ```python
 # 비효율적
 for symbol in symbols:
@@ -511,7 +521,8 @@ for symbol in symbols:
 quotes = kis.stocks(symbols).quotes()
 ```
 
-2. **비동기 처리 사용**
+1. **비동기 처리 사용**
+
 ```python
 import asyncio
 
@@ -522,12 +533,14 @@ async def fetch_all():
 results = asyncio.run(fetch_all())
 ```
 
-3. **로깅 레벨 조정**
+1. **로깅 레벨 조정**
+
 ```python
 setLevel("WARNING")  # 불필요한 로그 제거
 ```
 
-4. **캐싱 활용** (응용 프로그램 레벨)
+1. **캐싱 활용** (응용 프로그램 레벨)
+
 ```python
 from functools import lru_cache
 

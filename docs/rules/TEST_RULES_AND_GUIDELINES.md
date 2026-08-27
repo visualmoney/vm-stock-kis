@@ -3,6 +3,7 @@
 ## 1. KisAuth 사용 규칙
 
 ### 필수 필드
+
 ```python
 KisAuth(
     id="test_user",                        # 필수: 사용자 ID
@@ -14,6 +15,7 @@ KisAuth(
 ```
 
 ### 포인트
+
 - `virtual=True`: 실제 서버 접근 없이 테스트 모드로 실행
 - `appkey`와 `secretkey`는 더미 값이어도 되지만 길이 맞춰야 함
 - 모든 필드가 필수 - 하나라도 누락되면 TypeError 발생
@@ -21,6 +23,7 @@ KisAuth(
 ## 2. KisObject.transform_() 사용 규칙
 
 ### 기본 API
+
 ```python
 result = KisClass.transform_(
     data,                              # dict 타입의 데이터
@@ -31,6 +34,7 @@ result = KisClass.transform_(
 ### Custom Mock 클래스 작성 방법
 
 #### Step 1: 클래스 정의
+
 ```python
 class MockPrice(KisObject):
     __annotations__ = {  # __fields__ 아님! __annotations__ 사용
@@ -41,6 +45,7 @@ class MockPrice(KisObject):
 ```
 
 #### Step 2: __transform__ staticmethod 구현
+
 ```python
     @staticmethod
     def __transform__(cls, data):
@@ -57,13 +62,14 @@ class MockPrice(KisObject):
 ```
 
 #### Step 3: 중첩 객체 처리 (필요시)
+
 ```python
 class MockQuote(KisObject):
     __annotations__ = {
         'symbol': str,
         'prices': list[MockPrice],
     }
-    
+
     @staticmethod
     def __transform__(cls, data):
         obj = cls(cls)
@@ -71,7 +77,7 @@ class MockQuote(KisObject):
             if key == 'prices' and isinstance(value, list):
                 # 중첩된 객체 재귀 변환
                 setattr(obj, key, [
-                    MockPrice.__transform__(MockPrice, p) if isinstance(p, dict) else p 
+                    MockPrice.__transform__(MockPrice, p) if isinstance(p, dict) else p
                     for p in value
                 ])
             else:
@@ -80,63 +86,66 @@ class MockQuote(KisObject):
 ```
 
 ### 주의사항
-- **__fields__가 아니라 __annotations__ 사용**: KisObject는 __annotations__으로 필드 정의
-- **@staticmethod 사용**: 클래스메서드가 아님!
-- **cls를 첫 번째 인자로**: dynamic.py에서 `transform_fn(transform_type, data)` 호출되기 때문
-- **KisObject.__init__ 호출**: `obj = cls(cls)` 형태로 type 파라미터 전달
+
+- __`__fields__`가 아니라 `__annotations__` 사용__: KisObject는 `__annotations__`으로 필드 정의
+- __@staticmethod 사용__: 클래스메서드가 아님!
+- __cls를 첫 번째 인자로__: dynamic.py에서 `transform_fn(transform_type, data)` 호출되기 때문
+- __KisObject.__init__ 호출__: `obj = cls(cls)` 형태로 type 파라미터 전달
 
 ## 3. 성능 테스트 작성 규칙
 
 ### 벤치마크 패턴
+
 ```python
 def test_benchmark_operation(self):
     """벤치마크 설명"""
     data = {...}  # 테스트 데이터
-    
+
     count = 100  # 반복 횟수
     start = time.time()
-    
+
     for _ in range(count):
         result = MockClass.transform_(data, MockClass)
-    
+
     elapsed = time.time() - start
     benchmark = BenchmarkResult("테스트명", elapsed, count)
-    
+
     print(f"\n{benchmark}")
-    
+
     # 성능 기준 설정 (ops/s)
     assert benchmark.ops_per_second > 100
 ```
 
 ### 메모리 프로파일링 패턴
+
 ```python
 def test_memory_operation(self):
     """메모리 사용량 테스트"""
     tracemalloc.start()
-    
+
     snapshot_before = tracemalloc.take_snapshot()
-    
+
     # 메모리 집약적 작업
     objects = []
     for i in range(1000):
         obj = MockClass.transform_(data, MockClass)
         objects.append(obj)
-    
+
     snapshot_after = tracemalloc.take_snapshot()
-    
+
     current, peak = tracemalloc.get_traced_memory()
     tracemalloc.stop()
-    
+
     top_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
     total_diff = sum(stat.size_diff for stat in top_stats) / 1024
-    
+
     profile = MemoryProfile(
         name='test_name',
         peak_kb=peak / 1024,
         diff_kb=total_diff,
         count=1000
     )
-    
+
     print(f"\n{profile}")
     assert profile.per_item_kb < 10.0  # 항목당 10KB 미만
 ```
@@ -144,6 +153,7 @@ def test_memory_operation(self):
 ## 4. 테스트 스킵 규칙
 
 ### skip 데코레이터 사용
+
 ```python
 @pytest.mark.skip(reason="구체적인 스킵 사유")
 def test_something(self):
@@ -152,6 +162,7 @@ def test_something(self):
 ```
 
 ### 스킵 사유 기록
+
 - 라이브러리 구조 문제
 - 향후 수정 필요한 항목
 - 의존 라이브러리 부재
@@ -159,6 +170,7 @@ def test_something(self):
 ## 5. 테스트 코드 구조 규칙
 
 ### 필수 구성 요소
+
 ```python
 """
 모듈 설명
@@ -175,13 +187,14 @@ def mock_auth():
 
 class TestSomething:
     """테스트 클래스 설명"""
-    
+
     def test_specific_case(self, mock_auth):
         """구체적 테스트 케이스"""
         pass
 ```
 
 ### 명명 규칙
+
 - 모듈: `test_*.py`
 - 클래스: `Test*` 또는 `Test*Suite`
 - 메서드: `test_*_*` (동작_상황)
@@ -190,6 +203,7 @@ class TestSomething:
 ## 6. Mock 객체 작성 규칙
 
 ### Mock 클래스 패턴
+
 ```python
 class MockData(KisObject):
     """모의 데이터 설명"""
@@ -198,7 +212,7 @@ class MockData(KisObject):
         'field2': int,
         'field3': float,
     }
-    
+
     @staticmethod
     def __transform__(cls, data):
         obj = cls(cls)
@@ -208,6 +222,7 @@ class MockData(KisObject):
 ```
 
 ### 포인트
+
 - 실제 응답 클래스와 동일한 필드 구조
 - __annotations__로 필드 타입 정의
 - __transform__ 메서드 반드시 구현
@@ -215,11 +230,13 @@ class MockData(KisObject):
 ## 7. 성능 기준 설정 규칙
 
 ### 보수적 기준 설정
+
 - 너무 엄격하지 않을 것 (CI/CD 환경 고려)
 - 부하 테스트는 상대적 비교 중심
 - 메모리는 절대값이 아닌 항목당 사용량으로 판단
 
 ### 권장 기준
+
 | 작업 | 기준 | 예시 |
 |-----|------|------|
 | 간단 변환 | ops/sec > 1000 | simple_transform |
@@ -230,7 +247,8 @@ class MockData(KisObject):
 ## 8. 커밋 메시지 규칙
 
 ### 테스트 성공 시
-```
+
+```text
 fix: test_xxxx.py - xx 테스트 통과 (n/n passing)
 
 - KisAuth.virtual 필드 추가
@@ -241,11 +259,12 @@ Coverage: ~65%
 ```
 
 ### 부분 성공 시
-```
+
+```text
 feat: test_xxxx.py - 성능 테스트 구현 (n/m passed, k skipped)
 
 - 벤치마크 테스트 7/7 통과
-- 메모리 프로파일 7/7 통과  
+- 메모리 프로파일 7/7 통과
 - WebSocket 스트레스: 7개 스킵 (pykis 구조 불일치)
 
 다음 단계: PyKis websocket API 확인 후 테스트 수정

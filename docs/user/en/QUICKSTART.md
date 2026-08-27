@@ -130,7 +130,8 @@ print(f"Change Rate: {quote.change_rate:+.2f}%")
 ```
 
 **Output**:
-```
+
+```text
 Symbol: 005930
 Current Price: 60,000 KRW
 High: 61,500 KRW
@@ -180,7 +181,8 @@ print(df)
 ```
 
 **Output**:
-```
+
+```text
         Name Symbol    Price   Change     Volume
 0    Samsung  005930    60000    +2.45%  10500000
 1  SK Hynix  000660    85000    +1.23%   5200000
@@ -194,6 +196,7 @@ print(df)
 ### Error: "API key or secret is invalid"
 
 **Solution**:
+
 1. Check your App Key and Secret are correct
 2. Ensure credentials are not expired
 3. Try regenerating credentials from KIS portal
@@ -201,6 +204,7 @@ print(df)
 ### Error: "Market is closed"
 
 **Solution**:
+
 1. Check Korean market trading hours: 09:00~15:30 KST
 2. Verify the date is not a Korean holiday
 3. See [REGIONAL_GUIDES.md](../../../docs/guidelines/REGIONAL_GUIDES.md) for holidays
@@ -208,6 +212,7 @@ print(df)
 ### Error: "Connection refused"
 
 **Solution**:
+
 1. Check your internet connection
 2. Verify firewall allows API access
 3. Try again in a few moments (temporary network issue)
@@ -216,8 +221,10 @@ print(df)
 ### Error: "Too many requests" (429)
 
 **Solution**:
+
 1. Wait a few moments before retrying
 2. Use the built-in retry mechanism:
+
    ```python
    from vmkis.utils.retry import with_retry
 
@@ -281,7 +288,7 @@ orders = kis.account().orders()
 
 ### Market Hours
 
-```
+```text
 Normal Trading: 09:00 ~ 15:30 KST
 After-Hours:    15:40 ~ 16:00 KST
 Closed:         Weekends & Korean holidays
@@ -299,7 +306,7 @@ Closed:         Weekends & Korean holidays
 
 - 💬 **GitHub Issues**: [Report bugs](https://github.com/yourusername/vm-stock-kis/issues)
 - 💭 **GitHub Discussions**: [Ask questions](https://github.com/yourusername/vm-stock-kis/discussions)
-- 📧 **Email**: support@vm-stock-kis.org
+- 📧 **Email**: <support@vm-stock-kis.org>
 - 📚 **Wiki**: [Community documentation](https://github.com/yourusername/vm-stock-kis/wiki)
 
 ---

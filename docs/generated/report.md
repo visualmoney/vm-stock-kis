@@ -1,85 +1,95 @@
 **보고서 (Test Analysis Report)**
 
 요약:
+
 - 날짜: 2025-12-17
 - 목표: test_mock_api_simulation.py의 통합 테스트 성공 및 원인 분석
 
 수행한 작업:
 
 **1. test_token_issuance_flow 분석 및 수정**
-   - 실패 원인 분석 (3단계)
-     - 1단계: `virtual_auth` 키워드 인자 오류 → 위치-전용 인자로 수정
-     - 2단계: `id` None 오류 → 실전 도메인 auth도 제공하도록 수정
-     - 3단계: `KisAuth.virtual` 필드 누락 → `mock_auth` 픽스처에 `virtual=False` 추가
-   
-   - 테스트 결과: ✅ **성공** (실행 시간: 3.88초, 커버리지: 63%)
+
+- 실패 원인 분석 (3단계)
+  - 1단계: `virtual_auth` 키워드 인자 오류 → 위치-전용 인자로 수정
+  - 2단계: `id` None 오류 → 실전 도메인 auth도 제공하도록 수정
+  - 3단계: `KisAuth.virtual` 필드 누락 → `mock_auth` 픽스처에 `virtual=False` 추가
+
+- 테스트 결과: ✅ **성공** (실행 시간: 3.88초, 커버리지: 63%)
 
 **2. test_quote_api_call_flow 분석 및 수정**
-   - 실패 원인 분석 (2단계)
-     - 1단계: real 도메인 토큰 발급 API Mock 누락
-       - Mock에는 virtual 도메인만 등록되어 있었음
-       - `kis.stock()` 호출 시 real 도메인 토큰 필요
-       - 추가: `m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", ...)`
-     
-     - 2단계: search-info API Mock 누락
-       - `kis.stock("000660")` 내부에서 종목 정보 조회 API 호출
-       - 요청: `GET /uapi/domestic-stock/v1/quotations/search-info?PDNO=000660&PRDT_TYPE_CD=300`
-       - 추가: `mock_search_info_response` fixture 생성 및 Mock 등록
-   
-   - 수정 사항:
-     - real/virtual 도메인 토큰 발급 Mock 모두 추가
-     - search-info API Mock 추가 (종목 기본정보 응답)
-     - API 호출 순서: 토큰 발급(real) → 토큰 발급(virtual) → search-info → inquire-price
-   
-   - 테스트 결과: ✅ **성공** (실행 시간: 3.77초, 커버리지: 64%)
+
+- 실패 원인 분석 (2단계)
+  - 1단계: real 도메인 토큰 발급 API Mock 누락
+    - Mock에는 virtual 도메인만 등록되어 있었음
+    - `kis.stock()` 호출 시 real 도메인 토큰 필요
+    - 추가: `m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", ...)`
+
+  - 2단계: search-info API Mock 누락
+    - `kis.stock("000660")` 내부에서 종목 정보 조회 API 호출
+    - 요청: `GET /uapi/domestic-stock/v1/quotations/search-info?PDNO=000660&PRDT_TYPE_CD=300`
+    - 추가: `mock_search_info_response` fixture 생성 및 Mock 등록
+
+- 수정 사항:
+  - real/virtual 도메인 토큰 발급 Mock 모두 추가
+  - search-info API Mock 추가 (종목 기본정보 응답)
+  - API 호출 순서: 토큰 발급(real) → 토큰 발급(virtual) → search-info → inquire-price
+
+- 테스트 결과: ✅ **성공** (실행 시간: 3.77초, 커버리지: 64%)
 
 **3. 나머지 테스트 일괄 분석 및 수정 (5개)**
-   
+
    **A. test_balance_api_call_flow**
-   - 상태: ✅ 이미 수정된 패턴 사용 중 → 추가 수정 불필요
-   
+
+- 상태: ✅ 이미 수정된 패턴 사용 중 → 추가 수정 불필요
+
    **B. test_api_error_handling**
-   - 실패 원인:
-     - `KisAPIError` 예외가 발생하지 않음
-     - 기본 `response_type`이 `KisDynamicDict`라 `KisResponse.__pre_init__` 미호출
-   - 수정 사항:
-     - `response_type=KisAPIResponse` 명시적 지정
-     - real 도메인 토큰 Mock 추가
-     - from 문 추가: `from pykis.responses.response import KisAPIResponse`
-   - 결과: ✅ 성공
-   
+
+- 실패 원인:
+  - `KisAPIError` 예외가 발생하지 않음
+  - 기본 `response_type`이 `KisDynamicDict`라 `KisResponse.__pre_init__` 미호출
+- 수정 사항:
+  - `response_type=KisAPIResponse` 명시적 지정
+  - real 도메인 토큰 Mock 추가
+  - from 문 추가: `from pykis.responses.response import KisAPIResponse`
+- 결과: ✅ 성공
+
    **C. test_http_error_handling**
-   - 실패 원인: `PyKis(None, mock_virtual_auth)` → `id` 필드 None
-   - 수정: `PyKis(mock_auth, mock_virtual_auth)` + real 도메인 토큰 Mock
-   - 결과: ✅ 성공
-   
+
+- 실패 원인: `PyKis(None, mock_virtual_auth)` → `id` 필드 None
+- 수정: `PyKis(mock_auth, mock_virtual_auth)` + real 도메인 토큰 Mock
+- 결과: ✅ 성공
+
    **D. test_token_expiration_and_refresh**
-   - 실패 원인: `PyKis(None, mock_virtual_auth)` → `id` 필드 None
-   - 수정: `PyKis(mock_auth, mock_virtual_auth)` + real/virtual 토큰 Mock
-   - 결과: ✅ 성공
-   
+
+- 실패 원인: `PyKis(None, mock_virtual_auth)` → `id` 필드 None
+- 수정: `PyKis(mock_auth, mock_virtual_auth)` + real/virtual 토큰 Mock
+- 결과: ✅ 성공
+
    **E. test_rate_limiting_with_mock**
-   - 실패 원인:
-     - `PyKis(None, mock_virtual_auth)` → `id` 필드 None
-     - `quotable_market()` 호출 시 real 도메인 inquire-price API Mock 누락
-   - 수정:
-     - `PyKis(mock_auth, mock_virtual_auth)`
-     - real 도메인 토큰 Mock
-     - search-info API Mock
-     - real 도메인 inquire-price API Mock 추가
-   - 결과: ✅ 성공
-   
+
+- 실패 원인:
+  - `PyKis(None, mock_virtual_auth)` → `id` 필드 None
+  - `quotable_market()` 호출 시 real 도메인 inquire-price API Mock 누락
+- 수정:
+  - `PyKis(mock_auth, mock_virtual_auth)`
+  - real 도메인 토큰 Mock
+  - search-info API Mock
+  - real 도메인 inquire-price API Mock 추가
+- 결과: ✅ 성공
+
    **F. test_multiple_accounts**
-   - 실패 원인: `PyKis(None, auth1)`, `PyKis(None, auth2)` → `id` 필드 None
-   - 수정:
-     - 실전 도메인 인증 `real_auth` 생성 (virtual=False)
-     - `PyKis(real_auth, auth1)`, `PyKis(real_auth, auth2)`
-     - real/virtual 도메인 토큰 Mock 모두 추가
-   - 결과: ✅ 성공
+
+- 실패 원인: `PyKis(None, auth1)`, `PyKis(None, auth2)` → `id` 필드 None
+- 수정:
+  - 실전 도메인 인증 `real_auth` 생성 (virtual=False)
+  - `PyKis(real_auth, auth1)`, `PyKis(real_auth, auth2)`
+  - real/virtual 도메인 토큰 Mock 모두 추가
+- 결과: ✅ 성공
 
 テ스트 결과 최종 요약:
 
 **test_mock_api_simulation.py** (8개 테스트):
+
 | 테스트 메서드 | 상태 | 비고 |
 |--------------|------|------|
 | test_token_issuance_flow | ✅ 성공 | 토큰 발급 흐름 검증 |
@@ -94,6 +104,7 @@
 **결과: 8 passed in 4.22s, Coverage: 65%**
 
 **test_rate_limit_compliance.py** (9개 테스트):
+
 | 테스트 메서드 | 상태 | 비고 |
 |--------------|------|------|
 | test_rate_limit_enforced_on_api_calls | ✅ 성공 | Rate limiter API 호출 검증 |
@@ -111,25 +122,26 @@
 **전체 통합 테스트: 17/17 성공** ✅
 
 주요 발견:
+
 1. **PyKis API 설계 특성**
    - 위치-전용 인자 사용 (`/` 마커) → 키워드 인자 불가
    - Dual-domain 지원 → real/virtual 양쪽 인증 정보 모두 필요
    - **필수 패턴**: `PyKis(real_auth, virtual_auth)` (둘 다 제공 필수)
-   
+
 2. **KisAuth 구조**
    - `virtual` 필드 필수 (실전/모의 도메인 구분)
    - 모든 필드 required: id, account, appkey, secretkey, virtual
-   
+
 3. **kis.stock() 내부 동작**
    - 단순해 보이지만 2개의 API 호출 발생
    - ① search-info: 종목 기본정보 조회
    - ② quotable_market: 거래 가능 시장 확인 (inquire-price API 사용)
    - Mock 테스트 시 실제 API 호출 순서 정확히 파악 필수
-   
+
 4. **도메인별 URL 차이**
    - real: `https://openapi.koreainvestment.com:9443`
    - virtual: `https://openapivts.koreainvestment.com:29443`
-   
+
 5. **API 에러 처리**
    - `rt_cd != "0"`일 때 `KisAPIError` 발생
    - `KisResponse.__pre_init__`에서 처리
@@ -142,6 +154,7 @@
    - Mock 범위: PyKis 초기화 시 **두 도메인 모두** 토큰 발급 시도
 
 다음 단계:
+
 1. ✅ test_token_issuance_flow 수정 완료
 2. ✅ test_quote_api_call_flow 수정 완료
 3. ✅ test_balance_api_call_flow (이미 정상)

@@ -146,8 +146,8 @@ Returns the written dict.
 
 - `virtual()`: 모의도메인 여부
 - `keep_token()`: API 접속 토큰 자동 저장 여부
-- `request()`: 
-- `fetch()`: 
+- `request()`:
+- `fetch()`:
 - `token()`: 실전도메인 API 접속 토큰을 반환합니다.
 - `token()`: API 접속 토큰을 설정합니다.
 - `primary_token()`: API 접속 토큰을 반환합니다.
@@ -229,7 +229,7 @@ delegates to a `PyKis` instance.
 
 **Methods:**
 
-- `from_client()`: 
+- `from_client()`:
 - `get_price()`: Return the quote for `symbol`.
 - `get_balance()`: Return account balance object.
 - `place_order()`: Place a basic order. If `price` is None, market order is used.
@@ -258,4 +258,3 @@ Place a basic order. If `price` is None, market order is used.
 Cancel an existing order object (delegates to order.cancel()).
 
 ---
-

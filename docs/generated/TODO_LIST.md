@@ -7,6 +7,7 @@
 ---
 
 ## 📋 목차
+
 1. [즉시 처리 (현주)](#즉시-처리-현주)
 2. [단기 과제 (1-2주)](#단기-과제-1-2주)
 3. [중기 과제 (1개월)](#중기-과제-1개월)
@@ -20,6 +21,7 @@
 ### 🔴 Priority: Critical
 
 #### 1. 최종 보고서 리뷰
+
 - [ ] 프로젝트 관리자 검토
 - [ ] 기술 리드 승인
 - [ ] 팀 전체 공유
@@ -28,6 +30,7 @@
 - **예상 소요시간**: 2-3시간
 
 #### 2. 가이드 문서 공유
+
 - [ ] 개발 팀 미팅 준비
 - [ ] `docs/rules/TEST_RULES_AND_GUIDELINES.md` 발표
 - [ ] Mock 클래스 작성 패턴 실습
@@ -36,6 +39,7 @@
 - **예상 소요시간**: 2시간
 
 #### 3. Git 커밋 및 브랜치 통합
+
 - [ ] 현재 작업사항 확정
 - [ ] 모든 변경사항 커밋
 - [ ] Pull Request 생성
@@ -50,6 +54,7 @@
 ### 🟠 Priority: High
 
 #### 4. WebSocket 테스트 API 조사
+
 - [ ] PyKis 라이브러리 구조 확인
   - `pykis/scope/` 디렉토리 내용 검토
   - websocket 모듈 존재 여부 확인
@@ -66,6 +71,7 @@
 - **결과**: `docs/generated/websocket_investigation.md`
 
 #### 5. 성능 기준값 재검토
+
 - [ ] CI/CD 환경에서 실제 성능 측정
   - 벤치마크 테스트 3회 반복 실행
   - 메모리 프로파일 측정
@@ -87,11 +93,14 @@
 ### 🟡 Priority: Medium
 
 #### 6. WebSocket 테스트 수정
+
 - [ ] 올바른 @patch 경로로 수정
+
   ```python
   @patch('...')  # 올바른 경로 적용
   def test_stress_40_subscriptions(self, mock_ws_class, mock_auth):
   ```
+
 - [ ] 7개 SKIPPED 테스트 각각 수정
   1. [ ] test_stress_40_subscriptions
   2. [ ] test_stress_rapid_subscribe_unsubscribe
@@ -108,10 +117,13 @@
 - **목표**: 22개 모두 PASSED
 
 #### 7. Code Coverage 증대
+
 - [ ] 현재 커버리지 분석 (61%)
+
   ```bash
   pytest --cov=pykis --cov-report=html
   ```
+
 - [ ] 미커버 영역 식별
   - pykis/responses/ 모듈
   - pykis/api/ 모듈 일부
@@ -126,6 +138,7 @@
 - **결과**: Coverage 보고서 업데이트
 
 #### 8. 팀 교육 및 문서 공유
+
 - [ ] 정기 미팅 일정
   1. [ ] Week 1: Mock 클래스 작성 패턴 (1시간)
   2. [ ] Week 2: KisAuth 및 transform_() API (1시간)
@@ -148,7 +161,9 @@
 ### 🟡 Priority: Medium-High
 
 #### 9. 자동화 테스트 파이프라인 구축
+
 - [ ] GitHub Actions 워크플로우 작성
+
   ```yaml
   name: Test Suite
   on: [push, pull_request]
@@ -164,6 +179,7 @@
         - name: Generate Coverage Report
           run: pytest --cov=pykis --cov-report=xml
   ```
+
 - [ ] 커버리지 리포트 자동화
 - [ ] 성능 회귀 감지
 - [ ] 실패 시 알림 설정
@@ -172,6 +188,7 @@
 - **예상 소요시간**: 4-6시간
 
 #### 10. 성능 모니터링 대시보드
+
 - [ ] 메트릭 수집 시스템
   - 벤치마크 결과
   - 메모리 사용량
@@ -187,6 +204,7 @@
 - **예상 소요시간**: 8-12시간
 
 #### 11. 통합 테스트 확장
+
 - [ ] 새로운 API 엔드포인트 테스트
   - [ ] 계좌 정보 API
   - [ ] 주문 API
@@ -209,6 +227,7 @@
 ### 🟢 Priority: Low
 
 #### 12. E2E 테스트 시스템 구축 (Q1/Q2)
+
 - [ ] 실제 API 서버와 통신하는 테스트
 - [ ] 다양한 마켓 상황 시뮬레이션
 - [ ] 통합 시나리오 테스트
@@ -216,12 +235,14 @@
 - **예상 소요시간**: 20-30시간
 
 #### 13. 테스트 플랜 정기 갱신 (매 분기)
+
 - [ ] 새로운 기능 테스트 추가
 - [ ] 버그 재현 테스트 통합
 - [ ] 성능 기준값 조정
 - **예상 소요시간**: 4-6시간/분기
 
 #### 14. 테스트 자동화 수준 향상 (Q2)
+
 - [ ] 야간 자동화 테스트 실행
 - [ ] 보안 테스트 통합
 - [ ] 부하 테스트 구축
@@ -234,12 +255,13 @@
 ### 🔴 Critical Issues
 
 #### Issue 1: WebSocket API 패치 경로 불명확
+
 - **상태**: 🔍 조사 필요
 - **영향**: 7개 성능 테스트 SKIP
-- **현황**: 
+- **현황**:
   - 패치 경로: `@patch('pykis.scope.websocket.websocket.WebSocketApp')`
   - 에러: `AttributeError: module 'pykis.scope' has no attribute 'websocket'`
-- **해결책**: 
+- **해결책**:
   1. PyKis 라이브러리 구조 재확인
   2. 올바른 패치 경로 파악
   3. 테스트 수정
@@ -248,10 +270,11 @@
 - **관련 문서**: `docs/generated/websocket_investigation.md`
 
 #### Issue 2: Code Coverage 부족 (61%)
+
 - **상태**: 🟡 진행 중
 - **영향**: 미커버 코드에서의 버그 가능성
 - **목표**: 70% 달성
-- **현황**: 
+- **현황**:
   - pykis/responses/dynamic.py: 53%
   - pykis/api/: 평균 60% 미만
 - **액션**: 추가 테스트 케이스 작성
@@ -261,12 +284,13 @@
 ### 🟠 Major Issues
 
 #### Issue 3: Mock 클래스 구조 이해도 낮음
+
 - **상태**: 📚 교육 필요
 - **영향**: 향후 Mock 클래스 작성 시 오류 가능성
-- **현황**: 
-  - __transform__ staticmethod 패턴 아직 낯선 개발자 있음
-  - __annotations__ vs __fields__ 혼동 가능성
-- **액션**: 
+- **현황**:
+  - **transform** staticmethod 패턴 아직 낯선 개발자 있음
+  - **annotations** vs **fields** 혼동 가능성
+- **액션**:
   1. 팀 교육 실시
   2. 코드 예제 추가
   3. 리뷰 체크리스트 작성
@@ -274,12 +298,13 @@
 - **타겟 해결일**: 1월 2-3주차
 
 #### Issue 4: 성능 기준값 환경 의존성
+
 - **상태**: ⚙️ 설정 필요
 - **영향**: CI/CD에서 성능 테스트 불안정
-- **현황**: 
+- **현황**:
   - 현재 기준값이 로컬 개발 환경 기준
   - CI/CD 환경에서 더 느릴 가능성 높음
-- **액션**: 
+- **액션**:
   1. 환경별 기준값 측정
   2. 적응형 기준값 설정
   3. 성능 변동 허용 범위 정의
@@ -292,7 +317,7 @@
 
 ### 타임라인
 
-```
+```text
 현재 12월
 │
 ├─ Week 1 (현주)
@@ -340,7 +365,7 @@
 
 - [x] Integration 테스트 17개 모두 통과
 - [x] Performance 테스트 14개 통과
-- [x] Mock 클래스 __transform__ 구현
+- [x] Mock 클래스 **transform** 구현
 - [x] 규칙 및 가이드 문서화
 - [x] 프롬프트별 문서 작성
 - [x] 개발일지 작성
@@ -369,16 +394,19 @@
 ## 추가 참고사항
 
 ### 중요 문서
+
 - `docs/rules/TEST_RULES_AND_GUIDELINES.md`: 테스트 작성 규칙
 - `docs/prompts/PROMPT_003_Performance_Tests.md`: 성능 테스트 상세
 - `docs/generated/report_final.md`: 최종 보고서
 
 ### 관련 코드
+
 - `tests/integration/test_mock_api_simulation.py`: Integration 패턴
 - `tests/performance/test_benchmark.py`: 성능 테스트 패턴
 - `pykis/responses/dynamic.py`: transform_() 구현 (라인 247-257)
 
 ### 외부 자료
+
 - [PyKIS GitHub](https://github.com/bnhealth/python-kis)
 - [pytest 문서](https://docs.pytest.org/)
 - [unittest.mock 문서](https://docs.python.org/3/library/unittest.mock.html)

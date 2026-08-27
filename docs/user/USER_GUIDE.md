@@ -1,6 +1,7 @@
 # Python KIS - 사용자 문서
 
 ## 목차
+
 1. [설치 및 초기 설정](#설치-및-초기-설정)
 2. [빠른 시작](#빠른-시작)
 3. [인증 관리](#인증-관리)
@@ -601,6 +602,7 @@ for symbol in symbols:
 ### Q1: "시장이 미개장" 에러가 발생합니다
 
 **A:** 한국투자증권의 거래 시간에만 시세 조회가 가능합니다.
+
 - 평일 09:00 - 15:30 (점심 시간 11:30-12:30 제외)
 - 장 시작 시간을 확인하세요:
 
@@ -616,6 +618,7 @@ print(trading_hours.is_market_open)  # True/False
 ### Q2: 인증 에러가 발생합니다
 
 **A:** 인증 정보를 확인하세요:
+
 ```python
 # 1. 파일 경로 확인
 import os
@@ -638,6 +641,7 @@ kis = VmKis(
 ### Q3: Rate limit 에러가 발생합니다
 
 **A:** 요청 속도를 줄이세요:
+
 ```python
 # 자동 rate limiting 확인
 from vmkis import logging
@@ -653,6 +657,7 @@ for symbol in symbols:
 ### Q4: 주문이 자동으로 취소됩니다
 
 **A:** 주문 객체 참조 유지:
+
 ```python
 # ❌ 잘못된 예
 order = stock.buy(qty=10)  # 참조 유지 필요
@@ -668,7 +673,8 @@ orders = account.pending_orders()  # 미체결 주문 재조회
 ### Q5: 비밀키는 어디에서 얻나요?
 
 **A:** KIS Developers 포털에서:
-1. https://apiportal.koreainvestment.com/ 접속
+
+1. <https://apiportal.koreainvestment.com/> 접속
 2. 앱 관리 → 앱 상세
 3. App Key, Secret Key 확인
 

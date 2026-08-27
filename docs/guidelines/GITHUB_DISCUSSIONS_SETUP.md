@@ -11,6 +11,7 @@
 GitHub Discussions는 VM-Stock-KIS 사용자들이 질문하고, 아이디어를 공유하고, 공지를 받을 수 있는 중앙 커뮤니티 플랫폼입니다.
 
 **장점**:
+
 - ✅ GitHub 계정으로 쉽게 접근
 - ✅ 검색 가능한 아카이브
 - ✅ 개발자와 사용자 직접 소통
@@ -22,11 +23,13 @@ GitHub Discussions는 VM-Stock-KIS 사용자들이 질문하고, 아이디어를
 ## 1단계: GitHub Discussions 활성화
 
 ### 1.1 저장소 설정
-```
+
+```text
 GitHub 저장소 → Settings → General
 ```
 
 **절차**:
+
 1. 저장소 메인 페이지 → **Settings** 탭 클릭
 2. 좌측 메뉴 → **Discussions** 섹션 찾기
 3. "Discussions 활성화" 체크박스 선택
@@ -35,11 +38,13 @@ GitHub 저장소 → Settings → General
 **결과**: 저장소에 Discussions 탭이 나타남 ✅
 
 ### 1.2 권한 설정
-```
+
+```text
 Settings → Discussions → Permissions
 ```
 
 **설정**:
+
 ```yaml
 누가 토론을 시작할 수 있는가:
   - 저장소 권한자 ✅
@@ -59,6 +64,7 @@ Settings → Discussions → Permissions
 ### 2.1 기본 카테고리 (4개)
 
 #### 1️⃣ Announcements (공지사항)
+
 ```yaml
 이름: Announcements
 설명: "새로운 버전 출시, 유지보수 일정, 중요 공지"
@@ -68,11 +74,13 @@ Settings → Discussions → Permissions
 ```
 
 **사용 예시**:
+
 - "v2.3.0 출시: 새로운 기능 5개 추가"
 - "예정된 유지보수: 12월 25일 18:00~22:00"
 - "API 변경 공지: quote() 메서드 개선"
 
 #### 2️⃣ General (일반)
+
 ```yaml
 이름: General
 설명: "일반적인 질문, 토론, 아이디어 공유"
@@ -82,11 +90,13 @@ Settings → Discussions → Permissions
 ```
 
 **사용 예시**:
+
 - "VM-Stock-KIS를 사용해본 경험 공유합니다"
 - "다른 사람들은 이 기능을 어떻게 사용하고 있나요?"
 - "거래 알고리즘 구축 팁 공유"
 
 #### 3️⃣ Q&A (질문 & 답변)
+
 ```yaml
 이름: Q&A
 설명: "기술 질문, 버그 리포팅, 문제 해결"
@@ -96,11 +106,13 @@ Settings → Discussions → Permissions
 ```
 
 **사용 예시**:
+
 - "quote() 메서드가 None을 반환합니다"
 - "초기화할 때 ConnectionError가 발생합니다"
 - "환경변수 설정 방법을 모르겠습니다"
 
 #### 4️⃣ Ideas (기능 제안)
+
 ```yaml
 이름: Ideas
 설명: "새로운 기능 제안, 개선 아이디어"
@@ -110,6 +122,7 @@ Settings → Discussions → Permissions
 ```
 
 **사용 예시**:
+
 - "실시간 데이터 구독 기능이 필요합니다"
 - "CSV 내보내기 기능 추가를 제안합니다"
 - "간단한 백테스팅 도구를 추가하면 어떨까요?"
@@ -251,7 +264,7 @@ body:
           required: false
         - label: "유사한 기능 요청이 없는지 확인했습니다"
           required: false
-```
+```text
 
 #### General 템플릿: `.github/DISCUSSION_TEMPLATE/general.yml`
 
@@ -280,7 +293,7 @@ body:
 
 ### 3.2 파일 목록
 
-```
+```text
 .github/DISCUSSION_TEMPLATE/
 ├── question.yml              # Q&A 템플릿
 ├── feature-request.yml       # 기능 제안 템플릿
@@ -303,18 +316,20 @@ git push origin main
 ### 4.1 모더레이션 정책
 
 **목표**:
+
 - 존중하고 긍정적인 커뮤니티 유지
 - 중복된 질문 방지
 - 빠른 응답 시간
 
 **역할**:
+
 - **관리자** (유지보수자): Discussions 관리, 스팸 제거
 - **커뮤니티 리더** (경험 많은 사용자): 질문 답변 지원
 - **사용자**: 질문, 아이디어 제안
 
 ### 4.2 응답 시간
 
-```
+```text
 우선순위:    응답 시간
 🔴 긴급      24시간 내
 🟡 높음       48시간 내
@@ -322,15 +337,18 @@ git push origin main
 ```
 
 **긴급 (🔴)**:
+
 - API 동작 불가 (버그)
 - 보안 문제
 - 심각한 오류
 
 **높음 (🟡)**:
+
 - 설치/설정 문제
 - 주요 기능 문제
 
 **일반 (🟢)**:
+
 - 기능 제안
 - 일반 질문
 - 경험 공유
@@ -338,19 +356,21 @@ git push origin main
 ### 4.3 스팸 & 부적절한 콘텐츠
 
 **금지 항목**:
+
 - ❌ 광고, 마케팅 콘텐츠
 - ❌ 욕설, 모욕적 언어
 - ❌ 스팸 링크
 - ❌ 중복된 질문 (기존 스레드로 리다이렉트)
 
 **조치**:
+
 1. 첫 위반: 경고 댓글 (삭제 후 설명)
 2. 재위반: Discussion 잠금
 3. 지속적 위반: 사용자 차단
 
 ### 4.4 레이블 (Labels)
 
-```
+```text
 🏷️ Labels를 사용하여 Discussion을 분류합니다.
 
 상태:
@@ -380,6 +400,7 @@ git push origin main
 **제목**: "🎯 VM-Stock-KIS 시작하기"
 
 **내용**:
+
 ```markdown
 # VM-Stock-KIS에 오신 것을 환영합니다! 👋
 
@@ -416,6 +437,7 @@ VM-Stock-KIS는 한국투자증권 API를 Python으로 쉽게 사용할 수 있�
 **제목**: "📋 커뮤니티 행동 강령"
 
 **내용**:
+
 ```markdown
 # 커뮤니티 행동 강령
 
@@ -499,6 +521,7 @@ jobs:
 ## 7단계: 런칭 체크리스트
 
 ### 설정 확인
+
 - [ ] Discussions 활성화됨
 - [ ] 4개 카테고리 생성됨
 - [ ] 3개 템플릿 파일 추가됨
@@ -507,11 +530,13 @@ jobs:
 - [ ] 레이블 설정 완료됨
 
 ### 문서화
+
 - [ ] README.md에 Discussions 링크 추가
 - [ ] CONTRIBUTING.md에 커뮤니티 정보 추가
 - [ ] GitHub에 커뮤니티 탭 설정 (커뮤니티 가이드)
 
 ### 홍보
+
 - [ ] 첫 공지사항 게시 (v2.2.0 출시 소식)
 - [ ] YouTube 영상에서 언급
 - [ ] 소셜 미디어에 공유
@@ -523,7 +548,7 @@ jobs:
 
 ### Week 1 활동 계획
 
-```
+```text
 일정             활동
 ======================================
 Day 1            Discussions 활성화
@@ -561,7 +586,7 @@ Week 3           첫 GitHub Discussions 라이브
 
 ## 성과 지표 (1개월 후)
 
-```
+```text
 지표                     목표
 ====================================
 토론 개수                 20+

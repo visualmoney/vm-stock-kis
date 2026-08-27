@@ -4,7 +4,7 @@ VM-Stock-KIS는 단계별 학습이 가능하도록 초급, 중급, 고급 예�
 
 ## 📁 폴더 구조
 
-```
+```text
 examples/
 ├── 01_basic/          # 초급: 기본 사용법
 ├── 02_intermediate/   # 중급: 실전 거래
@@ -21,6 +21,7 @@ examples/
 **시간**: 1-2시간
 
 **예제**:
+
 - `hello_world.py` - 첫 연결
 - `get_quote.py` - 시세 조회
 - `get_balance.py` - 잔고 조회
@@ -28,6 +29,7 @@ examples/
 - `realtime_price.py` - 실시간 수가
 
 **학습 목표**:
+
 - 환경 설정 및 인증
 - 기본 API 호출
 - 데이터 조회
@@ -44,6 +46,7 @@ examples/
 **시간**: 3-5시간
 
 **예제**:
+
 - `01_multiple_symbols.py` - 여러 종목 분석
 - `02_conditional_trading.py` - 자동 거래
 - `03_portfolio_analysis.py` - 포트폴리오 분석
@@ -51,6 +54,7 @@ examples/
 - `05_advanced_order_types.py` - 고급 주문
 
 **학습 목표**:
+
 - 복잡한 거래 로직
 - 포트폴리오 관리
 - 실시간 모니터링
@@ -67,11 +71,13 @@ examples/
 **시간**: 5-8시간
 
 **예제**:
+
 - `01_scope_api_trading.py` - Scope API 활용
 - `02_performance_analysis.py` - 성과 분석 및 리포팅
 - `03_error_handling.py` - 에러 처리 및 복원력
 
 **학습 목표**:
+
 - VmKis 심화 API
 - 성과 분석 및 리포팅
 - 프로덕션급 에러 처리
@@ -232,11 +238,13 @@ nano config.yaml
 ### "한글이 깨집니다"
 
 **Windows PowerShell**:
+
 ```powershell
 chcp 65001
 ```
 
 **Linux/Mac**:
+
 ```bash
 export LANG=ko_KR.UTF-8
 ```

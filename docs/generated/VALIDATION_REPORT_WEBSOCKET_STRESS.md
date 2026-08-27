@@ -1,7 +1,7 @@
 # WebSocket Stress Test 검증 보고서
 
-**작성일**: 2025-12-17  
-**테스트 대상**: `tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_40_subscriptions`  
+**작성일**: 2025-12-17
+**테스트 대상**: `tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_40_subscriptions`
 **최종 결과**: ✅ **PASSED**
 
 ---
@@ -32,12 +32,14 @@
 #### 문제점 및 해결책
 
 **문제**: 모의 모드에서 PyKis 초기화 시 두 가지 인증 정보 필요
+
 - 실전도메인 인증: `KisAuth(virtual=False)`
 - 모의도메인 인증: `KisAuth(virtual=True)`
 
 **원인**: PyKis 초기화 로직에서 `auth` 및 `virtual_auth` 모두 필요 (line 349-375)
 
 **해결책**: 두 개의 fixture 생성
+
 ```python
 @pytest.fixture
 def mock_real_auth():
@@ -83,7 +85,8 @@ kis = PyKis(mock_real_auth, mock_auth, use_websocket=True)
 #### 상세 분석
 
 **WebSocket 구조**:
-```
+
+```text
 pykis/
 ├── client/
 │   ├── websocket.py         ← KisWebsocketClient가 있는 위치
@@ -96,6 +99,7 @@ pykis/
 ```
 
 **기존 문제점**:
+
 ```python
 # ❌ 잘못된 패치 경로
 @patch('pykis.scope.websocket.websocket.WebSocketApp')
@@ -104,6 +108,7 @@ kis.websocket.subscribe_price(symbol)
 ```
 
 **수정 내용**:
+
 ```python
 # ✅ 올바른 패치 경로
 @patch('websocket.WebSocketApp')
@@ -120,12 +125,12 @@ KisWebsocketClient.subscribe(id: str, key: str, primary: bool = False)
 def subscribe(self, id: str, key: str, primary: bool = False):
     """
     TR을 구독합니다.
-    
+
     Args:
         id (str): TR ID
         key (str): TR Key
         primary (bool): 주 서버에 구독할지 여부
-    
+
     Raises:
         ValueError: 최대 구독 수를 초과했습니다.
     """
@@ -139,6 +144,7 @@ def subscribe(self, id: str, key: str, primary: bool = False):
 ### 3.1 Fixture 수정
 
 **변경 전**:
+
 ```python
 @pytest.fixture
 def mock_auth():
@@ -153,6 +159,7 @@ def mock_auth():
 ```
 
 **변경 후**:
+
 ```python
 @pytest.fixture
 def mock_real_auth():
@@ -182,6 +189,7 @@ def mock_auth():
 ### 3.2 테스트 메서드 수정
 
 **변경 전**:
+
 ```python
 @pytest.mark.skip(reason="pykis.scope.websocket 구조 불일치 - 향후 수정 필요")
 @patch('pykis.scope.websocket.websocket.WebSocketApp')  # ❌ 잘못된 경로
@@ -194,6 +202,7 @@ def test_stress_40_subscriptions(self, mock_ws_class, mock_auth):
 ```
 
 **변경 후**:
+
 ```python
 @patch('websocket.WebSocketApp')  # ✅ 올바른 경로
 def test_stress_40_subscriptions(self, mock_ws_class, mock_real_auth, mock_auth):
@@ -212,11 +221,12 @@ def test_stress_40_subscriptions(self, mock_ws_class, mock_real_auth, mock_auth)
 ### 4.1 최종 실행
 
 ```bash
-$ pytest tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_40_subscriptions -xvs
+pytest tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_40_subscriptions -xvs
 ```
 
 **결과**:
-```
+
+```text
 tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_40_subscriptions PASSED
 40개 동시 구독: 40/40 (100.0% success) in 0.00s, 0 messages
 Subscriptions: 40/40
@@ -267,7 +277,7 @@ websocket_client.unsubscribe_all()
 
 ### 5.2 WebSocket 구독 흐름
 
-```
+```text
 PyKis 인스턴스 생성
     ↓
 KisWebsocketClient 자동 생성 (use_websocket=True)
@@ -286,6 +296,7 @@ WebSocket 연결로 구독 요청 전송
 ## 6. 권장사항 및 향후 개선
 
 ### 6.1 현재 상태
+
 - ✅ PyKis 초기화: 정상 작동
 - ✅ WebSocket 속성 접근: 정상 작동
 - ✅ 메서드 호출 가능: 정상 작동
@@ -306,15 +317,15 @@ WebSocket 연결로 구독 요청 전송
 # 1. 실제 구독/해제 테스트
 def test_subscribe_unsubscribe_flow():
     """완전한 구독 라이프사이클 테스트"""
-    
+
 # 2. 동시 구독 한계 테스트
 def test_max_subscriptions_limit():
     """최대 구독 수 초과 시 에러 처리"""
-    
+
 # 3. 메시지 수신 검증
 def test_message_reception():
     """실제 메시지 수신 및 처리"""
-    
+
 # 4. 연결 안정성
 def test_connection_stability():
     """장시간 연결 유지"""
@@ -335,7 +346,7 @@ def test_connection_stability():
 
 ### 7.2 최종 결과
 
-```
+```text
 ✅ 테스트 실행 성공
 ✅ 40개 구독 시뮬레이션 성공
 ✅ 100% 성공률 달성
@@ -373,11 +384,11 @@ KisAuth(
 
 ### C. 참고 문서
 
-- PyKis 공식 문서: https://github.com/bing230/python-kis
-- 한국투자증권 API 문서: https://apiportal.koreainvestment.com
+- PyKis 공식 문서: <https://github.com/bing230/python-kis>
+- 한국투자증권 API 문서: <https://apiportal.koreainvestment.com>
 
 ---
 
-**작성자**: GitHub Copilot  
-**검증 완료일**: 2025-12-17  
+**작성자**: GitHub Copilot
+**검증 완료일**: 2025-12-17
 **상태**: ✅ **COMPLETE**

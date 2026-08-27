@@ -114,6 +114,7 @@ kis = VmKis()  # Loads from environment
 #### Method 2: Configuration File
 
 **config.yaml**:
+
 ```yaml
 kis:
   server: real  # or "virtual" for sandbox
@@ -251,7 +252,7 @@ for order in orders:
 
 - 📝 **Issues**: [GitHub Issues](https://github.com/yourusername/vm-stock-kis/issues)
 - 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/vm-stock-kis/discussions)
-- 📧 **Email**: support@vm-stock-kis.org
+- 📧 **Email**: <support@vm-stock-kis.org>
 - 🌐 **Website**: [https://vm-stock-kis.org](https://vm-stock-kis.org)
 
 ---

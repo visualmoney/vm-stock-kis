@@ -9,7 +9,7 @@
 
 ## 📁 문서 저장 구조
 
-```
+```text
 docs/
 ├── README.md                          # 프로젝트 소개
 ├── architecture/                      # 아키텍처 문서
@@ -79,8 +79,10 @@ docs/
 | GUIDELINES_002_*.md | (추후 작성) | - | ⏳ 계획 중 |
 
 ### 프롬프트 기록 (Prompts)| 874개 테스트, 94% 커버리지 | ✅ 완료 |
+
 | [2025-12-20_phase4_week1_prompt.md](c:\Python\github.com\python-kis\docs\prompts\2025-12-20_phase4_week1_prompt.md) | 글로벌 문서 및 다국어 확장 | 3,500줄 문서화 | ✅ 완료 |
 | [2025-12-20_phase4_week3_script_discussions_prompt.md](c:\Python\github.com\python-kis\docs\prompts\2025-12-20_phase4_week3_script_discussions_prompt.md) | 영상 스크립트 & Discussions | 1,390줄 문서화 | ✅ 완료
+
 | 문서 | 주제 | 결과 | 상태 |
 |------|------|------|------|
 | [PROMPT_001_TEST_COVERAGE_AND_TESTS.md](c:\Python\github.com\python-kis\docs\prompts\PROMPT_001_TEST_COVERAGE_AND_TESTS.md) | 테스트 커버리지 개선 + test_daily_chart/test_info 구현 | 12개 테스트 추가 | ✅ 완료 |
@@ -104,6 +106,7 @@ docs/
 | TEST_REPORT_2025_12_*.md | (매주 업데이트) | - | - | ⏳ 계획 중 |
 
 ### 종합 보고서 (Main Reports)
+
 3_KR.md](c:\Python\github.com\python-kis\docs\reports\ARCHITECTURE_REPORT_V3_KR.md) | 종합 아키텍처 분석 | 2025-12-20 | ✅ 최신 |
 | [PHASE4_WEEK1_COMPLETION_REPORT.md](c:\Python\github.com\python-kis\docs\reports\PHASE4_WEEK1_COMPLETION_REPORT.md) | Phase 4 Week 1 완료 현황 | 2025-12-20 | ✅ 완료 |
 | [PHASE4_WEEK3_COMPLETION_REPORT.md](c:\Python\github.com\python-kis\docs\reports\PHASE4_WEEK3_COMPLETION_REPORT.md) | Phase 4 Week 3 완료 현황 | 2025-12-20 | ✅ 완료 |
@@ -157,7 +160,7 @@ docs/
 
 ### Phase 진행도
 
-```
+```text
 Phase 1: ✅ 완료 (2025-12-18)
   └─ API 리팩토링, 테스트 강화
 
@@ -175,7 +178,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 테스트 현황
 
-```
+```text
 테스트 통과:        874개 ✅
 테스트 스킵:        19개 ⏳
 커버리지 (단위):    89.7% 🟡 (목표 90% 근접)
@@ -185,7 +188,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 문서화 현황
 
-```
+```text
 총 신규 문서:       20+개 ✅
 가이드라인:         6개 ✅
 개발 일지:          3개 ✅
@@ -195,7 +198,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 아키텍처 평가
 
-```
+```text
 설계:      4.5/5.0 🟢
 코드 품질: 4.0/5.0 🟢
 테스트:    4.3/5.0 🟢 (개선됨)
@@ -272,7 +275,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 1. 명확성 (Clarity)
 
-```
+```text
 ✅ 좋은 예
 # 테스트 코드 작성 가이드라인
 이 문서는 python-kis 프로젝트의 테스트 코드 작성 표준을 정의합니다.
@@ -284,7 +287,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 2. 구조화 (Structure)
 
-```
+```text
 ✅ 좋은 예
 ## 섹션 1: 기본 규칙
 ### 1.1 파일 구조
@@ -297,7 +300,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 3. 실행 가능성 (Actionable)
 
-```
+```text
 ✅ 좋은 예
 ## 체크리스트
 - [ ] 테스트 명칭이 명확한가?
@@ -310,7 +313,7 @@ Phase 4: ✅ 완료 (2025-12-20)
 
 ### 4. 예시 포함 (Examples)
 
-```
+```text
 ✅ 좋은 예
 def test_feature():
     # 이렇게 하세요
@@ -328,6 +331,7 @@ def test_feature():
 ### Q: 새로운 테스트를 작성했는데, 어디에 기록해야 하나요?
 
 **A**: 다음과 같이 기록합니다:
+
 1. 테스트 코드: `tests/unit/...` (또는 `tests/integration/...`)
 2. 개발 일지: 주간 DEV_LOG에 기술
 3. 테스트 보고서: 주간 TEST_REPORT에 반영
@@ -336,6 +340,7 @@ def test_feature():
 ### Q: 기존 문서를 수정하려면?
 
 **A**: 다음을 확인하세요:
+
 1. 문서 버전 업데이트
 2. 수정 일자 기록 ("최종 수정: YYYY-MM-DD")
 3. 변경 내용 요약 ("주요 변경내용:" 섹션)
@@ -344,7 +349,8 @@ def test_feature():
 ### Q: 새로운 카테고리 폴더를 추가하려면?
 
 **A**: 다음 구조를 따르세요:
-```
+
+```text
 docs/new_category/
 ├── README.md (목록 및 설명)
 ├── DOCUMENT_001.md
@@ -356,7 +362,7 @@ docs/new_category/
 
 ## 🔗 상호 참조 지도
 
-```
+```text
 프롬프🎯 다음 단계
 
 ### Phase 3 (1월 예정)
