@@ -112,7 +112,7 @@ package "개선 (v2.2.0+)" #C8E6C9 {
   file "adapter/*.py" {
     circle "Mixin\n(내부 구현)" as NEW_ADAPTER
   }
-  
+
   NEW_INIT -.->|재export| NEW_PUBLIC
   NEW_TYPES -.->|고급 사용자| NEW_ADAPTER
 }
@@ -194,14 +194,14 @@ end note
 title Python-KIS 테스트 전략 (현재 vs 목표)
 
 rectangle "테스트 피라미드" {
-  
+
   ' 현재 상태
   package "Current (94%)" #FFE0B2 {
     rectangle "성능 테스트\n35 tests (5%)" as PERF_NOW #FFB6B6
     rectangle "통합 테스트\n25 tests (3%)" as INTEG_NOW #FFD6A5
     rectangle "단위 테스트\n840 tests (92%)" as UNIT_NOW #C8E6C9
   }
-  
+
   ' 목표 상태
   package "Target (90%+)" #E0BBE4 {
     rectangle "성능 테스트\n50 tests (5%)" as PERF_TARGET #E0BBE4
@@ -237,7 +237,7 @@ left to right direction
 rectangle "현재\n154개 export" as NOW {
   rectangle "핵심\n2개\n(PyKis\nKisAuth)" as NOW_CORE
   rectangle "Protocol\n30개" as NOW_PROTO
-  rectangle "Adapter\n40개" as NOW_ADAPTER  
+  rectangle "Adapter\n40개" as NOW_ADAPTER
   rectangle "기타\n82개" as NOW_OTHER
 }
 
@@ -331,12 +331,14 @@ jobs:
 ## 5.4 PlantUML 추가 리소스
 
 ### 참고 문서
-- PlantUML 공식: https://plantuml.com
-- C4 Model 다이어그램: https://c4model.com
-- 예제 모음: https://github.com/plantuml-stdlib
+
+- PlantUML 공식: <https://plantuml.com>
+- C4 Model 다이어그램: <https://c4model.com>
+- 예제 모음: <https://github.com/plantuml-stdlib>
 
 ### 추천 도구
-- **PlantUML Online Editor**: https://www.plantuml.com/plantuml/uml/
+
+- **PlantUML Online Editor**: <https://www.plantuml.com/plantuml/uml/>
 - **Visual Studio Code Extension**: `jebbs.plantuml`
 - **GitHub Integration**: 자동 렌더링 지원
 

@@ -1,7 +1,7 @@
 # WebSocket Stress Test 통합 검증 보고서
 
-**작성일**: 2025-12-17  
-**검증 범위**: `tests/performance/test_websocket_stress.py`  
+**작성일**: 2025-12-17
+**검증 범위**: `tests/performance/test_websocket_stress.py`
 **최종 결과**: ✅ **2/2 테스트 PASSED**
 
 ---
@@ -29,6 +29,7 @@ WebSocket 스트레스 테스트 파일의 두 가지 핵심 테스트를 검증
 | 커버리지 기여 | ✅ +0.3% | 61% 유지 |
 
 **검증 내용**:
+
 ```python
 ✅ PyKis 초기화: 실전/모의도메인 모두 필요
 ✅ WebSocket 접근: kis.websocket 정상 작동
@@ -48,6 +49,7 @@ WebSocket 스트레스 테스트 파일의 두 가지 핵심 테스트를 검증
 | 커버리지 기여 | ✅ 동일 | 61% 유지 → 62% |
 
 **검증 내용**:
+
 ```python
 ✅ 100회 반복 구독/취소 모두 성공
 ✅ 성공률 기준: 95% 이상 ✓ (100% 달성)
@@ -71,6 +73,7 @@ WebSocket 스트레스 테스트 파일의 두 가지 핵심 테스트를 검증
 ### 3.2 test_stress_rapid_subscribe_unsubscribe 특화 수정
 
 **변경 전** (스킵된 상태):
+
 ```python
 @pytest.mark.skip(reason="pykis.scope.websocket 구조 불일치 - 향후 수정 필요")
 @patch('pykis.scope.websocket.websocket.WebSocketApp')  # ❌ 잘못된 경로
@@ -81,11 +84,12 @@ def test_stress_rapid_subscribe_unsubscribe(self, mock_ws_class, mock_auth):  # 
 ```
 
 **변경 후** (활성화됨):
+
 ```python
 @patch('websocket.WebSocketApp')  # ✅ 올바른 경로
 def test_stress_rapid_subscribe_unsubscribe(self, mock_ws_class, mock_real_auth, mock_auth):  # ✅ 양쪽 auth
     kis = PyKis(mock_real_auth, mock_auth, use_websocket=True)  # ✅ 완전한 초기화
-    
+
     # 100회 반복
     for i in range(100):
         # 실제 API:
@@ -159,7 +163,8 @@ $ pytest tests/performance/test_websocket_stress.py::TestWebSocketStress::test_s
 ```
 
 **결과**:
-```
+
+```text
 tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_40_subscriptions PASSED          [ 50%]
 tests/performance/test_websocket_stress.py::TestWebSocketStress::test_stress_rapid_subscribe_unsubscribe PASSED [100%]
 
@@ -250,6 +255,7 @@ def test_performance_baseline():
 ✅ **2개 WebSocket 스트레스 테스트 완전 검증 및 수정**
 
 모든 테스트가 다음을 충족합니다:
+
 - PyKis API 정확한 사용
 - Mock 패치 경로 올바름
 - 인증 정보 완전성
@@ -305,6 +311,6 @@ pytest tests/performance/test_websocket_stress.py --cov=pykis --cov-report=html
 
 ---
 
-**검증 완료일**: 2025-12-17  
-**검증자**: GitHub Copilot  
+**검증 완료일**: 2025-12-17
+**검증자**: GitHub Copilot
 **상태**: ✅ **COMPLETE - 모든 검증 통과**

@@ -9,12 +9,12 @@
 예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `VMKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
 
 예:
+
 ```bash
 VMKIS_PROFILE=real python examples/02_intermediate/01_multiple_symbols.py
 # 또는
 python examples/02_intermediate/01_multiple_symbols.py --profile virtual
 ```
-
 
 ### 01_multiple_symbols.py - 여러 종목 동시 조회 및 분석
 
@@ -23,18 +23,21 @@ python examples/02_intermediate/01_multiple_symbols.py --profile virtual
 **목표**: 여러 종목의 시세를 한 번에 조회하고 성과를 비교 분석
 
 **학습 포인트**:
+
 - 리스트 기반 종목 조회
 - 데이터 정렬 및 필터링
 - 수익률 비교 분석
 - 통계 계산
 
 **실행**:
+
 ```bash
 python examples/02_intermediate/01_multiple_symbols.py
 ```
 
 **출력 예시**:
-```
+
+```text
 📊 단계 1: 종목 정보 조회 중...
 📈 단계 2: 성과별 정렬 (수익률)
 🎯 단계 3: 상승/하락 종목 필터링
@@ -50,12 +53,14 @@ python examples/02_intermediate/01_multiple_symbols.py
 **목표**: 설정한 목표가에 도달하면 자동으로 매수/매도 실행
 
 **학습 포인트**:
+
 - 실시간 가격 모니터링 (폴링)
 - 조건 판단 로직
 - 자동 주문 실행
 - 거래 안전장치
 
 **실행**:
+
 ```bash
 # 모의투자
 python examples/02_intermediate/02_conditional_trading.py
@@ -66,6 +71,7 @@ python examples/02_intermediate/02_conditional_trading.py
 ```
 
 **설정 (코드 내 수정 필요)**:
+
 ```python
 TARGET_BUY_PRICE = 65000   # 목표 매수가
 TARGET_SELL_PRICE = 70000  # 목표 매도가
@@ -74,7 +80,8 @@ MAX_DURATION = 300          # 최대 모니터링 시간 (초)
 ```
 
 **출력 예시**:
-```
+
+```text
 🤖 매수 조건 만족! (현재가 64,500원 <= 목표가 65,000원)
 ✅ 매수 주문 완료: ORDER_ID
 🤖 매도 조건 만족! (현재가 70,500원 >= 목표가 70,000원)
@@ -82,6 +89,7 @@ MAX_DURATION = 300          # 최대 모니터링 시간 (초)
 ```
 
 ⚠️ **주의**:
+
 - 실계좌에서 실행하지 마세요 (실제 주문 발생!)
 - 반드시 모의투자 모드(`virtual=true`)에서 먼저 테스트하세요
 
@@ -94,18 +102,21 @@ MAX_DURATION = 300          # 최대 모니터링 시간 (초)
 **목표**: 현재 포트폴리오의 성과를 분석하고 시각화
 
 **학습 포인트**:
+
 - 잔고 정보 조회
 - 자산 구성 분석
 - ROI 계산
 - 목표 달성률 추적
 
 **실행**:
+
 ```bash
 python examples/02_intermediate/03_portfolio_analysis.py
 ```
 
 **출력 예시**:
-```
+
+```text
 💰 예수금:        1,000,000원
 📊 총자산:        1,150,000원
 📈 평가손익:         150,000원
@@ -121,24 +132,28 @@ python examples/02_intermediate/03_portfolio_analysis.py
 **목표**: 여러 종목의 가격을 실시간으로 모니터링하는 대시보드 구축
 
 **학습 포인트**:
+
 - 클래스 기반 설계 (`StockMonitor`)
 - 실시간 데이터 갱신
 - 상태 표시 (상승/하락/보합)
 - 대시보드 UI
 
 **실행**:
+
 ```bash
 python examples/02_intermediate/04_monitoring_dashboard.py
 ```
 
 **출력 예시**:
-```
+
+```text
 종목       이름         현재가      변화      변화율      고가      저가    상태
 005930     삼성전자      65,000     +500      +0.77%    65,500    64,500  📈 상승
 000660     SK하이닉스    125,000     -1,000    -0.79%   126,000   124,000  📉 하락
 ```
 
 **설정 (코드 내 수정 가능)**:
+
 ```python
 duration = 60  # 모니터링 시간 (초)
 interval = 5   # 갱신 간격 (초)
@@ -153,17 +168,20 @@ interval = 5   # 갱신 간격 (초)
 **목표**: 지정가, 시장가, 분할 매수 등 다양한 주문 방식 학습
 
 **학습 포인트**:
+
 - 지정가 주문 (limit order)
 - 시장가 주문 (market order)
 - 분할 매수 전략 (dollar-cost averaging, DCA)
 - 손절/익절 설정
 
 **실행**:
+
 ```bash
 python examples/02_intermediate/05_advanced_order_types.py
 ```
 
 **클래스**: `AdvancedOrderer`
+
 - `limit_order()` - 지정가 주문
 - `market_order()` - 시장가 주문
 - `dollar_cost_averaging()` - 분할 매수
@@ -264,6 +282,7 @@ except Exception as e:
 ## 📖 다음 단계
 
 고급 예제를 보려면 `examples/03_advanced/`를 참조하세요:
+
 - WebSocket 실시간 연결
 - 사용자 정의 거래 전략
 - 성능 모니터링

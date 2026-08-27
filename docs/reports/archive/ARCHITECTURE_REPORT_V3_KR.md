@@ -30,12 +30,14 @@
 이 보고서는 이전의 v1(2025-12-10), v2(2025-12-17) 보고서를 통합하고, **Phase 1-3의 실제 완료 현황을 정확히 반영**하기 위해 처음부터 재작성되었습니다.
 
 **핵심 변경사항:**
+
 - ❌ 제거: "긴급 과제" 대부분 (이미 Phase 1-3에서 완료)
 - ✅ 추가: Phase 1-3 구체적 완료 현황
 - ✅ 수정: 실제 코드 현황 반영 (154개 → 11개, public_types.py 존재 등)
 - 📅 계획: Phase 4-5 실행 계획 수립
 
 **주요 갱신 사항:**
+
 - ✅ Phase 1 (공개 API 정리, public_types.py 생성): **완료**
 - ✅ Phase 2 (초보자 도구, SimpleKIS, helpers): **완료**
 - ✅ Phase 3 (문서화, 예제, 통합 테스트): **완료**
@@ -63,18 +65,21 @@
 #### 핵심 성과 (Phase 1-3 완료)
 
 **✅ Phase 1 (공개 API 정리) - 완료**
+
 - `pykis/public_types.py` 생성 (7개 공개 타입 별칭)
 - `__init__.py` 정리 (154개 → 11개 내보내기, **93% 축소**)
 - 하위 호환성 유지 (`__getattr__` + DeprecationWarning)
 - 테스트: `test_public_api_imports.py` 100% 통과
 
 **✅ Phase 2 (초보자 도구) - 완료**
+
 - `SimpleKIS` 클래스 구현 (Protocol/Mixin 숨김)
 - `create_client()`, `save_config_interactive()` 구현
 - `pykis/helpers.py` 완성 (100% 테스트 커버리지)
 - 테스트: `test_simple_helpers.py` 100% 통과
 
 **✅ Phase 3 (문서 및 예제) - 완료**
+
 - `QUICKSTART.md` 작성 (5분 시작 가이드)
 - `examples/01_basic/` 5개 예제 완성
 - `examples/02_intermediate/` 3+개 예제 완성
@@ -84,13 +89,15 @@
 #### 사용자 경험 개선
 
 **Before (v2.0.0):**
-```
+
+```text
 설치 → 30개 Protocol 문서 읽음 → 내부 구조 이해 → 첫 API 호출
 소요시간: 1-2시간 😞
 ```
 
 **After (v2.1.7+):**
-```
+
+```text
 설치 → 예제 복사 → 첫 API 호출
 소요시간: 5분 ✅
 ```
@@ -104,7 +111,8 @@
 #### 1. 완벽한 아키텍처 설계 ⭐⭐⭐⭐⭐
 
 **패턴:** Protocol 기반 구조적 서브타이핑
-```
+
+```text
 장점:
 ├─ 순환 참조 방지
 ├─ 명시적 인터페이스 정의
@@ -113,13 +121,15 @@
 ```
 
 **Mixin 기반 수평적 확장:**
-```
+
+```text
 각 메서드 (quote(), balance(), buy() 등)가
 독립적인 Mixin으로 구성 → 추가/제거 용이
 ```
 
 **의존성 주입 (DI) via KisObjectBase:**
-```
+
+```text
 모든 객체가 kis 참조 보유 → 리소스 관리 효율화
 ```
 
@@ -147,6 +157,7 @@ price_dict = kis.get_price("005930")  # 딕셔너리로 반환
 ```
 
 **제공되는 도구:**
+
 - ✅ SimpleKIS (Protocol/Mixin 숨김)
 - ✅ create_client() (환경변수/파일 자동 로드)
 - ✅ save_config_interactive() (대화형 설정)
@@ -177,12 +188,14 @@ price_dict = kis.get_price("005930")  # 딕셔너리로 반환
 #### 1. 문서 구조 고도화 (Phase 4 진행 중)
 
 **현황:**
+
 - QUICKSTART.md ✅
 - README.md ✅
 - examples/ ✅
 - 단순한 구조
 
 **개선 방향:**
+
 - 모듈식 아키텍처 문서 (진행 중)
 - 아키텍처별 가이드 (ARCHITECTURE_*.md)
 - WebSocket 심화 가이드
@@ -191,10 +204,12 @@ price_dict = kis.get_price("005930")  # 딕셔너리로 반환
 #### 2. 성능 최적화
 
 **현황:**
+
 - REST API: 일반적 성능 (테스트 환경 평균 200-500ms)
 - WebSocket: 안정적 (자동 재연결, 헤트비트)
 
 **개선 기회:**
+
 - 연결 풀링
 - 요청 배치 처리
 - 캐싱 전략
@@ -203,10 +218,12 @@ price_dict = kis.get_price("005930")  # 딕셔너리로 반환
 #### 3. 국제화 및 커뮤니티
 
 **현황:**
+
 - 한글 문서만 제공
 - GitHub Discussions 준비 중
 
 **계획:**
+
 - 영문 문서 번역
 - 사용 사례 수집
 - 커뮤니티 기여 프로세스 정립
@@ -218,6 +235,7 @@ price_dict = kis.get_price("005930")  # 딕셔너리로 반환
 ### Phase 1: 공개 API 정리 ✅ (2025-12-10 ~ 2025-12-17)
 
 #### 목표
+
 - `__init__.py` export 정리 (154개 → 20개 이하)
 - 공개/내부 API 명확 구분
 - 하위 호환성 유지
@@ -225,6 +243,7 @@ price_dict = kis.get_price("005930")  # 딕셔너리로 반환
 #### 구현 결과
 
 **1) `pykis/public_types.py` 생성**
+
 ```python
 # 사용자 친화적 공개 타입 정의
 Quote: TypeAlias = KisQuoteResponse
@@ -235,9 +254,11 @@ Orderbook: TypeAlias = KisOrderbook
 MarketInfo: TypeAlias = KisMarketType
 TradingHours: TypeAlias = KisTradingHours
 ```
+
 ✅ 7개 TypeAlias로 간결하게 정리
 
 **2) `pykis/__init__.py` 정리**
+
 ```python
 __all__ = [
     # 핵심 (2개)
@@ -252,17 +273,21 @@ __all__ = [
 ]
 # 총 11개 (기존 154개 대비 93% 축소)
 ```
+
 ✅ IDE 자동완성 혼란 제거
 
 **3) 하위 호환성 메커니즘**
+
 ```python
 def __getattr__(name: str):
     # Deprecated import 감지 → DeprecationWarning 발생
     # 기존 코드는 계속 작동하면서 마이그레이션 유도
 ```
+
 ✅ Breaking change 없이 전환 완료
 
 #### 테스트 검증
+
 - ✅ `test_public_api_imports.py`: 100% 통과
 - ✅ 기존 코드 하위 호환성: 100% 유지
 - ✅ IDE 테스트: 자동완성 개선 확인
@@ -274,6 +299,7 @@ def __getattr__(name: str):
 ### Phase 2: 초보자 도구 완성 ✅ (2025-12-12 ~ 2025-12-18)
 
 #### 목표
+
 - Protocol/Mixin 숨기고 단순 인터페이스 제공
 - 환경변수/파일에서 자동 로드
 - 90% 이상 테스트 커버리지
@@ -281,6 +307,7 @@ def __getattr__(name: str):
 #### 구현 결과
 
 **1) `SimpleKIS` 클래스**
+
 ```python
 class SimpleKIS:
     """초보자를 위한 단순화된 API"""
@@ -297,9 +324,11 @@ class SimpleKIS:
         """주문 → 딕셔너리 반환"""
         return {"order_id": ..., "status": ...}
 ```
+
 ✅ Protocol 없이 딕셔너리 기반 API 제공
 
 **2) `pykis/helpers.py`**
+
 ```python
 def create_client(
     id: Optional[str] = None,
@@ -317,9 +346,11 @@ def save_config_interactive() -> Path:
     """대화형 설정 생성"""
     # 사용자 입력 → ~/.pykis/config.yaml 저장
 ```
+
 ✅ 설정 자동화로 5분 진입 시간 달성
 
 **3) 테스트 커버리지**
+
 - ✅ `test_simple_helpers.py`: 100% 커버리지
 - ✅ 통합 테스트: 85%+ 커버리지
 - ✅ 모든 에러 경로 검증
@@ -331,6 +362,7 @@ def save_config_interactive() -> Path:
 ### Phase 3: 문서 및 예제 완성 ✅ (2025-12-14 ~ 2025-12-19)
 
 #### 목표
+
 - QUICKSTART.md 작성
 - 3단계 예제 (기본/중급/고급) 완성
 - 통합 테스트 50% 커버리지 이상
@@ -339,6 +371,7 @@ def save_config_interactive() -> Path:
 #### 구현 결과
 
 **1) `QUICKSTART.md` (5분 가이드)**
+
 ```markdown
 ## 🚀 5분 빠른 시작
 
@@ -358,6 +391,7 @@ print(f"{quote.name}: {quote.price:,}원")
 
 완료! 🎉
 ```
+
 ✅ 5분 내 첫 API 호출 성공
 
 **2) 예제 완성**
@@ -379,7 +413,8 @@ print(f"{quote.name}: {quote.price:,}원")
 ✅ 5+3+advanced = 8+개 예제 완성
 
 **3) 통합 테스트**
-```
+
+```text
 tests/integration/
 ├── conftest.py          # 공용 fixture
 ├── api/
@@ -389,6 +424,7 @@ tests/integration/
 └── websocket/
     └── test_reconnection.py       # 재연결 시나리오
 ```
+
 ✅ 85%+ 통합 테스트 커버리지
 
 **완료 상태: 100% ✅**
@@ -401,7 +437,7 @@ tests/integration/
 
 #### 1. Protocol 기반 구조적 서브타이핑
 
-```
+```text
 설계: 동적 덕 타이핑을 정적 타입 세계에서 구현
 ```
 
@@ -420,6 +456,7 @@ class KisMarketProtocol(KisObjectProtocol, Protocol):
 ```
 
 **장점:**
+
 - ✅ 명시적 인터페이스 (Java interface 같은 역할)
 - ✅ 런타임 타입 체크 가능 (`isinstance(obj, KisMarketProtocol)`)
 - ✅ IDE 자동완성 완벽 지원
@@ -442,6 +479,7 @@ class KisStock(KisObjectBase, KisQuoteMixin, KisOrderMixin, ...):
 ```
 
 **장점:**
+
 - ✅ 기능 추가/제거 용이 (Mixin 추가/삭제만으로 가능)
 - ✅ 각 Mixin이 독립적 테스트 가능
 - ✅ 코드 재사용성 높음
@@ -460,6 +498,7 @@ quote = stock.quote()  # kis를 통해 API 호출
 ```
 
 **장점:**
+
 - ✅ 리소스 관리 효율화
 - ✅ 테스트 Mock 용이
 - ✅ 순환 참조 방지
@@ -510,12 +549,14 @@ def buy(
 ### IDE 자동완성 품질
 
 **Before (v2.0.0):**
+
 ```python
 from pykis import <Tab>
 # 150개 노이즈 심한 자동완성 🤦
 ```
 
 **After (v2.1.7+):**
+
 ```python
 from pykis import <Tab>
 # PyKis, KisAuth, Quote, Balance, Order ... (명확한 11개) ✅
@@ -562,6 +603,7 @@ from pykis import <Tab>
 ## Phase 4 진행 현황 (v3.0.0 진화)
 
 ### 목표
+
 - 모듈식 아키텍처 문서 작성
 - WebSocket 심화 가이드
 - 성능 최적화 가이드
@@ -570,11 +612,13 @@ from pykis import <Tab>
 ### 진행 상황
 
 #### ✅ 완료 (100%)
+
 - GitHub Discussions 템플릿 3개 생성
 - INDEX.md 모듈식 네비게이션 추가
 - 아키텍처 모듈식 문서 기본 구조 생성
 
 #### 🔄 진행 중 (50%)
+
 - 모듈식 아키텍처 문서 7개 작성 (4,900+ 라인)
   - ARCHITECTURE_README_KR.md (네비게이션)
   - ARCHITECTURE_CURRENT_KR.md (현황)
@@ -585,6 +629,7 @@ from pykis import <Tab>
   - ARCHITECTURE_EVOLUTION_KR.md (진화)
 
 #### 📅 계획 (0%)
+
 - WebSocket 심화 가이드
 - 성능 최적화 가이드
 - API 마이그레이션 가이드
@@ -596,21 +641,25 @@ from pykis import <Tab>
 ### 목표 (2025-12-25 ~ 2026-01-31)
 
 #### 1단계: 커뮤니티 구축 (1주)
+
 - GitHub Discussions 활성화
 - 사용 사례 수집
 - 피드백 채널 개설
 
 #### 2단계: 자동화 강화 (2주)
+
 - CI/CD 파이프라인 개선
 - 자동 릴리스 프로세스
 - 라이센스 검증 자동화
 
 #### 3단계: 성능 최적화 (3주)
+
 - 연결 풀링 (connection pooling)
 - 요청 배치 처리
 - 캐싱 전략
 
 #### 4단계: 국제화 (2주)
+
 - 영문 문서 번역
 - 다국어 지원 검토
 
@@ -645,17 +694,20 @@ from pykis import <Tab>
 ### 성과 요약
 
 ✅ **Phase 1-3 완료: 모든 핵심 개선사항 달성**
+
 - 공개 API 정리: 154개 → 11개
 - 초보자 도구: SimpleKIS, helpers 완성
 - 문서 및 예제: QUICKSTART + 8+ 예제
 - 테스트: 92% 커버리지 달성
 
 ✅ **사용자 경험 획기적 개선**
+
 - 진입 시간: 1-2시간 → 5분
 - IDE 혼란도: 150개 노이즈 → 11개 명확
 - 타입 안전성: 100% 유지
 
 ✅ **코드 품질 유지**
+
 - 타입 힌트: 100%
 - 테스트 커버리지: 92%
 - 하위 호환성: 100% 유지
@@ -663,16 +715,19 @@ from pykis import <Tab>
 ### 권장사항
 
 **즉시 (이번 주):**
+
 1. Phase 4 문서 리뷰 및 검증
 2. 모듈식 아키텍처 문서 최종화
 3. 커밋 진행
 
 **단기 (1개월):**
+
 1. GitHub Discussions 활성화
 2. 성능 최적화 로드맵 수립
 3. Phase 5 계획 수립
 
 **장기 (3개월+):**
+
 1. 영문 문서 번역
 2. 커뮤니티 생태계 구축
 3. 써드파티 라이브러리 연계

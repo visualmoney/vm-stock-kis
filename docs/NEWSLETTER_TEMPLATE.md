@@ -1,4 +1,5 @@
 """
+
 # Python-KIS 월간 뉴스레터 템플릿
 
 ## 📰 Python-KIS Monthly Newsletter
@@ -12,6 +13,7 @@
 ### 1️⃣ Phase 3 에러 처리 & 로깅 시스템 완료
 
 **개선 사항:**
+
 - ✅ Exception 클래스 확대: 3개 → 13개
   - `KisConnectionError`, `KisAuthenticationError`, `KisRateLimitError` 등
   - 각 에러에 대한 재시도 가능 여부 명시
@@ -27,11 +29,13 @@
   - 타임스탐프, 예외 정보, 컨텍스트 자동 포함
 
 **영향:**
+
 - 프로덕션 환경에서 안정성 향상
 - 디버깅 시간 단축
 - 자동 재시도로 일시적 오류 대응 개선
 
 **예제:**
+
 ```python
 from pykis.utils.retry import with_retry
 from pykis.logging import enable_json_logging
@@ -52,12 +56,14 @@ quote = fetch_quote("005930")
 ### 2️⃣ CI/CD 파이프라인 확장
 
 **개선 사항:**
+
 - ✅ Cross-platform 테스트: 3 OS × 2 Python 버전 (6 조합)
 - ✅ 자동 커버리지 검사: 90% 미만 시 빌드 실패
 - ✅ Pre-commit 훅 8개 자동화
 - ✅ 통합/성능 테스트 14개 추가
 
 **이점:**
+
 - Windows, macOS 사용자 버그 조기 발견
 - 코드 품질 자동 유지
 - 메인브랜치 안정성 보장
@@ -67,11 +73,13 @@ quote = fetch_quote("005930")
 ### 3️⃣ 공개 API 정리 완료
 
 **변경:**
+
 - 공개 API: 154개 → 20개 (89% 축소)
 - IDE 자동완성: 명확하고 간결함
 - 문서화: 사용자 혼란 제거
 
 **사용 방법:**
+
 ```python
 # ✅ 추천: 공개 API만 사용
 from pykis import PyKis, Quote, Balance, Order
@@ -108,7 +116,7 @@ from pykis.logging import enable_json_logging
 enable_json_logging()
 
 # 이후 로그는 JSON 형식으로 출력
-# {"timestamp": "2025-12-20T14:20:00+00:00", "level": "INFO", 
+# {"timestamp": "2025-12-20T14:20:00+00:00", "level": "INFO",
 #  "message": "...", "module": "kis", ...}
 ```
 
@@ -197,6 +205,7 @@ client_logger.debug("HTTP 요청 전송")
 | **버그 리포트** | 3 | 🟢 해결됨 |
 
 **인기 질문 (이번 달)**:
+
 1. "Rate limit을 어떻게 처리하나요?" - ✅ 해결 (v2.2.0에서 자동 재시도)
 2. "로그 레벨을 조절할 수 있나요?" - ✅ 가능 (setLevel 함수)
 3. "Windows에서 에러가 발생합니다" - ✅ FAQ 추가
@@ -204,6 +213,7 @@ client_logger.debug("HTTP 요청 전송")
 ### 기여자
 
 이번 달 감사의 말:
+
 - 🙏 버그 리포트를 해주신 모든 분들
 - 🙏 코드 리뷰와 아이디어를 주신 분들
 - 🙏 문서 개선을 위해 피드백해주신 분들
@@ -212,13 +222,14 @@ client_logger.debug("HTTP 요청 전송")
 
 ## 📈 성과 지표
 
-```
+```text
 🔴 에러 처리: Week 1-2 완료 ✅
 🟡 로깅 시스템: Week 1-2 완료 ✅
 🟢 다음 목표: Week 3-4 (문서, 커뮤니티) 진행 중
 ```
 
 **프로젝트 진행률**:
+
 - Phase 1 (공개 API 정리): ✅ 100% 완료
 - Phase 2 (CI/CD & 테스트): ✅ 100% 완료
 - Phase 3 (에러/로깅 & 커뮤니티): 🔄 50% 완료 (Week 1-2 완료, Week 3-4 진행 중)

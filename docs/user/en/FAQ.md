@@ -40,6 +40,7 @@ pip install -e ".[dev]"
 ### Q2: What are the system requirements?
 
 **A**:
+
 - Python 3.8 or higher
 - Windows, macOS, or Linux
 - Internet connection
@@ -66,6 +67,7 @@ No real money is involved in virtual trading.
 ### Q4: How do I get my API credentials?
 
 **A**:
+
 1. Visit [KIS Developer Portal](https://developer.kis.co.kr)
 2. Sign in with your KIS account
 3. Create a new application
@@ -76,12 +78,14 @@ No real money is involved in virtual trading.
 **A**: **Recommended order**:
 
 1. **Environment Variables** (most secure):
+
    ```bash
    export VMKIS_APP_KEY="your_key"
    export VMKIS_APP_SECRET="your_secret"
    ```
 
 2. **Configuration File** (version-controlled):
+
    ```yaml
    # config.yaml (keep out of git)
    kis:
@@ -90,6 +94,7 @@ No real money is involved in virtual trading.
    ```
 
 3. **Code** (❌ NOT RECOMMENDED - security risk):
+
    ```python
    # DON'T do this in production!
    kis = VmKis(app_key="hardcoded_key", ...)
@@ -492,6 +497,7 @@ logger.info("Summary", extra={
 ### "Authentication failed"
 
 **Check**:
+
 - [ ] App Key is correct
 - [ ] App Secret is correct
 - [ ] Credentials are not expired
@@ -500,6 +506,7 @@ logger.info("Summary", extra={
 ### "Market is closed"
 
 **Note**: Korean stock market operates:
+
 - **Hours**: 09:00 ~ 15:30 KST
 - **Days**: Monday ~ Friday (excluding holidays)
 
@@ -508,6 +515,7 @@ See [REGIONAL_GUIDES.md](../../../docs/guidelines/REGIONAL_GUIDES.md) for Korean
 ### "Too many requests (429)"
 
 **Solution**:
+
 1. Use auto-retry decorator
 2. Add delays between requests
 3. Check KIS API rate limits
@@ -516,6 +524,7 @@ See [REGIONAL_GUIDES.md](../../../docs/guidelines/REGIONAL_GUIDES.md) for Korean
 ### "ModuleNotFoundError: No module named 'vmkis'"
 
 **Solution**:
+
 ```bash
 pip install vmkis
 # or for development
@@ -539,7 +548,7 @@ pip install -e .
 
 - 💬 **GitHub Issues**: Report bugs at [GitHub Issues](https://github.com/yourusername/vm-stock-kis/issues)
 - 💭 **Discussions**: Ask questions at [GitHub Discussions](https://github.com/yourusername/vm-stock-kis/discussions)
-- 📧 **Email**: support@vm-stock-kis.org
+- 📧 **Email**: <support@vm-stock-kis.org>
 
 ---
 

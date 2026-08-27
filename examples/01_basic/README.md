@@ -6,10 +6,13 @@
 
 1. 예제용 설정을 복사하세요. 선택지:
    - 전체 멀티프로파일 예제 사용:
+
      ```bash
      cp config.example.yaml config.yaml
      ```
+
    - 가상/실계좌 전용 예제 사용:
+
      ```bash
      cp config.example.virtual.yaml config.yaml
      # 또는
@@ -29,6 +32,7 @@
    - 기본값: `virtual` (설정에서 `default`가 있으면 해당 값 사용)
 
 4. **민감정보 보호**: `config.yaml`을 .gitignore에 추가하고 커밋하지 마세요.
+
    ```bash
    echo "config.yaml" >> .gitignore
    ```

@@ -103,7 +103,7 @@ uv run pytest tests/unit/test_public_api_imports.py
 
 ### 브랜치 명명 규칙
 
-```
+```text
 feature/<기능명>     # 새로운 기능 추가
 fix/<버그명>         # 버그 수정
 docs/<문서명>        # 문서 수정
@@ -281,6 +281,7 @@ Closes #123
 **형식**: `<타입>(<범위>): <제목>`
 
 **타입**:
+
 - `feat`: 새로운 기능
 - `fix`: 버그 수정
 - `docs`: 문서 변경
@@ -290,6 +291,7 @@ Closes #123
 - `chore`: 빌드/설정 변경
 
 **예시**:
+
 ```bash
 feat(api): add futures trading API
 fix(websocket): resolve reconnection issue
@@ -317,7 +319,7 @@ test(unit): add tests for load_config with profiles
 
 ### 1. 테스트 구조
 
-```
+```text
 tests/
 ├── unit/                    # 단위 테스트 (API 호출 없이)
 │   ├── test_public_api_imports.py
@@ -418,7 +420,7 @@ uv run pytest --cov --cov-report=html
 
 ### 1. 문서 구조
 
-```
+```text
 docs/
 ├── INDEX.md                  # 문서 인덱스
 ├── QUICKSTART.md             # 빠른 시작 (루트에도 복사)
@@ -441,6 +443,7 @@ docs/
 ### 2. 문서 작성 규칙
 
 **마크다운 스타일**:
+
 ```markdown
 # 제목 1 (H1) - 문서 제목에만 사용
 
@@ -465,7 +468,8 @@ docs/
 def example():
     pass
 ```
-```
+
+```text
 
 **예제 코드**:
 - 실제 작동하는 코드 작성
@@ -486,7 +490,7 @@ uv run sphinx-build -b html docs docs/_build
 
 ### 1. 버그 리포트
 
-```markdown
+````markdown
 ## 버그 설명
 
 (버그 현상을 명확히 설명)
@@ -521,11 +525,11 @@ uv run sphinx-build -b html docs docs/_build
 ## 추가 정보
 
 (스크린샷, 관련 코드 등)
-```
+````
 
 ### 2. 기능 제안
 
-```markdown
+````markdown
 ## 제안 배경
 
 (왜 이 기능이 필요한지)
@@ -548,7 +552,7 @@ result = kis.new_feature(...)
 ## 기타
 
 (추가 의견)
-```
+````
 
 ---
 
@@ -592,7 +596,7 @@ result = kis.new_feature(...)
 
 **A**: 일반적으로 1-3일 내에 리뷰가 진행됩니다. 복잡한 변경사항은 더 오래 걸릴 수 있습니다.
 
-### Q5: Breaking Change를 제안하고 싶습니다.
+### Q5: Breaking Change를 제안하고 싶습니다
 
 **A**: Issue를 먼저 생성하여 커뮤니티 의견을 수렴한 후 PR을 작성하세요.
 

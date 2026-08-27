@@ -65,11 +65,13 @@
 **개선**: `from pykis import Quote, Balance` ← 7개만 공개 타입
 
 **기대 효과**:
+
 - 🟢 IDE 자동완성 간결화
 - 🟢 공개 API 범위 명확화
 - 🟢 하위 호환성 100% 유지
 
 **실행 계획**:
+
 ```bash
 Week 1:
 ├─ public_types.py 생성 (2시간)
@@ -87,6 +89,7 @@ Total: 8시간
 **목표**: 5분 내 `kis.stock("005930").quote()` 호출
 
 **내용**:
+
 ```markdown
 1. 설치: pip install python-kis (1분)
 2. 인증: 환경변수 또는 파일 (2분)
@@ -94,6 +97,7 @@ Total: 8시간
 ```
 
 **기대 효과**:
+
 - 🟢 신규 사용자 이탈률 감소
 - 🟢 문의 50% 감소
 - 🟢 GitHub README 클릭률 증가
@@ -103,6 +107,7 @@ Total: 8시간
 ### 3️⃣ **기본 예제 5개** (높음, 1주)
 
 **예제**:
+
 - `hello_world.py` - 가장 기본
 - `get_quote.py` - 시세 조회
 - `get_balance.py` - 잔고 조회
@@ -110,6 +115,7 @@ Total: 8시간
 - `realtime_price.py` - WebSocket
 
 **기대 효과**:
+
 - 🟢 학습 곡선 완화
 - 🟢 복사-붙여넣기 가능
 - 🟢 신뢰성 증가
@@ -119,10 +125,11 @@ Total: 8시간
 ### 4️⃣ **초보자 Facade 구현** (높음, 1주)
 
 **코드**:
+
 ```python
 from pykis.simple import SimpleKIS
 
-kis = SimpleKIS(id="ID", account="ACCOUNT", 
+kis = SimpleKIS(id="ID", account="ACCOUNT",
                 appkey="KEY", secretkey="SECRET")
 
 # Protocol/Mixin 없이도 사용 가능
@@ -130,6 +137,7 @@ price_dict = kis.get_price("005930")  # {'name': '삼성전자', 'price': 65000,
 ```
 
 **기대 효과**:
+
 - 🟢 Protocol/Mixin 이해 불필요
 - 🟢 딕셔너리 기반 직관적 사용
 - 🟢 초보자 진입 장벽 50% 감소
@@ -141,12 +149,14 @@ price_dict = kis.get_price("005930")  # {'name': '삼성전자', 'price': 65000,
 **목표**: 전체 API 플로우 검증
 
 **테스트**:
+
 - 주문 전체 플로우
 - 잔고 조회
 - WebSocket 재연결
 - 예외 처리
 
 **기대 효과**:
+
 - 🟢 실제 시나리오 검증
 - 🟢 API 변경 감지
 - 🟢 배포 신뢰성 향상
@@ -238,36 +248,38 @@ from pykis.adapter.* import ...             ✅ OK
 
 ### ⏰ 1개월 안에
 
-4. **초보자 Facade** (SimpleKIS)
-5. **통합 테스트 기초**
-6. **고급 문서** (ARCHITECTURE.md)
+1. **초보자 Facade** (SimpleKIS)
+2. **통합 테스트 기초**
+3. **고급 문서** (ARCHITECTURE.md)
 
 ### 📅 2-3개월 안에
 
-7. **CI/CD 파이프라인**
-8. **중급/고급 예제** 확대
-9. **커버리지 90%+**
+1. **CI/CD 파이프라인**
+2. **중급/고급 예제** 확대
+3. **커버리지 90%+**
 
 ### 🌟 6개월 목표
 
-10. **커뮤니티 자료** (튜토리얼, 영문 문서 등)
+ 1. **커뮤니티 자료** (튜토리얼, 영문 문서 등)
 
 ---
 
 ## 6.6 핵심 메시지
 
 > ### "Protocol과 Mixin은 내부 구현의 우아함입니다"
-> 
+>
 > **사용자는 이것을 전혀 몰라도 사용할 수 있어야 합니다.**
 
 ### 현재 상황
-```
+
+```text
 [ 사용자 경험 ]
 Protocol/Mixin 이해 필요 → 진입 장벽 높음 → 초보자 이탈
 ```
 
 ### 개선 후
-```
+
+```text
 [ 사용자 경험 ]
 5분 빠른 시작 → 예제 학습 → SimpleKIS 사용 → 점진적 고도화
 ```
@@ -350,9 +362,9 @@ Protocol/Mixin 이해 필요 → 진입 장벽 높음 → 초보자 이탈
 
 **보고서 작성 완료**
 
-*작성자: Python-KIS 분석팀*  
-*작성일: 2025년 12월 18일*  
-*버전: V3.0*  
+*작성자: Python-KIS 분석팀*
+*작성일: 2025년 12월 18일*
+*버전: V3.0*
 *최종 검토: 2026년 1월 15일 예정*
 
 ---

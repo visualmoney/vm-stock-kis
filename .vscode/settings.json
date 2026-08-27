@@ -1,5 +1,8 @@
 {
-    "python.analysis.extraPaths": [".","tests"],
+    "python.analysis.extraPaths": [
+        ".",
+        "tests"
+    ],
     "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
     "python.envFile": "${workspaceFolder}/.env",
     "python.testing.pytestArgs": [
@@ -25,11 +28,11 @@
         "vmkis"
     ],
     "files.exclude": {
-      "**/__pycache__": true,
-      "**/.pytest_cache": true,
-      "**/.mypy_cache": true,
-      "**/*.pyc": true,
-      "**/Thumbs.db": true
+        "**/__pycache__": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/*.pyc": true,
+        "**/Thumbs.db": true
     },
     "files.eol": "\n",
     "files.trimTrailingWhitespace": true,
@@ -41,6 +44,17 @@
     "plantuml.diagramsRoot": "docs/diagrams/src",
     "plantuml.exportOutDir": "docs/diagrams/out",
     "plantuml.jarArgs": [
-       "-charset", "UTF-8"
-    ]
+        "-charset",
+        "UTF-8"
+    ],
+    "[markdown]": {
+        "editor.rulers": [
+            120
+        ],
+        "editor.wordWrap": "bounded",
+        "editor.wordWrapColumn": 120,
+        "editor.codeActionsOnSave": {
+            "source.fixAll.markdownlint": "explicit"
+        }
+    }
 }

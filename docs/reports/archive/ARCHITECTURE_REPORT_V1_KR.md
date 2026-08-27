@@ -22,12 +22,15 @@
 ## 요약
 
 ### 사용자 관점
+
 python-kis는 한국투자증권 REST/WebSocket API를 타입 안전하게 래핑한 강력한 라이브러리입니다. 사용자 경험은 **설치 → 최소 설정 → 5분 내 `kis.stock("...").quote()` 호출**이 가능해야 하며, Protocol이나 Mixin 같은 내부 구조를 이해할 필요가 없어야 합니다.
 
 ### 엔지니어 관점
+
 현재 설계는 견고합니다(Protocol 중심 아키텍처, Mixin 어댑터, DI via `KisObjectBase`, 동적 응답 변환, 이벤트 기반 WebSocket). 높은 확장성과 타입 안전성을 제공하지만, 초기 진입 복잡도가 높고 `__init__.py`와 `types.py` 간 중복 export가 존재하여 정리가 필요합니다.
 
 **핵심 문제:**
+
 - 초보자 진입 장벽이 높음 (Protocol/Mixin 이해 필요)
 - 공개 API가 과도하게 노출됨 (150개 이상의 export)
 - `__init__.py`와 `types.py`에서 타입이 중복 정의됨
@@ -63,7 +66,8 @@ python-kis는 한국투자증권 REST/WebSocket API를 타입 안전하게 래�
 ### 약점 ⚠️
 
 1. **높은 초기 학습 곡선**
-   ```
+
+   ```text
    문제점:
    ├── Protocol과 Mixin 이해 필요
    ├── 30개 이상의 Protocol 정의 노출
@@ -72,7 +76,8 @@ python-kis는 한국투자증권 REST/WebSocket API를 타입 안전하게 래�
    ```
 
 2. **타입 정의 중복**
-   ```
+
+   ```text
    pykis/__init__.py: 150개 이상 export
    pykis/types.py:    동일한 타입 재정의
 
@@ -89,7 +94,8 @@ python-kis는 한국투자증권 REST/WebSocket API를 타입 안전하게 래�
    - 초보자용 빠른 시작 가이드 없음
 
 4. **테스트 전략 미흡**
-   ```
+
+   ```text
    현재 상태:
    ├── 단위 테스트만 존재 (tests/unit/)
    ├── 통합 테스트 없음 (tests/integration/ 부재)
@@ -137,6 +143,7 @@ python-kis는 한국투자증권 REST/WebSocket API를 타입 안전하게 래�
 ### 1. 초보자 진입 장벽 낮추기
 
 #### 문제 상황
+
 ```python
 # 현재: 사용자가 봐야 하는 것들
 from pykis import (
@@ -150,6 +157,7 @@ from pykis import (
 ```
 
 #### 개선안
+
 ```python
 # 개선 후: 사용자에게 필요한 것만
 from pykis import (
@@ -168,6 +176,7 @@ from pykis.helpers import create_client
 #### 실행 방안
 
 **A) `QUICKSTART.md` 작성**
+
 ```markdown
 # 🚀 5분 빠른 시작
 
@@ -177,6 +186,7 @@ pip install python-kis
 ```
 
 ## 2단계: 인증 정보 설정
+
 ```python
 from pykis import PyKis
 
@@ -189,6 +199,7 @@ kis = PyKis(
 ```
 
 ## 3단계: 시세 조회
+
 ```python
 stock = kis.stock("005930")  # 삼성전자
 quote = stock.quote()
@@ -196,10 +207,12 @@ print(f"{quote.name}: {quote.price:,}원")
 ```
 
 **완료! Protocol? Mixin? 몰라도 됩니다! 🎉**
-```
+
+```text
 
 **B) `examples/` 폴더 구조**
 ```
+
 examples/
 ├── README.md
 ├── 01_basic/
@@ -215,7 +228,8 @@ examples/
 └── 03_advanced/
     ├── custom_strategy.py    # 커스텀 전략
     └── custom_adapter.py     # 어댑터 확장
-```
+
+```text
 
 **C) 초보자용 Facade 구현**
 ```python
@@ -255,7 +269,8 @@ class SimpleKIS:
 ### 2. 통합 테스트 추가
 
 #### 현재 문제
-```
+
+```text
 tests/
 └── unit/              # 단위 테스트만 존재
     ├── api/
@@ -270,7 +285,8 @@ tests/
 ```
 
 #### 개선안
-```
+
+```text
 tests/
 ├── unit/              # 단위 테스트 (기존)
 └── integration/       # 통합 테스트 (신규)
@@ -284,6 +300,7 @@ tests/
 ```
 
 #### 실행 방안
+
 ```python
 # tests/integration/conftest.py
 import pytest
@@ -330,6 +347,7 @@ def test_complete_order_flow(mock_kis_api):
 ### 현황 분석
 
 #### 문제점
+
 ```python
 # pykis/__init__.py (현재)
 __all__ = [
@@ -350,6 +368,7 @@ __all__ = [
 ```
 
 **문제:**
+
 1. 유지보수 부담 (같은 타입을 두 곳에서 관리)
 2. IDE 혼란 (같은 타입이 여러 경로로 import 가능)
 3. 공개 API 범위 불명확 (어떤 것이 공식 API인지 모호)
@@ -360,6 +379,7 @@ __all__ = [
 #### Phase 1: 공개 타입 모듈 분리 (즉시 적용 가능)
 
 **새 파일 생성: `pykis/public_types.py`**
+
 ```python
 """
 사용자를 위한 공개 타입 정의
@@ -411,6 +431,7 @@ __all__ = [
 #### Phase 2: `__init__.py` 최소화 (하위 호환성 유지)
 
 **개선된 `pykis/__init__.py`**
+
 ```python
 """
 Python-KIS: 한국투자증권 API 라이브러리
@@ -507,6 +528,7 @@ __version__ = "2.1.7"
 #### Phase 3: `types.py` 역할 명확화
 
 **개선된 `pykis/types.py`**
+
 ```python
 """
 내부 타입 및 Protocol 정의
@@ -553,6 +575,7 @@ __all__ = [
 ### 마이그레이션 전략
 
 #### 1단계: 준비 (Breaking Change 없음)
+
 ```bash
 # 1. public_types.py 생성
 touch pykis/public_types.py
@@ -565,6 +588,7 @@ touch pykis/public_types.py
 ```
 
 #### 2단계: 전환 기간 (2-3 릴리스)
+
 ```python
 # 사용자가 deprecated 경로 사용 시
 >>> from pykis import KisObjectProtocol
@@ -578,6 +602,7 @@ import KisObjectProtocol'을 사용하세요.
 ```
 
 #### 3단계: 정리 (v3.0.0)
+
 ```python
 # __getattr__ 제거
 # Deprecated import 경로 완전 삭제
@@ -587,6 +612,7 @@ import KisObjectProtocol'을 사용하세요.
 ### 테스트 전략
 
 **새 테스트 파일: `tests/unit/test_public_api_imports.py`**
+
 ```python
 """공개 API import 경로 테스트"""
 import pytest
@@ -636,12 +662,14 @@ def test_public_types_module():
 ### Week 1: 즉시 적용 가능한 개선
 
 #### Day 1-2: 문서화 기초
+
 - [ ] `docs/` 폴더 생성
 - [ ] `QUICKSTART.md` 작성
 - [ ] `README.md` 상단에 "빠른 시작" 링크 추가
 - [ ] 이 보고서 (`ARCHITECTURE_REPORT_KR.md`) 검토 및 수정
 
 #### Day 3-4: 예제 코드
+
 - [ ] `examples/01_basic/` 생성
 - [ ] 5개 기본 예제 작성:
   - `hello_world.py` - 가장 기본
@@ -652,6 +680,7 @@ def test_public_types_module():
 - [ ] 각 예제에 상세한 주석 추가
 
 #### Day 5-7: API 정리
+
 - [ ] `pykis/public_types.py` 생성
 - [ ] `pykis/__init__.py` 리팩토링 (하위 호환성 유지)
 - [ ] Deprecation 메커니즘 구현
@@ -661,6 +690,7 @@ def test_public_types_module():
 ### Week 2: 초보자 도구 및 테스트
 
 #### Day 1-3: 초보자용 인터페이스
+
 - [ ] `pykis/simple.py` 구현
 - [ ] `pykis/helpers.py` 구현:
   - `create_client()` - 환경변수/파일에서 자동 로드
@@ -668,11 +698,13 @@ def test_public_types_module():
 - [ ] 관련 단위 테스트 작성
 
 #### Day 4-5: CLI 도구
+
 - [ ] `pykis/cli.py` 구현
 - [ ] `pyproject.toml`에 script entry 추가
 - [ ] CLI 테스트
 
 #### Day 6-7: 통합 테스트
+
 - [ ] `tests/integration/` 폴더 구조 생성
 - [ ] `conftest.py` 작성 (공통 fixture)
 - [ ] 3-5개 통합 테스트 작성:
@@ -684,6 +716,7 @@ def test_public_types_module():
 ### Week 3-4: 고급 문서화
 
 #### Week 3
+
 - [ ] `ARCHITECTURE.md` 작성:
   - Protocol 설명
   - Mixin 패턴 설명
@@ -696,6 +729,7 @@ def test_public_types_module():
   - 테스트 요구사항
 
 #### Week 4
+
 - [ ] `examples/02_intermediate/` 작성 (3개)
 - [ ] `examples/03_advanced/` 작성 (2개)
 - [ ] 각 예제에 README 추가
@@ -704,6 +738,7 @@ def test_public_types_module():
 ### Month 2: 고급 기능 및 자동화
 
 #### Week 1-2: 라이센스 및 법적 검토
+
 - [ ] 의존성 라이센스 자동 체크 스크립트
 - [ ] `LICENSES/` 폴더 자동 생성
 - [ ] Apache 2.0 전환 검토:
@@ -712,6 +747,7 @@ def test_public_types_module():
   - 마이그레이션 계획
 
 #### Week 3-4: CI/CD 개선
+
 - [ ] GitHub Actions 설정:
   - 단위 테스트 자동 실행
   - 커버리지 리포트 자동 생성
@@ -734,10 +770,12 @@ def test_public_types_module():
 ## 할 일 목록
 
 ### ✅ 완료
+
 - [x] daily_order.py 커버리지 개선 (78% → 84%)
 - [x] pending_order.py 커버리지 개선 (79% → 90%)
 
 ### 🔄 진행 중
+
 - [ ] order.py 커버리지 개선 (76% → 90%+)
   - 현재 76%, 목표 90%
   - 주요 누락: domestic_order, foreign_order, 예외 처리 경로
@@ -745,6 +783,7 @@ def test_public_types_module():
 ### 📋 대기 중 (우선순위순)
 
 #### 최우선 (이번 주)
+
 1. [ ] `QUICKSTART.md` 작성
 2. [ ] `examples/01_basic/` 예제 5개 작성
 3. [ ] `pykis/public_types.py` 생성
@@ -752,25 +791,28 @@ def test_public_types_module():
 5. [ ] 공개 API import 테스트 작성
 
 #### 높은 우선순위 (다음 주)
-6. [ ] `pykis/simple.py` 초보자 Facade 구현
-7. [ ] `pykis/helpers.py` 헬퍼 함수 구현
-8. [ ] `pykis/cli.py` CLI 도구 구현
-9. [ ] `tests/integration/` 구조 생성
-10. [ ] 통합 테스트 3-5개 작성
+
+1. [ ] `pykis/simple.py` 초보자 Facade 구현
+2. [ ] `pykis/helpers.py` 헬퍼 함수 구현
+3. [ ] `pykis/cli.py` CLI 도구 구현
+4. [ ] `tests/integration/` 구조 생성
+5. [ ] 통합 테스트 3-5개 작성
 
 #### 중간 우선순위 (2주 이내)
-11. [ ] `ARCHITECTURE.md` 상세 문서
-12. [ ] `CONTRIBUTING.md` 기여 가이드
-13. [ ] 의존성 라이센스 자동 체크
-14. [ ] `LICENSES/` 폴더 자동 생성
-15. [ ] CI/CD 파이프라인 개선
+
+ 1. [ ] `ARCHITECTURE.md` 상세 문서
+ 2. [ ] `CONTRIBUTING.md` 기여 가이드
+ 3. [ ] 의존성 라이센스 자동 체크
+ 4. [ ] `LICENSES/` 폴더 자동 생성
+ 5. [ ] CI/CD 파이프라인 개선
 
 #### 낮은 우선순위 (1개월 이상)
-16. [ ] Apache 2.0 라이센스 재검토 및 전환
-17. [ ] Jupyter Notebook 튜토리얼
-18. [ ] 비디오 튜토리얼 제작
-19. [ ] API 안정성 정책 문서화
-20. [ ] 다국어 문서 (영문) 작성
+
+ 1. [ ] Apache 2.0 라이센스 재검토 및 전환
+ 2. [ ] Jupyter Notebook 튜토리얼
+ 3. [ ] 비디오 튜토리얼 제작
+ 4. [ ] API 안정성 정책 문서화
+ 5. [ ] 다국어 문서 (영문) 작성
 
 ---
 
@@ -801,7 +843,7 @@ def test_public_types_module():
 
 ### 단계별 우선순위
 
-```
+```text
 Phase 1 (1주): 문서 + 예제 + API 정리
   └─> 즉각적인 UX 개선
 
@@ -818,12 +860,14 @@ Phase 4 (2개월+): 고급 기능 + 커뮤니티
 ### 성공 지표
 
 **정량적:**
+
 - ⏱️ Time to First Success: 5분 이내
 - 📊 커버리지: order.py 90% 이상
 - 📈 GitHub Stars: 현재 대비 50% 증가
 - 💬 "어떻게 사용하나요?" 질문: 50% 감소
 
 **정성적:**
+
 - ✅ "이해하기 쉬웠다" 피드백
 - ✅ "빠르게 시작할 수 있었다" 피드백
 - ✅ "문서가 충분했다" 피드백

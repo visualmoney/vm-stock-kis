@@ -155,7 +155,8 @@ config = save_config_interactive("config.yaml")
 ```
 
 **입력 예시:**
-```
+
+```text
 HTS id: my_id
 Account (XXXXXXXX-XX): 12345678-01
 AppKey: my_appkey
@@ -173,6 +174,7 @@ Write config file? (y/N): y
 ```
 
 **환경변수로 확인 단계 건너뛰기 (CI/CD용):**
+
 ```bash
 export VMKIS_CONFIRM_SKIP=1
 python your_script.py
@@ -204,11 +206,13 @@ simple = SimpleKIS(kis)
 | **호가 정보** | ❌ 미지원 | ✅ 지원 |
 
 **언제 SimpleKIS를 쓸까?**
+
 - 시세, 잔고, 간단한 주문만 필요할 때
 - API를 빠르게 학습하고 싶을 때
 - 프로토타이핑이나 스크립트 작업
 
 **언제 VmKis를 쓸까?**
+
 - 웹소켓 실시간 데이터가 필요할 때
 - 차트, 호가, 복잡한 분석이 필요할 때
 - 고급 거래 전략을 구현할 때
@@ -312,6 +316,7 @@ order = simple.place_order(...)  # 💰 실제 주문 발생!
 ```
 
 **테스트 프로세스:**
+
 1. `virtual=True`로 모의투자에서 전부 검증
 2. `ALLOW_LIVE_TRADES=1` 환경변수 설정 필수
 3. 실계좌에서 소액으로 테스트
@@ -387,6 +392,7 @@ with ThreadPoolExecutor(max_workers=3) as executor:
 - **모니터링**: 포트폴리오 성과 추적 및 리포팅
 
 **예제:**
+
 - `examples/01_basic/` - 기본 사용법
 - `examples/02_intermediate/` - 중급 예제 (예정)
 - `examples/03_advanced/` - 고급 예제 (예정)

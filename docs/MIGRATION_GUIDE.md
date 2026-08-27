@@ -11,7 +11,7 @@
 
 1. [이름 변경 (v3.0.0)](#1-이름-변경-v300)
 2. [타임라인](#2-타임라인)
-3. [v2.2.0 변경사항](#v220-변경사항-202512)
+3. [v2.2.0 변경사항](#v220-변경사항-2025-12)
 4. [v4.0.0 예정 Breaking Changes](#v400-예정-breaking-changes)
 5. [단계별 마이그레이션](#단계별-마이그레이션)
 6. [FAQ](#faq)
@@ -94,7 +94,7 @@ kis = vmkis.PyKis(...)    # ✅ 동작합니다 (DeprecationWarning)
 
 ## 2. 타임라인
 
-```
+```text
 v2.1.x (python-kis 포크 시점)
     ↓
 v2.2.0 (2025-12)  공개 API 축소 (154 → 20), deprecated 경로에 경고
@@ -122,6 +122,7 @@ v4.0.0            PyKis 별칭, ~/.pykis 폴백, PYKIS_* 폴백,
 ### 1. 공개 API 축소
 
 **이전 (v2.1.7)**:
+
 ```python
 from vmkis import (
     VmKis, KisAuth,
@@ -133,6 +134,7 @@ from vmkis import (
 ```
 
 **현재 (v2.2.0+)**:
+
 ```python
 # 권장: 일반 사용자
 from vmkis import (
@@ -147,6 +149,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 ```
 
 **변경사항**:
+
 - `src/vmkis/__init__.py`의 `__all__`이 20개로 축소
 - 내부 Protocol/Mixin은 `vmkis.types` 및 하위 모듈에서 import
 - 기존 import 경로는 `DeprecationWarning`과 함께 동작 (v3.0.0까지 유지)
@@ -164,6 +167,7 @@ def analyze(quote: Quote, balance: Balance) -> None:
 ```
 
 **타입 별칭**:
+
 | 별칭 | 실제 타입 | 설명 |
 |------|----------|------|
 | `Quote` | `KisQuoteResponse` | 시세 정보 |
@@ -177,6 +181,7 @@ def analyze(quote: Quote, balance: Balance) -> None:
 ### 3. 초보자용 도구 추가
 
 **SimpleKIS** (간소화된 API):
+
 ```python
 from vmkis import SimpleKIS
 
@@ -192,6 +197,7 @@ balance = simple.get_balance()
 ```
 
 **헬퍼 함수**:
+
 ```python
 from vmkis import create_client, save_config_interactive
 
@@ -211,6 +217,7 @@ save_config_interactive("config.yaml")
 ### 1. Deprecated Import 경로 제거
 
 **작동하지 않게 될 코드 (v4.0.0부터)**:
+
 ```python
 # ❌ AttributeError 발생
 from vmkis import KisObjectProtocol
@@ -218,6 +225,7 @@ from vmkis import KisQuotableProductMixin
 ```
 
 **올바른 코드**:
+
 ```python
 # ✅ 공개 타입 (일반 사용자)
 from vmkis import Quote, Balance, Order
@@ -230,9 +238,11 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 ### 2. `types.py` 역할 변경
 
 **v2.x**:
+
 - `vmkis.types`는 모든 타입을 포함 (공개 + 내부)
 
 **v4.0.0+**:
+
 - `vmkis.types`는 내부 Protocol/고급 타입만 포함
 - 공개 타입은 `vmkis.public_types` 또는 `vmkis.__init__`에서 import
 
@@ -252,6 +262,7 @@ pip install --upgrade vm-stock-kis
 ```
 
 **확인**:
+
 ```python
 import vmkis
 print(vmkis.__version__)  # 2.2.0 이상
@@ -260,12 +271,14 @@ print(vmkis.__version__)  # 2.2.0 이상
 ### Step 2: Deprecation 경고 확인
 
 **테스트 실행**:
+
 ```bash
 python -W all your_script.py
 ```
 
 **경고 예시**:
-```
+
+```text
 DeprecationWarning: from vmkis import KisObjectProtocol은(는)
 deprecated되었습니다. 대신 'from vmkis.types import KisObjectProtocol'을
 사용하세요. 이 기능은 v3.0.0에서 제거될 예정입니다.
@@ -307,6 +320,7 @@ mypy your_script.py
 ### Step 5: v3.0.0 대비
 
 **체크리스트**:
+
 - [ ] Deprecation 경고 모두 해결
 - [ ] 공개 API (`vmkis.__init__.__all__`)만 사용
 - [ ] 내부 모듈은 명시적 경로 사용 (`vmkis.types`, `vmkis.adapter.*`)
@@ -372,6 +386,7 @@ if __name__ == "__main__":
 ```
 
 **사용법**:
+
 ```bash
 python scripts/migrate_imports.py
 ```
@@ -395,6 +410,7 @@ python scripts/migrate_imports.py
 ### Q4: 왜 공개 API를 축소했나요?
 
 **A**:
+
 - 초보자가 어떤 것을 import해야 할지 명확하게 하기 위함
 - IDE 자동완성 목록이 너무 길었음 (154개 → 20개)
 - 내부 구현과 공개 API의 경계를 명확히 하기 위함

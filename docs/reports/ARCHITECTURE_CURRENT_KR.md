@@ -11,12 +11,14 @@
 **Python-KIS**는 한국투자증권 REST/WebSocket API를 타입 안전하게 래핑한 강력한 라이브러리입니다.
 
 **이상적인 사용자 경험**:
+
 - ✅ 설치: `pip install python-kis` (1분)
 - ✅ 인증 설정: 환경변수 또는 파일 (2분)
 - ✅ 첫 API 호출: `kis.stock("005930").quote()` (2분)
 - ✅ **총 5분 내 완주 목표**
 
 **핵심 가치**:
+
 - Protocol이나 Mixin 같은 내부 구조를 이해할 필요 없음
 - IDE 자동완성 100% 지원으로 손쉬운 개발
 - 타입 안전성이 보장된 코드
@@ -91,7 +93,7 @@
 
 ## 1.5 Phase 별 진행도
 
-```
+```text
 Phase 1 (2025-12-18)    ✅ 100% 완료
 ├─ API 리팩토링
 ├─ 공개 타입 분리 (진행 중)
@@ -124,12 +126,12 @@ Phase 4 (2025-12-20)    ✅ 100% 완료
 | **현재 버전** | 2.1.7 |
 | **Python 요구사항** | 3.10+ |
 | **라이센스** | MIT |
-| **저장소** | https://github.com/Soju06/python-kis |
+| **저장소** | <https://github.com/Soju06/python-kis> |
 | **유지보수자** | Soju06 |
 
 ### 코드 규모
 
-```
+```text
 pykis/                   (~8,500 LOC)
 ├── adapter/             (~600 LOC)
 ├── api/                 (~4,000 LOC)
@@ -149,6 +151,7 @@ docs/                   (~3,000 LOC)
 ### 의존성
 
 **프로덕션** (7개):
+
 - requests >= 2.32.3
 - websocket-client >= 1.8.0
 - cryptography >= 43.0.0
@@ -158,6 +161,7 @@ docs/                   (~3,000 LOC)
 - python-dotenv >= 1.2.1
 
 **개발** (4개):
+
 - pytest ^9.0.1
 - pytest-cov ^7.0.0
 - pytest-html ^4.1.1
@@ -190,7 +194,7 @@ docs/                   (~3,000 LOC)
 
 ### 신규 문서 (Phase 4)
 
-```
+```text
 docs/guidelines/
 ├── MULTILINGUAL_SUPPORT.md        ✅ 다국어 정책
 ├── REGIONAL_GUIDES.md             ✅ 지역별 설정
@@ -217,7 +221,7 @@ docs/user/
 
 ## 1.9 빠른 통계
 
-```
+```text
 ┌──────────────────────────────────────┐
 │  📊 2025-12-20 현황 스냅샷           │
 ├──────────────────────────────────────┤

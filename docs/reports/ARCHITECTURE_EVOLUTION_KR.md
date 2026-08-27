@@ -11,7 +11,8 @@
 ### 6.1.1 공개 API 정리 (154개 → 20개)
 
 **변경 개요**:
-```
+
+```text
 현재 (v2.1.x)          v3.0.0 (변경 후)
 ────────────────────────────────────────────
 154개 export        →   20개 export
@@ -161,6 +162,7 @@ __all__ = [
 #### 시나리오 1: 간단한 주식 시세 조회
 
 **Before (v2.1.x)**:
+
 ```python
 from pykis import PyKis, KisStock, KisQuotableProduct
 
@@ -171,6 +173,7 @@ print(quote.price)
 ```
 
 **After (v3.0.0) - 동일함**:
+
 ```python
 from pykis import PyKis
 
@@ -181,6 +184,7 @@ print(quote.price)  # 사용 코드는 변화 없음
 ```
 
 **변경 사항**:
+
 - ✅ `KisStock` import 제거 가능 (내부적으로 처리)
 - ✅ `KisQuotableProduct` import 제거 (이제 비공개)
 - ✅ 실제 코드는 수정 불필요
@@ -188,6 +192,7 @@ print(quote.price)  # 사용 코드는 변화 없음
 #### 시나리오 2: 주문 실행
 
 **Before (v2.1.x)**:
+
 ```python
 from pykis import (
     PyKis,
@@ -202,6 +207,7 @@ order = account.buy("005930", 10, 70000)
 ```
 
 **After (v3.0.0)**:
+
 ```python
 from pykis import PyKis, Order
 
@@ -211,6 +217,7 @@ order = account.buy("005930", 10, 70000)
 ```
 
 **변경 사항**:
+
 - ✅ `KisAccount`, `KisOrderableAccount` 제거 가능
 - ✅ `Order` 타입 import 여전히 가능
 - ✅ 실제 호출 코드는 변화 없음
@@ -218,6 +225,7 @@ order = account.buy("005930", 10, 70000)
 #### 시나리오 3: WebSocket 실시간 시세
 
 **Before (v2.1.x)**:
+
 ```python
 from pykis import (
     PyKis,
@@ -234,6 +242,7 @@ def on_quote(quote):
 ```
 
 **After (v3.0.0) - 동일함**:
+
 ```python
 from pykis import PyKis
 
@@ -246,6 +255,7 @@ def on_quote(quote):
 ```
 
 **변경 사항**:
+
 - ✅ Decorator 사용 방식은 유지
 - ✅ 내부 Adapter 클래스는 비공개화되나 동작은 동일
 
@@ -255,7 +265,7 @@ def on_quote(quote):
 
 ### 6.5.1 직접 영향을 미치는 변경
 
-```
+```text
 순번    변경 사항                              영향도   대응
 ────────────────────────────────────────────────────────────
 1     공개 API 154 → 20개                    중간    auto-import 호환성 유지
@@ -267,7 +277,7 @@ def on_quote(quote):
 
 ### 6.5.2 간접 영향 (주의 필요)
 
-```
+```text
 변경 사항                               v2.1.x 코드   v3.0.0 결과
 ────────────────────────────────────────────────────────────────
 pykis/types.py 정리                    import types  호환성 유지
@@ -306,7 +316,7 @@ Dynamic 응답 처리 최적화               quote.price   동일하게 동작
 
 ### 6.6.2 버전 지정 정책
 
-```
+```text
 공개 API 변경:
 ├─ 신규 추가        → Minor 버전 (v3.1.0)
 ├─ Deprecation 추가  → Minor 버전 (v3.1.0)
@@ -324,7 +334,7 @@ Dynamic 응답 처리 최적화               quote.price   동일하게 동작
 
 ### 6.7.1 단계별 계획
 
-```
+```text
 v2.1.7 (현재)
 ├─ 기능: v3.0.0 준비 경고 추가
 └─ 상태: 모든 기존 코드 동작함
@@ -346,7 +356,7 @@ v3.1.0 (안정화)
 
 ### 6.7.2 지원 기간
 
-```
+```text
 버전         출시        종료 지원    보안 패치
 ──────────────────────────────────────────────
 v2.1.x      2025-06    2026-03    ✅ 있음
@@ -360,7 +370,7 @@ v4.0.0      2027-01    (미정)     ✅ 있음
 
 ## 6.8 공개 API 구체 목록
 
-### 6.8.1 최종 __all__ 정의
+### 6.8.1 최종 **all** 정의
 
 ```python
 # pykis/__init__.py v3.0.0
@@ -472,6 +482,7 @@ from pykis.types import KisObjectProtocol  # 타입 체킹만
 ### Q1: 내 v2.1.x 코드가 v3.0.0에서 동작할까요?
 
 **A**: 대부분 동작합니다.
+
 - ✅ `PyKis.stock()` → 동일
 - ✅ `account.buy()` → 동일
 - ✅ `@domestic.on_quote` → 동일
@@ -480,6 +491,7 @@ from pykis.types import KisObjectProtocol  # 타입 체킹만
 ### Q2: 어떤 코드를 수정해야 할까요?
 
 **A**: 다음과 같은 import만 확인하세요:
+
 ```python
 # ❌ 수정 필요
 from pykis import (
@@ -495,6 +507,7 @@ from pykis import PyKis, Order, Quote
 ### Q3: 내부 구현에 접근해야 하면요?
 
 **A**: `pykis._internal`에서 import하세요:
+
 ```python
 # v3.0.0
 from pykis._internal import KisDynamic
@@ -506,6 +519,7 @@ from pykis.types import KisObjectProtocol
 ### Q4: 마이그레이션 비용은?
 
 **A**: 매우 낮습니다:
+
 - 일반적인 사용: 0줄 수정
 - 내부 클래스 사용: 1-2줄 수정 (경로 변경)
 
@@ -515,7 +529,7 @@ from pykis.types import KisObjectProtocol
 
 v3.0.0은 **공개 API 정리를 통해 접근성을 개선**하는 메이저 업데이트입니다.
 
-```
+```text
 Before (v2.1.x)         After (v3.0.0)
 154개 항목 혼란   →     20개 항목 명확
 사용자 어려움     →     쉬운 학습곡선

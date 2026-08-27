@@ -1,6 +1,7 @@
 # Python KIS - 개발자 문서
 
 ## 목차
+
 1. [개발 환경 설정](#개발-환경-설정)
 2. [개발 환경 구성](#개발-환경-구성)
 3. [핵심 모듈 상세 가이드](#핵심-모듈-상세-가이드)
@@ -15,6 +16,7 @@
 ## 개발 환경 설정
 
 ### 필수 요구사항
+
 - Python 3.10 이상
 - uv (의존성 관리)
 - Git
@@ -45,6 +47,7 @@ pip install -e .
 ### IDE 설정
 
 #### VS Code
+
 ```json
 {
   "python.linting.pylintEnabled": true,
@@ -65,7 +68,7 @@ pip install -e .
 
 ### 프로젝트 구조 이해
 
-```
+```text
 src/vmkis/
 ├── kis.py              # VmKis 메인 클래스 (800+ 줄)
 ├── types.py            # 공개 타입 정의
@@ -272,7 +275,7 @@ class KisWebsocketClient:
 
 #### 재연결 메커니즘
 
-```
+```text
 연결 시도
     ↓
 연결 성공 ──N──→ 대기 후 재시도
@@ -522,7 +525,7 @@ quote = stock.simple_quote()
 
 ### 테스트 구조
 
-```
+```text
 tests/
 ├── __init__.py
 ├── conftest.py           # pytest 설정

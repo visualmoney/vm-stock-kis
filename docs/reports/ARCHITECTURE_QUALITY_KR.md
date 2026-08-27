@@ -10,7 +10,7 @@
 
 ### 3.1.1 테스트 구성
 
-```
+```text
 tests/
 ├── unit/              874 tests (주요 테스트)
 ├── integration/        31 tests (API 통합 테스트)
@@ -22,7 +22,7 @@ tests/
 
 ### 3.1.2 커버리지 분석
 
-```
+```text
 파일별 커버리지:
 ├── pykis/responses/              95.2% 🟢
 ├── pykis/api/                   94.8% 🟢
@@ -38,12 +38,14 @@ tests/
 ### 3.1.3 테스트 품질 평가
 
 **강점**:
+
 - ✅ Unit test 비중 92% (좋은 테스트 피라미드)
 - ✅ API 응답 처리 테스트 우수 (95.2%)
 - ✅ 클라이언트 통신 테스트 완벽 (92.5%)
 - ✅ 성능 회귀 테스트 구현 (43개)
 
 **개선점**:
+
 - ⚠️ WebSocket 이벤트 테스트 비중 낮음 (85.2%)
 - ⚠️ 엣지 케이스 테스트 비중 미흡
 - ⚠️ 동시성 테스트 부족
@@ -56,7 +58,7 @@ tests/
 
 ### 3.2.1 순환 복잡도 (Cyclomatic Complexity)
 
-```
+```text
 심각 수준:
 ├── pykis/api/stock/order.py    CC=18 🔴 (매우 높음)
 ├── pykis/responses/dynamic.py  CC=15 🟡 (높음)
@@ -72,7 +74,7 @@ tests/
 
 ### 3.2.2 함수 길이 분석
 
-```
+```text
 긴 함수 (>50줄):
 ├── buy() [pykis/api/stock/order.py]         82줄 🔴
 ├── sell() [pykis/api/stock/order.py]        78줄 🔴
@@ -123,7 +125,7 @@ from typing import Protocol, Union, Optional, List, Dict
 
 ### 3.3.2 Pylance 검증
 
-```
+```text
 settings.json (pylance 설정):
 {
     "python.analysis.typeCheckingMode": "strict",
@@ -166,7 +168,7 @@ settings.json (pylance 설정):
 
 ### 3.4.2 메모리 사용
 
-```
+```text
 객체당 메모리:
 ├── KisAccount         ~2.5 KB
 ├── KisStock          ~1.8 KB
@@ -201,7 +203,7 @@ min_interval = 100  # ms (최소 간격)
 
 ### 3.5.1 PEP 8 준수도
 
-```
+```text
 검증 도구: pylint + black + isort
 
 준수율:
@@ -251,7 +253,7 @@ def buy(self, symbol: str, qty: int, price: float) -> Order:
 
 ### 3.6.1 의존성 보안
 
-```
+```text
 주요 의존성:
 ├── requests 2.32.3     ✅ 최신 (2025년 기준)
 ├── websocket-client 1.8.0 ✅ 최신
@@ -280,7 +282,7 @@ def buy(self, symbol: str, qty: int, price: float) -> Order:
 
 ## 종합 평가
 
-```
+```text
 ┌─────────────────────────────────────────┐
 │ 항목                평가    점수        │
 ├─────────────────────────────────────────┤

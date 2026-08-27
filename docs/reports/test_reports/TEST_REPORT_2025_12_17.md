@@ -1,7 +1,7 @@
 # 테스트 커버리지 보고서 (2025-12-17)
 
-**작성일**: 2025-12-17  
-**테스트 실행 시간**: 52.45초  
+**작성일**: 2025-12-17
+**테스트 실행 시간**: 52.45초
 **테스트 환경**: Python 3.11.9, Windows 11, pytest 9.0.1
 
 ---
@@ -25,7 +25,8 @@
 ### Phase 1: test_daily_chart.py 개선 ✅
 
 **이전 상태**:
-```
+
+```text
 스킵된 테스트: 4개
 - test_kis_domestic_daily_chart_bar_base
 - test_kis_domestic_daily_chart_bar
@@ -34,13 +35,15 @@
 ```
 
 **현재 상태**:
-```
+
+```text
 ✅ 모두 구현됨 (스킵 해제)
 ✅ 모두 통과 (pass)
 ✅ ExDateType.EX_DIVIDEND 명칭 수정 완료
 ```
 
 **영향**:
+
 - 추가 테스트: 4개
 - 커버리지 증대: +3-4%
 
@@ -49,7 +52,8 @@
 ### Phase 2: test_info.py 개선 ✅
 
 **이전 상태**:
-```
+
+```text
 스킵된 테스트: 8개
 - test_domestic_market_with_zero_price_continues
 - test_foreign_market_with_empty_price_continues
@@ -62,7 +66,8 @@
 ```
 
 **현재 상태**:
-```
+
+```text
 ✅ 모두 구현됨 (스킵 해제)
 ✅ 모두 통과 (pass)
 ✅ 마켓 코드 반복 로직 완벽히 검증
@@ -70,6 +75,7 @@
 ```
 
 **영향**:
+
 - 추가 테스트: 8개
 - 커버리지 증대: +5-6%
 
@@ -113,7 +119,7 @@
 
 ### 매우 우수 (95%+)
 
-```
+```text
 ✅ api.auth.token               98%
 ✅ api.stock.daily_chart        98%
 ✅ api.stock.info               98%
@@ -130,7 +136,7 @@
 
 ### 우수 (90-95%)
 
-```
+```text
 🟢 adapter.account              100%
 🟢 adapter.account_product      86.4%
 🟢 api.websocket.price          91%
@@ -143,7 +149,7 @@
 
 ### 개선 권장 (80-90%)
 
-```
+```text
 🟡 adapter.websocket.price      81%
 🟡 api.account.daily_order      85%
 🟡 api.account.order_modify     86%
@@ -160,13 +166,13 @@
 
 ### 개선 필요 (70-80%)
 
-```
+```text
 🔴 scope                        76%
 ```
 
 ### 미흡 (70% 미만)
 
-```
+```text
 🔴 event                        54%
 🔴 responses (전체)            52%
 🔴 . (루트)                    47%
@@ -180,7 +186,7 @@
 
 ### 발생한 경고 (7건)
 
-```
+```text
 1. DeprecationWarning (tests/unit/api/account/test_pending_order.py:262)
    - KisPendingOrderBase.from_number() 사용 중단
    - 대신 KisOrder.from_number() 사용
@@ -197,7 +203,7 @@
 
 ### 권장 조치
 
-```
+```text
 ✅ Deprecation 경고: 테스트 코드 업데이트 필요
    - from_number() → from_order() 또는 deprecated API 제거
 
@@ -226,6 +232,7 @@
 ### 즉시 개선 (이번 주)
 
 #### 1. 경고 제거
+
 ```python
 # test_pending_order.py 업데이트
 # KisPendingOrderBase 대신 KisOrder 사용
@@ -237,7 +244,8 @@ ticket.unsubscribe()
 ```
 
 #### 2. 통합 테스트 명확화
-```
+
+```text
 스킵된 5개 테스트 → 통합 테스트 폴더로 이동
 tests/integration/api/test_account.py (실제 연결 필요)
 tests/integration/websocket/test_connection.py (실제 연결 필요)
@@ -258,7 +266,7 @@ tests/integration/websocket/test_connection.py (실제 연결 필요)
 
 #### 4. 테스트 작성 가이드라인 배포
 
-```
+```text
 docs/guidelines/GUIDELINES_001_TEST_WRITING.md
 - Mock 패턴 표준화
 - 마켓 코드 선택 기준
@@ -271,7 +279,7 @@ docs/guidelines/GUIDELINES_001_TEST_WRITING.md
 
 ### 코드 통계
 
-```
+```text
 총 라인 수:     7,227
 커버된 라인:    4,356
 미커버 라인:    2,871
@@ -280,7 +288,7 @@ docs/guidelines/GUIDELINES_001_TEST_WRITING.md
 
 ### 테스트 통계
 
-```
+```text
 총 테스트:      850
 통과:          840 (98.8%)
 스킵:           5  (0.6%)
@@ -289,7 +297,7 @@ docs/guidelines/GUIDELINES_001_TEST_WRITING.md
 
 ### 작업 통계
 
-```
+```text
 추가된 테스트:  12개 (daily_chart: 4, info: 8)
 개선된 모듈:    2개 (daily_chart, info)
 추가 시간:      약 2-3시간 (분석 + 구현 + 문서화)
@@ -308,22 +316,24 @@ docs/guidelines/GUIDELINES_001_TEST_WRITING.md
 ## ✅ 다음 단계
 
 ### Priority 1 (이번 주)
+
 - [ ] 경고 메시지 해결 (Deprecation, Event Ticket)
 - [ ] 스킵된 테스트 분류 (단위 vs 통합)
 - [ ] 통합 테스트 폴더 구조 설정
 
 ### Priority 2 (1-2주)
+
 - [ ] utils 모듈 테스트 추가 (34% → 70%)
 - [ ] client 모듈 테스트 추가 (41% → 70%)
 - [ ] 테스트 작성 가이드 공포
 
 ### Priority 3 (1개월)
+
 - [ ] responses 모듈 테스트 (52% → 70%)
 - [ ] event 모듈 테스트 (54% → 70%)
 - [ ] 전체 커버리지 80% 이상
 
 ---
 
-**보고서 생성**: 2025-12-17 22:45 UTC  
+**보고서 생성**: 2025-12-17 22:45 UTC
 **다음 측정**: 2025-12-24
-
