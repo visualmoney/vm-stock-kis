@@ -277,7 +277,7 @@ def foreign_modify_order(
         condition (ORDER_CONDITION, optional): 주문조건
         execution (ORDER_EXECUTION_CONDITION, optional): 체결조건
     """
-    if qty != None and qty <= 0:
+    if qty is not None and qty <= 0:
         raise ValueError("수량은 0보다 커야합니다.")
 
     from vmkis.api.account.pending_order import pending_orders
@@ -411,7 +411,7 @@ def foreign_daytime_modify_order(
     if self.virtual:
         raise NotImplementedError("모의투자에서는 주간거래 정정 주문을 지원하지 않습니다.")
 
-    if qty != None and qty <= 0:
+    if qty is not None and qty <= 0:
         raise ValueError("수량은 0보다 커야합니다.")
 
     from vmkis.api.account.pending_order import pending_orders

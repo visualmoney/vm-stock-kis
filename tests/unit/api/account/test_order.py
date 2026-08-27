@@ -1,7 +1,8 @@
-import pytest
-from decimal import Decimal
 from datetime import datetime
+from decimal import Decimal
 from unittest.mock import Mock
+
+import pytest
 
 from vmkis.api.account import order as ordmod
 from vmkis.client.account import KisAccountNumber
@@ -98,7 +99,7 @@ def test_kis_ordernumber_eq_and_hash():
 
 def test_order_condition_fallback_virtual_none():
     # Test fallback logic when virtual is not in map - converts to None (real)
-    res = ordmod.order_condition(True, "KRX", "buy", Decimal("100"), None, None)
+    ordmod.order_condition(True, "KRX", "buy", Decimal("100"), None, None)
 
 
 def test_orderable_conditions_repr_prints_table():
@@ -165,12 +166,7 @@ def test_domestic_order_pre_init_not_found(monkeypatch):
     order.symbol = "INVALID"
     order.market = "KRX"
 
-    data = {
-        "msg_cd": "APBK0656",
-        "msg1": "Not found",
-        "__response__": mock_response,
-        "output": {"ORD_TMD": "153000"}
-    }
+    data = {"msg_cd": "APBK0656", "msg1": "Not found", "__response__": mock_response, "output": {"ORD_TMD": "153000"}}
 
     with pytest.raises(KisNotFoundError):
         order.__pre_init__(data)
@@ -178,17 +174,12 @@ def test_domestic_order_pre_init_not_found(monkeypatch):
 
 def test_domestic_order_pre_init_sets_time(monkeypatch):
     # Test __pre_init__ sets time correctly
-    from datetime import datetime
-    from vmkis.utils.timezone import TIMEZONE
 
     order = object.__new__(ordmod.KisDomesticOrder)
     order.symbol = "005930"
     order.market = "KRX"
 
-    data = {
-        "msg_cd": "OK",
-        "output": {"ORD_TMD": "153000"}
-    }
+    data = {"msg_cd": "OK", "output": {"ORD_TMD": "153000"}}
 
     # Mock super().__pre_init__
     monkeypatch.setattr(ordmod.KisAPIResponse, "__pre_init__", lambda self, data: None)
@@ -210,18 +201,15 @@ def test_foreign_order_checks_msg_cd_for_errors():
 
 def test_foreign_order_pre_init_sets_time_with_timezone(monkeypatch):
     # Test ForeignOrder __pre_init__ sets time with timezone conversion
+
     from vmkis.api.stock.market import get_market_timezone
-    from zoneinfo import ZoneInfo
 
     order = object.__new__(ordmod.KisForeignOrder)
     order.symbol = "AAPL"
     order.market = "NASDAQ"
     order.timezone = get_market_timezone("NASDAQ")
 
-    data = {
-        "msg_cd": "OK",
-        "output": {"ORD_TMD": "093000"}
-    }
+    data = {"msg_cd": "OK", "output": {"ORD_TMD": "093000"}}
 
     monkeypatch.setattr(ordmod.KisAPIResponse, "__pre_init__", lambda self, data: None)
 
@@ -247,12 +235,7 @@ def test_orderable_quantity_buy_uses_orderable_amount(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.orderable_amount.orderable_amount", mock_orderable_amount)
 
     qty, unit_price = ordmod._orderable_quantity(
-        Mock(),
-        "12345678-01",
-        "KRX",
-        "005930",
-        order="buy",
-        price=Decimal("50000")
+        Mock(), "12345678-01", "KRX", "005930", order="buy", price=Decimal("50000")
     )
 
     assert qty == Decimal("100")
@@ -271,12 +254,7 @@ def test_orderable_quantity_buy_with_foreign(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.orderable_amount.orderable_amount", lambda *a, **k: mock_amount)
 
     qty, unit_price = ordmod._orderable_quantity(
-        Mock(),
-        "12345678-01",
-        "KRX",
-        "005930",
-        order="buy",
-        include_foreign=True
+        Mock(), "12345678-01", "KRX", "005930", order="buy", include_foreign=True
     )
 
     assert qty == Decimal("150")
@@ -293,13 +271,7 @@ def test_orderable_quantity_buy_throws_when_no_qty(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.orderable_amount.orderable_amount", lambda *a, **k: mock_amount)
 
     with pytest.raises(ValueError, match="주문가능수량이 없습니다"):
-        ordmod._orderable_quantity(
-            Mock(),
-            "12345678-01",
-            "KRX",
-            "005930",
-            order="buy"
-        )
+        ordmod._orderable_quantity(Mock(), "12345678-01", "KRX", "005930", order="buy")
 
 
 def test_orderable_quantity_sell_uses_balance(monkeypatch):
@@ -308,13 +280,7 @@ def test_orderable_quantity_sell_uses_balance(monkeypatch):
 
     monkeypatch.setattr("vmkis.api.account.balance.orderable_quantity", lambda *a, **k: Decimal("50"))
 
-    qty, unit_price = ordmod._orderable_quantity(
-        Mock(),
-        "12345678-01",
-        "KRX",
-        "005930",
-        order="sell"
-    )
+    qty, unit_price = ordmod._orderable_quantity(Mock(), "12345678-01", "KRX", "005930", order="sell")
 
     assert qty == Decimal("50")
     assert unit_price is None
@@ -325,13 +291,7 @@ def test_orderable_quantity_sell_throws_when_none(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.balance.orderable_quantity", lambda *a, **k: None)
 
     with pytest.raises(ValueError, match="주문가능수량이 없습니다"):
-        ordmod._orderable_quantity(
-            Mock(),
-            "12345678-01",
-            "KRX",
-            "005930",
-            order="sell"
-        )
+        ordmod._orderable_quantity(Mock(), "12345678-01", "KRX", "005930", order="sell")
 
 
 def test_get_order_price_upper_limit(monkeypatch):
@@ -487,12 +447,7 @@ def test_ordernumberbase_init_full_valid():
     account = KisAccountNumber(account="12345678-01")
 
     order_num = ordmod.KisOrderNumberBase(
-        kis=mock_kis,
-        symbol="005930",
-        market="KRX",
-        account_number=account,
-        branch="00001",
-        number="12345"
+        kis=mock_kis, symbol="005930", market="KRX", account_number=account, branch="00001", number="12345"
     )
 
     assert order_num.symbol == "005930"
@@ -507,11 +462,7 @@ def test_ordernumberbase_init_missing_market_error():
     mock_kis = Mock()
 
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisOrderNumberBase(
-            kis=mock_kis,
-            symbol="005930",
-            market=None
-        )
+        ordmod.KisOrderNumberBase(kis=mock_kis, symbol="005930", market=None)
 
     assert "market" in str(exc_info.value)
 
@@ -521,12 +472,7 @@ def test_ordernumberbase_init_missing_account_error():
     mock_kis = Mock()
 
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisOrderNumberBase(
-            kis=mock_kis,
-            symbol="005930",
-            market="KRX",
-            account_number=None
-        )
+        ordmod.KisOrderNumberBase(kis=mock_kis, symbol="005930", market="KRX", account_number=None)
 
     assert "account_number" in str(exc_info.value)
 
@@ -537,13 +483,7 @@ def test_ordernumberbase_init_missing_branch_error():
     account = KisAccountNumber(account="12345678-01")
 
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisOrderNumberBase(
-            kis=mock_kis,
-            symbol="005930",
-            market="KRX",
-            account_number=account,
-            branch=None
-        )
+        ordmod.KisOrderNumberBase(kis=mock_kis, symbol="005930", market="KRX", account_number=account, branch=None)
 
     assert "branch" in str(exc_info.value)
 
@@ -555,12 +495,7 @@ def test_ordernumberbase_init_missing_number_error():
 
     with pytest.raises(ValueError) as exc_info:
         ordmod.KisOrderNumberBase(
-            kis=mock_kis,
-            symbol="005930",
-            market="KRX",
-            account_number=account,
-            branch="00001",
-            number=None
+            kis=mock_kis, symbol="005930", market="KRX", account_number=account, branch="00001", number=None
         )
 
     assert "number" in str(exc_info.value)
@@ -585,10 +520,7 @@ def test_kissimpleorder_init_with_account_missing_symbol_error():
     account = KisAccountNumber(account="12345678-01")
 
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisSimpleOrder(
-            account_number=account,
-            symbol=None
-        )
+        ordmod.KisSimpleOrder(account_number=account, symbol=None)
 
     assert "symbol" in str(exc_info.value)
 
@@ -598,11 +530,7 @@ def test_kissimpleorder_init_with_symbol_missing_market_error():
     account = KisAccountNumber(account="12345678-01")
 
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisSimpleOrder(
-            account_number=account,
-            symbol="005930",
-            market=None
-        )
+        ordmod.KisSimpleOrder(account_number=account, symbol="005930", market=None)
 
     assert "market" in str(exc_info.value)
 
@@ -610,10 +538,7 @@ def test_kissimpleorder_init_with_symbol_missing_market_error():
 def test_kissimpleorder_init_with_branch_missing_account_error():
     # Test error when branch provided but account_number missing
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisSimpleOrder(
-            account_number=None,
-            branch="00001"
-        )
+        ordmod.KisSimpleOrder(account_number=None, branch="00001")
 
     assert "account_number" in str(exc_info.value)
 
@@ -623,13 +548,7 @@ def test_kissimpleorder_init_with_branch_missing_number_error():
     account = KisAccountNumber(account="12345678-01")
 
     with pytest.raises(ValueError) as exc_info:
-        ordmod.KisSimpleOrder(
-            account_number=account,
-            symbol="005930",
-            market="KRX",
-            branch="00001",
-            number=None
-        )
+        ordmod.KisSimpleOrder(account_number=account, symbol="005930", market="KRX", branch="00001", number=None)
 
     assert "number" in str(exc_info.value)
 
@@ -640,12 +559,7 @@ def test_kissimpleorder_init_with_number_missing_timekst_error():
 
     with pytest.raises(ValueError) as exc_info:
         ordmod.KisSimpleOrder(
-            account_number=account,
-            symbol="005930",
-            market="KRX",
-            branch="00001",
-            number="12345",
-            time_kst=None
+            account_number=account, symbol="005930", market="KRX", branch="00001", number="12345", time_kst=None
         )
 
     assert "time_kst" in str(exc_info.value)
@@ -657,12 +571,7 @@ def test_kissimpleorder_init_full_valid():
     time_kst = datetime(2024, 1, 1, 9, 0, 0, tzinfo=datetime.now().astimezone().tzinfo)
 
     order = ordmod.KisSimpleOrder(
-        account_number=account,
-        symbol="005930",
-        market="KRX",
-        branch="00001",
-        number="12345",
-        time_kst=time_kst
+        account_number=account, symbol="005930", market="KRX", branch="00001", number="12345", time_kst=time_kst
     )
 
     assert order.account_number == account
@@ -679,11 +588,7 @@ def test_domestic_order_validation_no_account(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="계좌번호를 입력해주세요"):
-        ordmod.domestic_order(
-            mock_kis,
-            account=None,
-            symbol="005930"
-        )
+        ordmod.domestic_order(mock_kis, account=None, symbol="005930")
 
 
 def test_domestic_order_validation_no_symbol(monkeypatch):
@@ -692,11 +597,7 @@ def test_domestic_order_validation_no_symbol(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="종목코드를 입력해주세요"):
-        ordmod.domestic_order(
-            mock_kis,
-            account="12345678-01",
-            symbol=""
-        )
+        ordmod.domestic_order(mock_kis, account="12345678-01", symbol="")
 
 
 def test_domestic_order_validation_negative_qty(monkeypatch):
@@ -705,12 +606,7 @@ def test_domestic_order_validation_negative_qty(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="수량은 0보다 커야합니다"):
-        ordmod.domestic_order(
-            mock_kis,
-            account="12345678-01",
-            symbol="005930",
-            qty=-10
-        )
+        ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", qty=-10)
 
 
 def test_domestic_order_converts_string_account(monkeypatch):
@@ -723,13 +619,7 @@ def test_domestic_order_converts_string_account(monkeypatch):
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("100"), None))
 
-    ordmod.domestic_order(
-        mock_kis,
-        account="12345678-01",
-        symbol="005930",
-        order="buy",
-        price=50000
-    )
+    ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", order="buy", price=50000)
 
     # Verify fetch was called with KisAccountNumber in form
     assert mock_kis.fetch.called
@@ -753,7 +643,7 @@ def test_domestic_order_sets_price_upper_when_market_buy(monkeypatch):
         account="12345678-01",
         symbol="005930",
         order="buy",
-        price=None  # Market order
+        price=None,  # Market order
     )
 
     # Verify fetch called with price 0 for market order
@@ -778,14 +668,7 @@ def test_domestic_order_uses_orderable_quantity_when_qty_none(monkeypatch):
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", mock_orderable_qty)
 
-    ordmod.domestic_order(
-        mock_kis,
-        account="12345678-01",
-        symbol="005930",
-        order="buy",
-        price=50000,
-        qty=None
-    )
+    ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", order="buy", price=50000, qty=None)
 
     assert len(orderable_qty_called) == 1
     assert mock_kis.fetch.call_args.kwargs["body"]["ORD_QTY"] == "50"
@@ -802,24 +685,12 @@ def test_domestic_order_fetch_with_correct_api_code(monkeypatch):
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
     # Test buy order
-    ordmod.domestic_order(
-        mock_kis,
-        account="12345678-01",
-        symbol="005930",
-        order="buy",
-        price=50000
-    )
+    ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", order="buy", price=50000)
 
     assert mock_kis.fetch.call_args.kwargs["api"] == "TTTC0802U"
 
     # Test sell order
-    ordmod.domestic_order(
-        mock_kis,
-        account="12345678-01",
-        symbol="005930",
-        order="sell",
-        price=50000
-    )
+    ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", order="sell", price=50000)
 
     assert mock_kis.fetch.call_args.kwargs["api"] == "TTTC0801U"
 
@@ -835,13 +706,7 @@ def test_domestic_order_virtual_api_codes(monkeypatch):
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
     # Test virtual buy
-    ordmod.domestic_order(
-        mock_kis,
-        account="12345678-01",
-        symbol="005930",
-        order="buy",
-        price=50000
-    )
+    ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", order="buy", price=50000)
 
     assert mock_kis.fetch.call_args.kwargs["api"] == "VTTC0802U"
 
@@ -852,12 +717,7 @@ def test_foreign_order_validation_no_account(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="계좌번호를 입력해주세요"):
-        ordmod.foreign_order(
-            mock_kis,
-            account=None,
-            market="NASDAQ",
-            symbol="AAPL"
-        )
+        ordmod.foreign_order(mock_kis, account=None, market="NASDAQ", symbol="AAPL")
 
 
 def test_foreign_order_validation_no_symbol(monkeypatch):
@@ -866,12 +726,7 @@ def test_foreign_order_validation_no_symbol(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="종목코드를 입력해주세요"):
-        ordmod.foreign_order(
-            mock_kis,
-            account="12345678-01",
-            market="NASDAQ",
-            symbol=""
-        )
+        ordmod.foreign_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="")
 
 
 def test_foreign_order_validation_negative_qty(monkeypatch):
@@ -880,13 +735,7 @@ def test_foreign_order_validation_negative_qty(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="수량은 0보다 커야합니다"):
-        ordmod.foreign_order(
-            mock_kis,
-            account="12345678-01",
-            market="NASDAQ",
-            symbol="AAPL",
-            qty=-5
-        )
+        ordmod.foreign_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="AAPL", qty=-5)
 
 
 def test_foreign_order_uses_correct_market_api_code(monkeypatch):
@@ -900,25 +749,11 @@ def test_foreign_order_uses_correct_market_api_code(monkeypatch):
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
     # NASDAQ buy
-    ordmod.foreign_order(
-        mock_kis,
-        account="12345678-01",
-        market="NASDAQ",
-        symbol="AAPL",
-        order="buy",
-        price=150
-    )
+    ordmod.foreign_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="AAPL", order="buy", price=150)
     assert mock_kis.fetch.call_args.kwargs["api"] == "TTTT1002U"
 
     # NYSE sell
-    ordmod.foreign_order(
-        mock_kis,
-        account="12345678-01",
-        market="NYSE",
-        symbol="AAPL",
-        order="sell",
-        price=150
-    )
+    ordmod.foreign_order(mock_kis, account="12345678-01", market="NYSE", symbol="AAPL", order="sell", price=150)
     assert mock_kis.fetch.call_args.kwargs["api"] == "TTTT1006U"
 
 
@@ -932,14 +767,7 @@ def test_foreign_order_tokyo_market(monkeypatch):
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("100"), None))
 
-    ordmod.foreign_order(
-        mock_kis,
-        account="12345678-01",
-        market="TYO",
-        symbol="6758",
-        order="buy",
-        price=1000
-    )
+    ordmod.foreign_order(mock_kis, account="12345678-01", market="TYO", symbol="6758", order="buy", price=1000)
 
     assert mock_kis.fetch.call_args.kwargs["api"] == "TTTS0308U"
 
@@ -950,12 +778,7 @@ def test_foreign_daytime_order_validation_no_account(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="계좌번호를 입력해주세요"):
-        ordmod.foreign_daytime_order(
-            mock_kis,
-            account=None,
-            market="NASDAQ",
-            symbol="AAPL"
-        )
+        ordmod.foreign_daytime_order(mock_kis, account=None, market="NASDAQ", symbol="AAPL")
 
 
 def test_foreign_daytime_order_validation_no_symbol(monkeypatch):
@@ -964,12 +787,7 @@ def test_foreign_daytime_order_validation_no_symbol(monkeypatch):
     mock_kis.virtual = False
 
     with pytest.raises(ValueError, match="종목코드를 입력해주세요"):
-        ordmod.foreign_daytime_order(
-            mock_kis,
-            account="12345678-01",
-            market="NASDAQ",
-            symbol=""
-        )
+        ordmod.foreign_daytime_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="")
 
 
 def test_foreign_daytime_order_uses_daytime_market_code(monkeypatch):
@@ -983,23 +801,27 @@ def test_foreign_daytime_order_uses_daytime_market_code(monkeypatch):
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
     ordmod.foreign_daytime_order(
-        mock_kis,
-        account="12345678-01",
-        market="NASDAQ",
-        symbol="AAPL",
-        order="buy",
-        price=150
+        mock_kis, account="12345678-01", market="NASDAQ", symbol="AAPL", order="buy", price=150
     )
 
     # Verify fetch called with daytime API
     assert mock_kis.fetch.called
     call_args = mock_kis.fetch.call_args
-    assert call_args.kwargs["body"]["OVRS_EXCG_CD"] in ["NASD", "NYSE", "AMEX", "SEHK", "SHAA", "SZAA", "TKSE", "HASE", "VNSE"]
+    assert call_args.kwargs["body"]["OVRS_EXCG_CD"] in [
+        "NASD",
+        "NYSE",
+        "AMEX",
+        "SEHK",
+        "SHAA",
+        "SZAA",
+        "TKSE",
+        "HASE",
+        "VNSE",
+    ]
 
 
 def test_account_order_delegates_to_order(monkeypatch):
     # Test account_order delegates to order function
-    from decimal import Decimal
 
     mock_account = Mock()
     mock_account.kis = Mock()
@@ -1013,13 +835,7 @@ def test_account_order_delegates_to_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "order_function", mock_order)
 
-    ordmod.account_order(
-        mock_account,
-        market="KRX",
-        symbol="005930",
-        order="buy",
-        price=50000
-    )
+    ordmod.account_order(mock_account, market="KRX", symbol="005930", order="buy", price=50000)
 
     assert len(order_called) == 1
     assert order_called[0] == ("KRX", "005930", "buy")
@@ -1039,12 +855,7 @@ def test_account_buy_delegates_with_buy_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "order_function", mock_order)
 
-    ordmod.account_buy(
-        mock_account,
-        market="KRX",
-        symbol="005930",
-        price=50000
-    )
+    ordmod.account_buy(mock_account, market="KRX", symbol="005930", price=50000)
 
     assert len(order_called) == 1
     assert order_called[0] == "buy"
@@ -1064,12 +875,7 @@ def test_account_sell_delegates_with_sell_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "order_function", mock_order)
 
-    ordmod.account_sell(
-        mock_account,
-        market="KRX",
-        symbol="005930",
-        price=50000
-    )
+    ordmod.account_sell(mock_account, market="KRX", symbol="005930", price=50000)
 
     assert len(order_called) == 1
     assert order_called[0] == "sell"
@@ -1091,11 +897,7 @@ def test_account_product_order_uses_product_info(monkeypatch):
 
     monkeypatch.setattr(ordmod, "order_function", mock_order)
 
-    ordmod.account_product_order(
-        mock_product,
-        order="buy",
-        price=200
-    )
+    ordmod.account_product_order(mock_product, order="buy", price=200)
 
     assert len(order_called) == 1
     assert order_called[0] == ("NASDAQ", "TSLA")
@@ -1117,10 +919,7 @@ def test_account_product_buy_uses_buy_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "order_function", mock_order)
 
-    ordmod.account_product_buy(
-        mock_product,
-        price=150
-    )
+    ordmod.account_product_buy(mock_product, price=150)
 
     assert order_called[0] == "buy"
 
@@ -1141,10 +940,7 @@ def test_account_product_sell_uses_sell_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "order_function", mock_order)
 
-    ordmod.account_product_sell(
-        mock_product,
-        price=150
-    )
+    ordmod.account_product_sell(mock_product, price=150)
 
     assert order_called[0] == "sell"
 
@@ -1162,14 +958,7 @@ def test_order_function_routes_to_domestic_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "domestic_order", mock_domestic_order)
 
-    ordmod.order(
-        mock_kis,
-        account="12345678-01",
-        market="KRX",
-        symbol="005930",
-        order="buy",
-        price=50000
-    )
+    ordmod.order(mock_kis, account="12345678-01", market="KRX", symbol="005930", order="buy", price=50000)
 
     assert len(domestic_called) == 1
 
@@ -1187,14 +976,7 @@ def test_order_function_routes_to_foreign_order(monkeypatch):
 
     monkeypatch.setattr(ordmod, "foreign_order", mock_foreign_order)
 
-    ordmod.order(
-        mock_kis,
-        account="12345678-01",
-        market="NASDAQ",
-        symbol="AAPL",
-        order="buy",
-        price=150
-    )
+    ordmod.order(mock_kis, account="12345678-01", market="NASDAQ", symbol="AAPL", order="buy", price=150)
 
     assert len(foreign_called) == 1
 
@@ -1221,13 +1003,7 @@ def test_orderable_quantity_sell_with_zero_qty(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.balance.orderable_quantity", lambda *a, **k: Decimal("0"))
 
     with pytest.raises(ValueError, match="주문가능수량이 없습니다"):
-        ordmod._orderable_quantity(
-            Mock(),
-            "12345678-01",
-            "KRX",
-            "005930",
-            order="sell"
-        )
+        ordmod._orderable_quantity(Mock(), "12345678-01", "KRX", "005930", order="sell")
 
 
 def test_orderable_quantity_buy_with_zero_qty(monkeypatch):
@@ -1241,13 +1017,7 @@ def test_orderable_quantity_buy_with_zero_qty(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.orderable_amount.orderable_amount", lambda *a, **k: mock_amount)
 
     with pytest.raises(ValueError, match="주문가능수량이 없습니다"):
-        ordmod._orderable_quantity(
-            Mock(),
-            "12345678-01",
-            "KRX",
-            "005930",
-            order="buy"
-        )
+        ordmod._orderable_quantity(Mock(), "12345678-01", "KRX", "005930", order="buy")
 
 
 def test_foreign_order_api_codes_mapping():
@@ -1263,7 +1033,6 @@ def test_foreign_order_api_codes_mapping():
 
 def test_order_routes_to_domestic_for_krx(monkeypatch):
     # Test that order() function routes KRX orders correctly
-    from decimal import Decimal
 
     mock_kis = Mock()
     mock_kis.virtual = False
@@ -1276,21 +1045,13 @@ def test_order_routes_to_domestic_for_krx(monkeypatch):
 
     monkeypatch.setattr(ordmod, "domestic_order", mock_domestic)
 
-    ordmod.order(
-        mock_kis,
-        account="12345678-01",
-        market="KRX",
-        symbol="005930",
-        order="buy",
-        price=50000
-    )
+    ordmod.order(mock_kis, account="12345678-01", market="KRX", symbol="005930", order="buy", price=50000)
 
     assert len(domestic_called) == 1
 
 
 def test_order_routes_to_foreign_for_nasdaq(monkeypatch):
     # Test that order() function routes NASDAQ orders correctly
-    from decimal import Decimal
 
     mock_kis = Mock()
     mock_kis.virtual = False
@@ -1303,14 +1064,7 @@ def test_order_routes_to_foreign_for_nasdaq(monkeypatch):
 
     monkeypatch.setattr(ordmod, "foreign_order", mock_foreign)
 
-    ordmod.order(
-        mock_kis,
-        account="12345678-01",
-        market="NASDAQ",
-        symbol="AAPL",
-        order="buy",
-        price=150
-    )
+    ordmod.order(mock_kis, account="12345678-01", market="NASDAQ", symbol="AAPL", order="buy", price=150)
 
     assert len(foreign_called) == 1
 
@@ -1354,6 +1108,7 @@ def test_order_condition_price_none_converts_to_false():
 def test_ensure_price_converts_int():
     # Test ensure_price with integer
     from decimal import Decimal
+
     result = ordmod.ensure_price(100, digit=2)
     assert isinstance(result, Decimal)
     assert result == Decimal("100.00")
@@ -1362,6 +1117,7 @@ def test_ensure_price_converts_int():
 def test_ensure_price_converts_float():
     # Test ensure_price with float
     from decimal import Decimal
+
     result = ordmod.ensure_price(99.99, digit=2)
     assert isinstance(result, Decimal)
     assert result == Decimal("99.99")
@@ -1370,6 +1126,7 @@ def test_ensure_price_converts_float():
 def test_ensure_quantity_converts_int():
     # Test ensure_quantity with integer
     from decimal import Decimal
+
     result = ordmod.ensure_quantity(50, digit=0)
     assert isinstance(result, Decimal)
     assert result == Decimal("50")
@@ -1378,6 +1135,7 @@ def test_ensure_quantity_converts_int():
 def test_ensure_quantity_converts_float():
     # Test ensure_quantity with float
     from decimal import Decimal
+
     result = ordmod.ensure_quantity(12.5, digit=1)
     assert isinstance(result, Decimal)
     assert result == Decimal("12.5")
@@ -1385,7 +1143,6 @@ def test_ensure_quantity_converts_float():
 
 def test_domestic_order_with_explicit_qty(monkeypatch):
     # Test domestic_order with explicit quantity (skips _orderable_quantity)
-    from decimal import Decimal
 
     mock_kis = Mock()
     mock_kis.virtual = False
@@ -1397,7 +1154,7 @@ def test_domestic_order_with_explicit_qty(monkeypatch):
         symbol="005930",
         order="buy",
         price=50000,
-        qty=100  # Explicit quantity
+        qty=100,  # Explicit quantity
     )
 
     # Should skip _orderable_quantity call
@@ -1407,7 +1164,6 @@ def test_domestic_order_with_explicit_qty(monkeypatch):
 
 def test_foreign_order_with_explicit_qty(monkeypatch):
     # Test foreign_order with explicit quantity
-    from decimal import Decimal
 
     mock_kis = Mock()
     mock_kis.virtual = False
@@ -1420,7 +1176,7 @@ def test_foreign_order_with_explicit_qty(monkeypatch):
         symbol="AAPL",
         order="buy",
         price=150,
-        qty=50  # Explicit quantity
+        qty=50,  # Explicit quantity
     )
 
     call_args = mock_kis.fetch.call_args
@@ -1429,7 +1185,6 @@ def test_foreign_order_with_explicit_qty(monkeypatch):
 
 def test_foreign_daytime_order_with_explicit_qty(monkeypatch):
     # Test foreign_daytime_order with explicit quantity
-    from decimal import Decimal
 
     mock_kis = Mock()
     mock_kis.virtual = False
@@ -1442,7 +1197,7 @@ def test_foreign_daytime_order_with_explicit_qty(monkeypatch):
         symbol="AAPL",
         order="buy",
         price=150,
-        qty=25  # Explicit quantity
+        qty=25,  # Explicit quantity
     )
 
     call_args = mock_kis.fetch.call_args
@@ -1460,13 +1215,6 @@ def test_orderable_quantity_no_throw(monkeypatch):
     monkeypatch.setattr("vmkis.api.account.orderable_amount.orderable_amount", lambda *a, **k: mock_amount)
 
     # Should not raise
-    qty, price = ordmod._orderable_quantity(
-        Mock(),
-        "12345678-01",
-        "KRX",
-        "005930",
-        order="buy",
-        throw_no_qty=False
-    )
+    qty, price = ordmod._orderable_quantity(Mock(), "12345678-01", "KRX", "005930", order="buy", throw_no_qty=False)
 
     assert qty == Decimal("0")

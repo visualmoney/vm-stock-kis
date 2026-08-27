@@ -1,15 +1,13 @@
-import json
-from datetime import datetime, timedelta
 from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
 from vmkis.api.auth.token import KisAccessToken
-from vmkis.responses.dynamic import KisObject
 from vmkis.client.auth import KisAuth
 from vmkis.client.exceptions import KisHTTPError
 from vmkis.client.form import KisForm
 from vmkis.kis import VmKis
+from vmkis.responses.dynamic import KisObject
 
 
 @pytest.fixture
@@ -38,6 +36,7 @@ def mock_virtual_kis_auth():
     auth.key.secretkey = "v_test_secretkey"
     auth.account_number = "V12345678-01"
     return auth
+
 
 # Valid key lengths required by `KisKey` (APPKEY_LENGTH=36, SECRETKEY_LENGTH=180)
 VALID_APPKEY = "A" * 36
@@ -282,7 +281,6 @@ def test_save_cached_token(mock_save, mock_mkdir):
         saved_path = mock_save.call_args[0][0]
         assert saved_path.name == "hashed_token_name.json"
 
-
     def test_primary_and_websocket_errors():
         """`primary` and `websocket` accessors raise when uninitialized"""
         kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
@@ -296,7 +294,6 @@ def test_save_cached_token(mock_save, mock_mkdir):
         kis._websocket = None
         with pytest.raises(ValueError, match="웹소켓 클라이언트가 초기화되지 않았습니다."):
             _ = kis.websocket
-
 
     @patch("vmkis.api.auth.token.token_revoke")
     def test_discard_calls_token_revoke(mock_revoke):
@@ -338,13 +335,11 @@ def test_save_cached_token(mock_save, mock_mkdir):
         assert mock_revoke.call_args_list[0][0][0] is kis
         assert mock_revoke.call_args_list[0][0][1] == "realtok"
 
-
     def test_get_hashed_token_name_missing_virtual_appkey():
         """_get_hashed_token_name raises when virtual appkey missing for virtual domain"""
         kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
         with pytest.raises(ValueError, match="모의도메인 AppKey가 없습니다."):
             kis._get_hashed_token_name("virtual")
-
 
     def test_request_get_validation_errors():
         """Request should validate GET body and appkey_location rules"""
@@ -367,9 +362,7 @@ def test_keep_token_property():
     with patch("vmkis.kis.get_cache_path") as mock_cache_path:
         mock_cache_path.return_value = "fake/cache/path"
         with patch("vmkis.kis.Path.exists", return_value=False):
-            kis = VmKis(
-                id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False
-            )
+            kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=True, use_websocket=False)
             assert kis.keep_token
 
 
@@ -650,7 +643,7 @@ def test_load_cached_token_for_virtual_domain(mock_load, mock_exists):
     )
     mock_load.return_value = mock_token
 
-    kis = VmKis(
+    VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,

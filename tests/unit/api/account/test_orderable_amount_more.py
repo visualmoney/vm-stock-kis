@@ -1,5 +1,5 @@
-from decimal import Decimal
 import types
+from decimal import Decimal
 
 import pytest
 
@@ -11,7 +11,9 @@ def test__domestic_orderable_amount_calls_fetch_and_uses_quote(monkeypatch):
     monkeypatch.setattr(oa, "order_condition", lambda **kwargs: ("C", True, None))
 
     # fake quote returns close Decimal
-    monkeypatch.setattr(oa, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(close=Decimal("123.45")))
+    monkeypatch.setattr(
+        oa, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(close=Decimal("123.45"))
+    )
 
     # fake kis with fetch that returns the provided response_type
     class FakeKis:
@@ -25,7 +27,9 @@ def test__domestic_orderable_amount_calls_fetch_and_uses_quote(monkeypatch):
 
     kis = FakeKis()
 
-    res = oa._domestic_orderable_amount(kis, account="12345678", symbol="AAA", price=None, condition=None, execution=None)
+    res = oa._domestic_orderable_amount(
+        kis, account="12345678", symbol="AAA", price=None, condition=None, execution=None
+    )
 
     # fetch should have been called and returned a KisDomesticOrderableAmount
     assert isinstance(res, oa.KisDomesticOrderableAmount)
@@ -53,7 +57,9 @@ def test_foreign_orderable_amount_unit_price_and_order_condition(monkeypatch):
     monkeypatch.setattr(oa, "order_condition", fake_order_condition)
 
     # fake quote when price is None
-    monkeypatch.setattr(oa, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(close=Decimal("9.99")))
+    monkeypatch.setattr(
+        oa, "quote", lambda self, symbol, market, extended=False: types.SimpleNamespace(close=Decimal("9.99"))
+    )
 
     class FakeKis:
         def __init__(self):
@@ -66,7 +72,9 @@ def test_foreign_orderable_amount_unit_price_and_order_condition(monkeypatch):
 
     kis = FakeKis()
 
-    res = oa.foreign_orderable_amount(kis, account="12345678", market="NASDAQ", symbol="XYZ", price=None, condition=None, execution=None)
+    res = oa.foreign_orderable_amount(
+        kis, account="12345678", market="NASDAQ", symbol="XYZ", price=None, condition=None, execution=None
+    )
     assert isinstance(res, oa.KisForeignOrderableAmount)
     assert called.get("virtual") is False
     # API for non-virtual should be TTTS3007R

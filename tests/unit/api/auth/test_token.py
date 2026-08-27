@@ -1,6 +1,6 @@
 import json
-from datetime import datetime, timedelta
 import types
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -36,19 +36,23 @@ def test_kisaccess_token_properties_and_build_and_str_repr(tmp_path):
     assert "KisAccessToken" in r
 
     # save should write JSON using raw(); monkeypatch raw to known dict
-    data = {"access_token": "abc123", "token_type": "Bearer", "access_token_token_expired": "2000-01-01 00:00:00", "expires_in": 3600}
+    data = {
+        "access_token": "abc123",
+        "token_type": "Bearer",
+        "access_token_token_expired": "2000-01-01 00:00:00",
+        "expires_in": 3600,
+    }
 
     def fake_raw(self):
         return data
 
-    monkeypatch_attrs = {"raw": fake_raw}
     # attach temporarily
     KisAccessToken.raw = fake_raw  # simple assignment for test
 
     p = tmp_path / "tok.json"
     t.save(str(p))
 
-    with open(p, "r") as f:
+    with open(p) as f:
         got = json.load(f)
 
     assert got == data

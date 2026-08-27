@@ -1,6 +1,6 @@
-import types
-import pytest
 from types import SimpleNamespace
+
+import pytest
 
 import vmkis.scope.stock as stock_mod
 

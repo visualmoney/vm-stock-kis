@@ -1,5 +1,3 @@
-import types
-
 from vmkis.api.base import account as ab
 
 

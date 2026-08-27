@@ -24,7 +24,7 @@ def test_account_product_inherits_and_properties_work():
 
     import vmkis.api.stock.info as info_mod
 
-    info_mod_info = getattr(info_mod, "info")
+    info_mod_info = info_mod.info
     try:
         info_mod.info = fake_info
         assert p.name == "N"

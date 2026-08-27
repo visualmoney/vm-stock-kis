@@ -1,5 +1,6 @@
-import pytest
 from typing import Protocol
+
+import pytest
 
 from vmkis.utils.typing import Checkable
 
@@ -31,8 +32,7 @@ def test_generic_subscription_and_protocol_argument():
 
     # Define a runtime Protocol and use it as the type parameter / argument
     class P(Protocol):
-        def foo(self) -> int:
-            ...
+        def foo(self) -> int: ...
 
     cp = Checkable[P](P)  # runtime accepts Protocol type objects
     assert isinstance(cp, Checkable)

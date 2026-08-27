@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta
 import types
+from datetime import datetime, timedelta
 
 import pytest
 
@@ -81,11 +81,7 @@ def test_kis_pending_order_base_properties():
     from decimal import Decimal
 
     order = types.SimpleNamespace(
-        unit_price=Decimal("50000"),
-        quantity=100,
-        executed_quantity=60,
-        orderable_quantity=40,
-        price=Decimal("50000")
+        unit_price=Decimal("50000"), quantity=100, executed_quantity=60, orderable_quantity=40, price=Decimal("50000")
     )
 
     # Create instance
@@ -131,10 +127,7 @@ def test_kis_pending_order_base_pending_order_property():
 
 def test_kis_pending_orders_base_getitem_by_index():
     """Test __getitem__ with integer index."""
-    orders_list = [
-        make_o("005930", "1", datetime.utcnow()),
-        make_o("AAPL", "2", datetime.utcnow())
-    ]
+    orders_list = [make_o("005930", "1", datetime.utcnow()), make_o("AAPL", "2", datetime.utcnow())]
 
     pending_orders = object.__new__(po.KisPendingOrdersBase)
     pending_orders.orders = orders_list
@@ -145,10 +138,7 @@ def test_kis_pending_orders_base_getitem_by_index():
 
 def test_kis_pending_orders_base_getitem_by_symbol():
     """Test __getitem__ with symbol string."""
-    orders_list = [
-        make_o("005930", "1", datetime.utcnow()),
-        make_o("AAPL", "2", datetime.utcnow())
-    ]
+    orders_list = [make_o("005930", "1", datetime.utcnow()), make_o("AAPL", "2", datetime.utcnow())]
 
     pending_orders = object.__new__(po.KisPendingOrdersBase)
     pending_orders.orders = orders_list
@@ -170,10 +160,7 @@ def test_kis_pending_orders_base_getitem_keyerror():
 
 def test_kis_pending_orders_base_order_by_symbol():
     """Test order() method with symbol."""
-    orders_list = [
-        make_o("005930", "1", datetime.utcnow()),
-        make_o("AAPL", "2", datetime.utcnow())
-    ]
+    orders_list = [make_o("005930", "1", datetime.utcnow()), make_o("AAPL", "2", datetime.utcnow())]
 
     pending_orders = object.__new__(po.KisPendingOrdersBase)
     pending_orders.orders = orders_list
@@ -192,7 +179,7 @@ def test_kis_pending_orders_base_len():
     orders_list = [
         make_o("005930", "1", datetime.utcnow()),
         make_o("AAPL", "2", datetime.utcnow()),
-        make_o("MSFT", "3", datetime.utcnow())
+        make_o("MSFT", "3", datetime.utcnow()),
     ]
 
     pending_orders = object.__new__(po.KisPendingOrdersBase)
@@ -203,10 +190,7 @@ def test_kis_pending_orders_base_len():
 
 def test_kis_pending_orders_base_iter():
     """Test __iter__ method."""
-    orders_list = [
-        make_o("005930", "1", datetime.utcnow()),
-        make_o("AAPL", "2", datetime.utcnow())
-    ]
+    orders_list = [make_o("005930", "1", datetime.utcnow()), make_o("AAPL", "2", datetime.utcnow())]
 
     pending_orders = object.__new__(po.KisPendingOrdersBase)
     pending_orders.orders = orders_list
@@ -230,6 +214,7 @@ def test_kis_pending_order_base_equality():
 
 def test_kis_pending_order_base_hash():
     """Test __hash__ method uses order_number."""
+
     # Create a hashable mock order number
     class MockOrderNumber:
         def __init__(self, branch, number):
@@ -252,7 +237,6 @@ def test_kis_pending_order_base_hash():
 
 def test_kis_pending_order_base_deprecated_from_number(monkeypatch):
     """Test deprecated from_number static method."""
-    from vmkis.api.account.order import KisSimpleOrderNumber
     from vmkis.client.account import KisAccountNumber
 
     mock_kis = types.SimpleNamespace()
@@ -260,12 +244,7 @@ def test_kis_pending_order_base_deprecated_from_number(monkeypatch):
 
     # Test that from_number delegates to KisSimpleOrderNumber.from_number
     result = po.KisPendingOrderBase.from_number(
-        kis=mock_kis,
-        symbol="005930",
-        market="KRX",
-        account_number=account,
-        branch="00001",
-        number="12345"
+        kis=mock_kis, symbol="005930", market="KRX", account_number=account, branch="00001", number="12345"
     )
 
     assert result is not None
@@ -275,7 +254,6 @@ def test_kis_pending_order_base_deprecated_from_number(monkeypatch):
 
 def test_kis_pending_order_base_deprecated_from_order(monkeypatch):
     """Test deprecated from_order static method."""
-    from vmkis.api.account.order import KisSimpleOrder
     from vmkis.client.account import KisAccountNumber
     from vmkis.utils.timezone import TIMEZONE
 
@@ -291,7 +269,7 @@ def test_kis_pending_order_base_deprecated_from_order(monkeypatch):
         account_number=account,
         branch="00001",
         number="12345",
-        time_kst=time_kst
+        time_kst=time_kst,
     )
 
     assert result is not None
@@ -301,8 +279,8 @@ def test_kis_pending_order_base_deprecated_from_order(monkeypatch):
 
 def test_kis_domestic_pending_order_pre_init():
     """Test KisDomesticPendingOrder.__pre_init__ sets time correctly."""
+
     from vmkis.utils.timezone import TIMEZONE
-    from unittest.mock import Mock
 
     order = object.__new__(po.KisDomesticPendingOrder)
     order.__data__ = {"ord_tmd": "093000", "ord_dvsn_cd": "00", "ord_gno_brno": "00001", "odno": "12345"}
@@ -317,7 +295,7 @@ def test_kis_domestic_pending_order_pre_init():
         "ord_unpr": "50000",
         "ord_qty": "10",
         "tot_ccld_qty": "5",
-        "psbl_qty": "5"
+        "psbl_qty": "5",
     }
 
     # Mock super().__pre_init__
@@ -332,7 +310,6 @@ def test_kis_domestic_pending_order_pre_init():
 def test_kis_domestic_pending_order_post_init():
     """Test KisDomesticPendingOrder.__post_init__ resolves order condition."""
     from decimal import Decimal
-    from unittest.mock import Mock
 
     order = object.__new__(po.KisDomesticPendingOrder)
     order.__data__ = {"ord_dvsn_cd": "01"}  # Market order code
@@ -383,7 +360,7 @@ def test_kis_foreign_pending_order_pre_init():
         "ft_ccld_qty": "5",
         "nccs_qty": "5",
         "rjct_rson": "",
-        "rjct_rson_name": ""
+        "rjct_rson_name": "",
     }
 
     order.__pre_init__(data)
@@ -396,9 +373,9 @@ def test_kis_foreign_pending_order_pre_init():
 
 def test_kis_foreign_pending_order_post_init_timezone_conversion():
     """Test KisForeignPendingOrder.__post_init__ converts timezone."""
+
     from vmkis.api.stock.market import get_market_timezone
     from vmkis.utils.timezone import TIMEZONE
-    from zoneinfo import ZoneInfo
 
     order = object.__new__(po.KisForeignPendingOrder)
     order.__data__ = {"ovrs_excg_cd": "NASD"}
@@ -522,10 +499,7 @@ def test_account_pending_orders_delegates():
     mock_kis = types.SimpleNamespace(virtual=False)
     account = KisAccountNumber("12345678-01")
 
-    mock_account = types.SimpleNamespace(
-        kis=mock_kis,
-        account_number=account
-    )
+    mock_account = types.SimpleNamespace(kis=mock_kis, account_number=account)
 
     # This will fail at fetch, but we're just testing delegation
     with pytest.raises(AttributeError):
@@ -535,7 +509,6 @@ def test_account_pending_orders_delegates():
 def test_account_product_pending_orders_filters_by_symbol(monkeypatch):
     """Test account_product_pending_orders filters orders by symbol and market."""
     from vmkis.client.account import KisAccountNumber
-    from vmkis.api.stock.info import get_market_country
 
     mock_kis = types.SimpleNamespace(virtual=False)
     account = KisAccountNumber("12345678-01")
@@ -555,12 +528,7 @@ def test_account_product_pending_orders_filters_by_symbol(monkeypatch):
 
     monkeypatch.setattr(po, "pending_orders", mock_pending_orders)
 
-    mock_product = types.SimpleNamespace(
-        kis=mock_kis,
-        account_number=account,
-        symbol="005930",
-        market="KRX"
-    )
+    mock_product = types.SimpleNamespace(kis=mock_kis, account_number=account, symbol="005930", market="KRX")
 
     result = po.account_product_pending_orders(mock_product)
 
@@ -604,7 +572,6 @@ def test_kis_pending_order_base_number_property():
 
 def test_kis_domestic_pending_order_kis_post_init():
     """Test KisDomesticPendingOrder.__kis_post_init__ creates order_number."""
-    from vmkis.api.account.order import KisSimpleOrder
     from vmkis.client.account import KisAccountNumber
     from vmkis.utils.timezone import TIMEZONE
 
@@ -612,10 +579,7 @@ def test_kis_domestic_pending_order_kis_post_init():
     account = KisAccountNumber("12345678-01")
 
     order = object.__new__(po.KisDomesticPendingOrder)
-    order.__data__ = {
-        "ord_gno_brno": "00001",
-        "odno": "12345"
-    }
+    order.__data__ = {"ord_gno_brno": "00001", "odno": "12345"}
     order.kis = mock_kis
     order.symbol = "005930"
     order.market = "KRX"
@@ -634,7 +598,6 @@ def test_kis_domestic_pending_order_kis_post_init():
 
 def test_kis_foreign_pending_order_kis_post_init():
     """Test KisForeignPendingOrder.__kis_post_init__ creates order_number."""
-    from vmkis.api.account.order import KisSimpleOrder
     from vmkis.client.account import KisAccountNumber
     from vmkis.utils.timezone import TIMEZONE
 
@@ -642,10 +605,7 @@ def test_kis_foreign_pending_order_kis_post_init():
     account = KisAccountNumber("12345678-01")
 
     order = object.__new__(po.KisForeignPendingOrder)
-    order.__data__ = {
-        "ord_gno_brno": "00001",
-        "odno": "12345"
-    }
+    order.__data__ = {"ord_gno_brno": "00001", "odno": "12345"}
     order.kis = mock_kis
     order.symbol = "AAPL"
     order.market = "NASDAQ"

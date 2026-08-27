@@ -1,9 +1,8 @@
 import warnings
 from abc import ABCMeta, abstractmethod
+from collections.abc import Callable, Iterable
 from typing import (
-    Callable,
     Generic,
-    Iterable,
     Literal,
     Protocol,
     TypeVar,
@@ -171,7 +170,11 @@ class KisLambdaEventCallback(KisEventCallback[TSender, TEventArgs]):
         if self.where is None:
             return False
 
-        return self.where.__filter__(handler, sender, e) if isinstance(self.where, KisEventFilter) else self.where(sender, e)
+        return (
+            self.where.__filter__(handler, sender, e)
+            if isinstance(self.where, KisEventFilter)
+            else self.where(sender, e)
+        )
 
     def __callback__(self, handler: "KisEventHandler", sender: TSender, e: TEventArgs):
         if self.once:
@@ -266,6 +269,7 @@ class KisEventTicket(Generic[TSender, TEventArgs]):
                 warnings.warn(
                     f"Event ticket {self} was not explicitly unsubscribed, but was unsubscribed due to a resource release.",
                     UserWarning,
+                    stacklevel=2,
                 )
 
             self.unsubscribe()

@@ -17,9 +17,10 @@ VM-Stock-KIS 사용 예제
   - SimpleKIS: 초보자 친화 인터페이스
 """
 
+import os
+
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
-import os
 
 
 def analyze_portfolio(config_path: str | None = None, profile: str | None = None) -> None:
@@ -150,4 +151,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

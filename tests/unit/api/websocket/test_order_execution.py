@@ -62,7 +62,6 @@ def test_on_account_execution_forwards_to_on_execution():
 def test_domestic_execution_executed_amount_calculation():
     """Test executed_amount property calculates correctly."""
     from decimal import Decimal
-    from vmkis.client.account import KisAccountNumber
 
     exec_obj = order_execution.KisDomesticRealtimeOrderExecution()
     exec_obj.executed_quantity = Decimal("100")
@@ -356,7 +355,7 @@ def test_on_execution_with_where_filter():
     def my_filter(*args):
         return True
 
-    ticket = order_execution.on_execution(client, lambda *_: None, where=my_filter)
+    ticket = order_execution.on_execution(client, lambda *_: None, where=my_filter)  # noqa: F841 - 티켓을 붙잡지 않으면 GC가 구독을 해지한다
 
     assert ws.called[0]["where"] == my_filter
     assert ws.called[1]["where"] == my_filter
@@ -370,7 +369,7 @@ def test_on_execution_with_once_flag():
     ws.kis = kis
     client = SimpleNamespace(kis=kis, on=ws.on)
 
-    ticket = order_execution.on_execution(client, lambda *_: None, once=True)
+    ticket = order_execution.on_execution(client, lambda *_: None, once=True)  # noqa: F841 - 티켓을 붙잡지 않으면 GC가 구독을 해지한다
 
     assert ws.called[0]["once"] is True
     assert ws.called[1]["once"] is True
@@ -415,10 +414,10 @@ def test_realtime_execution_base_properties():
 
 def test_domestic_kis_post_init_creates_order_number():
     """Test __kis_post_init__ creates KisOrderNumber correctly."""
-    from decimal import Decimal
     from datetime import datetime
-    from vmkis.client.account import KisAccountNumber
     from unittest.mock import Mock
+
+    from vmkis.client.account import KisAccountNumber
 
     exec_obj = order_execution.KisDomesticRealtimeOrderExecution()
     exec_obj.symbol = "005930"
@@ -462,10 +461,10 @@ def test_domestic_kis_post_init_creates_order_number():
 
 def test_foreign_kis_post_init_creates_order_number():
     """Test __kis_post_init__ creates KisOrderNumber for foreign execution."""
-    from decimal import Decimal
     from datetime import datetime
-    from vmkis.client.account import KisAccountNumber
     from unittest.mock import Mock
+
+    from vmkis.client.account import KisAccountNumber
 
     exec_obj = order_execution.KisForeignRealtimeOrderExecution()
     exec_obj.symbol = "AAPL"
@@ -514,12 +513,12 @@ def test_foreign_order_conditions_all_types():
     # Test all condition codes
     test_cases = [
         ("1", False, None),  # Market order
-        ("2", True, None),   # Limit order
+        ("2", True, None),  # Limit order
         ("6", False, None),  # Odd lot market
-        ("7", True, None),   # Odd lot limit
-        ("A", False, "MOO"), # Market on open
+        ("7", True, None),  # Odd lot limit
+        ("A", False, "MOO"),  # Market on open
         ("B", True, "LOO"),  # Limit on open
-        ("C", False, "MOC"), # Market on close
+        ("C", False, "MOC"),  # Market on close
         ("D", True, "LOC"),  # Limit on close
     ]
 
@@ -551,14 +550,14 @@ def test_foreign_decimal_places_all_markets():
     # Test market types with different decimal places
     test_cases = [
         ("NASDAQ", "1480100", "148.0100"),  # US: 4 decimals
-        ("NYSE", "1480100", "148.0100"),    # US: 4 decimals
-        ("AMEX", "1480100", "148.0100"),    # US: 4 decimals
-        ("TYO", "12345", "1234.5"),         # JP: 1 decimal
-        ("SSE", "1234567", "1234.567"),     # CN: 3 decimals
-        ("SZSE", "1234567", "1234.567"),    # CN: 3 decimals
-        ("HKEX", "1234567", "1234.567"),    # HK: 3 decimals
-        ("HNX", "12345", "12345"),          # VN: 0 decimals
-        ("HSX", "12345", "12345"),          # VN: 0 decimals
+        ("NYSE", "1480100", "148.0100"),  # US: 4 decimals
+        ("AMEX", "1480100", "148.0100"),  # US: 4 decimals
+        ("TYO", "12345", "1234.5"),  # JP: 1 decimal
+        ("SSE", "1234567", "1234.567"),  # CN: 3 decimals
+        ("SZSE", "1234567", "1234.567"),  # CN: 3 decimals
+        ("HKEX", "1234567", "1234.567"),  # HK: 3 decimals
+        ("HNX", "12345", "12345"),  # VN: 0 decimals
+        ("HSX", "12345", "12345"),  # VN: 0 decimals
     ]
 
     for market, raw_price, expected_price in test_cases:

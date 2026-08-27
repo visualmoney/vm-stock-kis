@@ -10,9 +10,11 @@ RateLimiter 정확성 테스트 (현행 API 기준)
 타이밍 단언의 상한 여유에 대해서는 아래 SCHEDULING_SLACK 주석을 참고하세요.
 """
 
-import pytest
 import time
 from threading import Thread
+
+import pytest
+
 from vmkis.utils.rate_limit import RateLimiter
 
 # 타이밍 단언의 상한 여유(초).

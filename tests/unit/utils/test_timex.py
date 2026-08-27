@@ -1,5 +1,6 @@
-import pytest
 from datetime import timedelta
+
+import pytest
 
 from vmkis.utils.timex import parse_timex, timex
 
@@ -7,7 +8,10 @@ from vmkis.utils.timex import parse_timex, timex
 @pytest.mark.parametrize(
     "expr,expected",
     [
-        (("1", "h"), timedelta(hours=1)),  # tuple with strings (should fail int conversion normally; using int tuple below)
+        (
+            ("1", "h"),
+            timedelta(hours=1),
+        ),  # tuple with strings (should fail int conversion normally; using int tuple below)
     ],
 )
 def test_parse_timex_with_tuple_strings_raises_value_error(expr, expected):

@@ -2,11 +2,10 @@ import pytest
 
 from vmkis.event.handler import (
     KisEventArgs,
+    KisEventHandler,
+    KisLambdaEventCallback,
     KisLambdaEventFilter,
     KisMultiEventFilter,
-    KisLambdaEventCallback,
-    KisEventHandler,
-    KisEventTicket,
 )
 
 
@@ -102,7 +101,7 @@ def test_event_handler_add_remove_clear_and_operators():
         pass
 
     # add returns a ticket and contains callback
-    t = handler.add(cb)
+    t = handler.add(cb)  # noqa: F841 - 티켓을 붙잡지 않으면 GC가 구독을 해지한다
     assert cb in handler
     # __len__ and __bool__
     assert len(handler) >= 1

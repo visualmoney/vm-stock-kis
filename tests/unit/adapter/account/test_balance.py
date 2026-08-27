@@ -1,4 +1,5 @@
 """Unit tests for vmkis.adapter.account.balance"""
+
 from datetime import date
 from types import SimpleNamespace
 

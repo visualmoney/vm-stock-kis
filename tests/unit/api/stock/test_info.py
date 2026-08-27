@@ -37,25 +37,25 @@ Cannot substitute KR for US:
 - This is intentional design, not arbitrary choice"""
 
 from datetime import timedelta
-from unittest.mock import Mock, MagicMock, patch
+from unittest.mock import Mock, patch
+
 import pytest
 
 from vmkis.api.stock.info import (
-    _KisStockInfo,
     MARKET_CODE_MAP,
-    R_MARKET_TYPE_MAP,
-    MARKET_COUNTRY_MAP,
-    get_market_country,
-    quotable_market,
-    info,
-    resolve_market,
     MARKET_TYPE_MAP,
+    R_MARKET_TYPE_MAP,
+    _KisStockInfo,
+    get_market_country,
+    info,
+    quotable_market,
+    resolve_market,
 )
 from vmkis.client.exceptions import KisAPIError
 from vmkis.responses.exceptions import KisNotFoundError
 
-
 # ===== Tests for _KisStockInfo class =====
+
 
 class TestKisStockInfo:
     """Tests for _KisStockInfo response class."""
@@ -64,9 +64,9 @@ class TestKisStockInfo:
         """Test _KisStockInfo can be initialized."""
         # _KisStockInfo는 KisAPIResponse를 상속하므로 직접 인스턴스화 불가
         # 속성 정의만 확인
-        assert hasattr(_KisStockInfo, 'symbol')
-        assert hasattr(_KisStockInfo, 'std_code')
-        assert hasattr(_KisStockInfo, 'name_kor')
+        assert hasattr(_KisStockInfo, "symbol")
+        assert hasattr(_KisStockInfo, "std_code")
+        assert hasattr(_KisStockInfo, "name_kor")
 
     def test_name_property(self):
         """Test name property returns name_kor."""
@@ -74,7 +74,7 @@ class TestKisStockInfo:
         mock_info.name_kor = "삼성전자"
 
         # Property를 직접 테스트할 수 없으므로 클래스 정의 확인
-        assert hasattr(_KisStockInfo, 'name')
+        assert hasattr(_KisStockInfo, "name")
 
     def test_market_property(self):
         """Test market property maps from market_code."""
@@ -103,6 +103,7 @@ class TestKisStockInfo:
 
 
 # ===== Tests for get_market_country function =====
+
 
 class TestGetMarketCountry:
     """Tests for get_market_country function."""
@@ -155,6 +156,7 @@ class TestGetMarketCountry:
 
 # ===== Tests for quotable_market function =====
 
+
 class TestQuotableMarket:
     """Tests for quotable_market function."""
 
@@ -193,6 +195,7 @@ class TestQuotableMarket:
     def test_domestic_market_with_zero_price_continues(self):
         """Test domestic market with zero price tries next market."""
         from unittest.mock import Mock
+
         fake_kis = Mock()
         fake_kis.cache.get.return_value = None
 
@@ -208,7 +211,7 @@ class TestQuotableMarket:
         fake_kis.fetch.side_effect = [mock_response_zero, mock_response_valid]
 
         # Should skip the zero price and try next market
-        result = quotable_market(fake_kis, "005930", market=None, use_cache=False)
+        quotable_market(fake_kis, "005930", market=None, use_cache=False)
 
         # fetch should be called twice
         assert fake_kis.fetch.call_count == 2
@@ -229,6 +232,7 @@ class TestQuotableMarket:
     def test_foreign_market_with_empty_price_continues(self):
         """Test foreign market with empty price tries next market."""
         from unittest.mock import Mock
+
         fake_kis = Mock()
         fake_kis.cache.get.return_value = None
 
@@ -244,7 +248,7 @@ class TestQuotableMarket:
         fake_kis.fetch.side_effect = [mock_response_empty, mock_response_valid]
 
         # Should skip the empty price and try next market type
-        result = quotable_market(fake_kis, "AAPL", market="US", use_cache=False)
+        quotable_market(fake_kis, "AAPL", market="US", use_cache=False)
 
         # fetch should be called twice (once for each US market code)
         assert fake_kis.fetch.call_count == 2
@@ -252,6 +256,7 @@ class TestQuotableMarket:
     def test_attribute_error_continues(self):
         """Test AttributeError in response is caught and continues."""
         from unittest.mock import Mock
+
         fake_kis = Mock()
         fake_kis.cache.get.return_value = None
 
@@ -275,6 +280,7 @@ class TestQuotableMarket:
     def test_raises_not_found_when_no_markets_match(self):
         """Test raises KisNotFoundError when no markets match."""
         from unittest.mock import Mock
+
         from requests import Response
 
         fake_kis = Mock()
@@ -301,6 +307,7 @@ class TestQuotableMarket:
 
 
 # ===== Tests for info function =====
+
 
 class TestInfo:
     """Tests for info function.
@@ -349,8 +356,8 @@ class TestInfo:
         mock_info = Mock()
         fake_kis.fetch.return_value = mock_info
 
-        with patch('vmkis.api.stock.info.quotable_market', return_value="KRX") as mock_quotable:
-            result = info(fake_kis, "005930", market="KR", use_cache=False, quotable=True)
+        with patch("vmkis.api.stock.info.quotable_market", return_value="KRX") as mock_quotable:
+            info(fake_kis, "005930", market="KR", use_cache=False, quotable=True)
 
             mock_quotable.assert_called_once_with(
                 fake_kis,
@@ -367,8 +374,8 @@ class TestInfo:
         mock_info = Mock()
         fake_kis.fetch.return_value = mock_info
 
-        with patch('vmkis.api.stock.info.quotable_market') as mock_quotable:
-            result = info(fake_kis, "005930", market="KR", use_cache=False, quotable=False)
+        with patch("vmkis.api.stock.info.quotable_market") as mock_quotable:
+            info(fake_kis, "005930", market="KR", use_cache=False, quotable=False)
 
             mock_quotable.assert_not_called()
 
@@ -393,13 +400,9 @@ class TestInfo:
         mock_info = Mock()
         fake_kis.fetch.return_value = mock_info
 
-        result = info(fake_kis, "005930", market="KR", use_cache=True, quotable=False)
+        info(fake_kis, "005930", market="KR", use_cache=True, quotable=False)
 
-        fake_kis.cache.set.assert_called_once_with(
-            "info:KR:005930",
-            mock_info,
-            expire=timedelta(days=1)
-        )
+        fake_kis.cache.set.assert_called_once_with("info:KR:005930", mock_info, expire=timedelta(days=1))
 
     def test_does_not_cache_when_use_cache_false(self):
         """Test does not cache when use_cache=False."""
@@ -409,7 +412,7 @@ class TestInfo:
         mock_info = Mock()
         fake_kis.fetch.return_value = mock_info
 
-        result = info(fake_kis, "005930", market="KR", use_cache=False, quotable=False)
+        info(fake_kis, "005930", market="KR", use_cache=False, quotable=False)
 
         fake_kis.cache.set.assert_not_called()
 
@@ -437,6 +440,7 @@ class TestInfo:
         that info() implements for multiple market availability.
         """
         from unittest.mock import Mock
+
         from requests import Response
 
         fake_kis = Mock()
@@ -455,7 +459,7 @@ class TestInfo:
         mock_http_response.request.body = None
         api_error = KisAPIError(
             data={"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": mock_http_response},
-            response=mock_http_response
+            response=mock_http_response,
         )
         api_error.rt_cd = 7
 
@@ -467,7 +471,7 @@ class TestInfo:
         # IMPORTANT: market="US" has multiple codes enabling retry logic validation
         # First call: code 512 fails with rt_cd=7
         # Second call: code 513 succeeds
-        with patch('vmkis.api.stock.info.quotable_market', return_value="US"):
+        with patch("vmkis.api.stock.info.quotable_market", return_value="US"):
             result = info(fake_kis, "AAPL", market="US", use_cache=False, quotable=True)
 
         assert result == mock_info
@@ -477,6 +481,7 @@ class TestInfo:
     def test_raises_other_api_errors_immediately(self):
         """Test raises non-rt_cd=7 API errors immediately."""
         from unittest.mock import Mock
+
         from requests import Response
 
         fake_kis = Mock()
@@ -493,8 +498,7 @@ class TestInfo:
         mock_http_response.request.url = "http://test.com/api"
         mock_http_response.request.body = None
         api_error = KisAPIError(
-            data={"rt_cd": "1", "msg1": "인증 실패", "__response__": mock_http_response},
-            response=mock_http_response
+            data={"rt_cd": "1", "msg1": "인증 실패", "__response__": mock_http_response}, response=mock_http_response
         )
         api_error.rt_cd = 1
 
@@ -502,7 +506,7 @@ class TestInfo:
 
         # Should raise the error immediately without trying next market
         with pytest.raises(KisAPIError) as exc_info:
-            with patch('vmkis.api.stock.info.quotable_market', return_value="KR"):
+            with patch("vmkis.api.stock.info.quotable_market", return_value="KR"):
                 info(fake_kis, "005930", market="KR", use_cache=False, quotable=True)
 
         assert exc_info.value.rt_cd == 1
@@ -528,6 +532,7 @@ class TestInfo:
         when all available market codes have been attempted.
         """
         from unittest.mock import Mock
+
         from requests import Response
 
         fake_kis = Mock()
@@ -546,7 +551,7 @@ class TestInfo:
         mock_http_response.request.body = None
         api_error = KisAPIError(
             data={"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": mock_http_response},
-            response=mock_http_response
+            response=mock_http_response,
         )
         api_error.rt_cd = 7
         api_error.data = {"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": mock_http_response}
@@ -556,7 +561,7 @@ class TestInfo:
         # Should raise KisNotFoundError after all markets fail with rt_cd=7
         # KR has only one code, so exhaustion occurs naturally
         with pytest.raises(KisNotFoundError) as exc_info:
-            with patch('vmkis.api.stock.info.quotable_market', return_value="KR"):
+            with patch("vmkis.api.stock.info.quotable_market", return_value="KR"):
                 info(fake_kis, "INVALID", market="KR", use_cache=False, quotable=True)
 
         assert "해당 종목의 정보를 조회할 수 없습니다" in str(exc_info.value)
@@ -569,7 +574,7 @@ class TestInfo:
         mock_info = Mock()
         fake_kis.fetch.return_value = mock_info
 
-        result = info(fake_kis, "005930", market="KR", use_cache=False, quotable=False)
+        info(fake_kis, "005930", market="KR", use_cache=False, quotable=False)
 
         call_args = fake_kis.fetch.call_args
         assert call_args[0][0] == "/uapi/domestic-stock/v1/quotations/search-info"
@@ -600,6 +605,7 @@ class TestInfo:
         - All available codes are attempted in sequence
         """
         from unittest.mock import Mock
+
         from requests import Response
 
         fake_kis = Mock()
@@ -618,7 +624,7 @@ class TestInfo:
         mock_http_response.request.body = None
         api_error = KisAPIError(
             data={"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": mock_http_response},
-            response=mock_http_response
+            response=mock_http_response,
         )
         api_error.rt_cd = 7
         api_error.data = {"rt_cd": "7", "msg1": "조회된 데이터가 없습니다", "__response__": mock_http_response}
@@ -629,7 +635,7 @@ class TestInfo:
         fake_kis.fetch.side_effect = [api_error, api_error, mock_info]
 
         # Should iterate through market codes until one succeeds
-        with patch('vmkis.api.stock.info.quotable_market', return_value="US"):
+        with patch("vmkis.api.stock.info.quotable_market", return_value="US"):
             result = info(fake_kis, "AAPL", market="US", use_cache=False, quotable=True)
 
         assert result == mock_info
@@ -638,6 +644,7 @@ class TestInfo:
 
 
 # ===== Tests for resolve_market function =====
+
 
 class TestResolveMarket:
     """Tests for resolve_market function."""
@@ -665,14 +672,8 @@ class TestResolveMarket:
         mock_info.market = "NASDAQ"
         fake_kis.fetch.return_value = mock_info
 
-        with patch('vmkis.api.stock.info.info', return_value=mock_info) as mock_info_func:
-            result = resolve_market(
-                fake_kis,
-                symbol="AAPL",
-                market="US",
-                use_cache=True,
-                quotable=False
-            )
+        with patch("vmkis.api.stock.info.info", return_value=mock_info) as mock_info_func:
+            resolve_market(fake_kis, symbol="AAPL", market="US", use_cache=True, quotable=False)
 
             mock_info_func.assert_called_once_with(
                 fake_kis,
@@ -691,6 +692,7 @@ class TestResolveMarket:
 
 
 # ===== Tests for MARKET_TYPE_MAP =====
+
 
 class TestMarketTypeMap:
     """Tests for MARKET_TYPE_MAP dictionary."""

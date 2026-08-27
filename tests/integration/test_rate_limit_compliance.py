@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 import pytest
 import requests_mock
+
 from vmkis import KisAuth, VmKis
 from vmkis.__env__ import VIRTUAL_API_REQUEST_PER_SECOND
 from vmkis.utils.rate_limit import RateLimiter

@@ -2,6 +2,13 @@
 
 from types import SimpleNamespace
 
+import pytest
+
+from vmkis.adapter.websocket.execution import (
+    KisRealtimeOrderableAccountMixin,
+    KisRealtimeOrderableOrderMixin,
+)
+
 
 def test_realtime_orderable_account_mixin_on_execution():
     """KisRealtimeOrderableAccountMixin.on should forward to on_account_execution."""
@@ -104,7 +111,7 @@ def test_realtime_orderable_order_mixin_wraps_filter():
         assert calls[0][2] is False
 
         # without where -> should use self as filter
-        ticket2 = order.on("execution", lambda *_: None, where=None, once=True)
+        ticket2 = order.on("execution", lambda *_: None, where=None, once=True)  # noqa: F841 - 티켓을 붙잡지 않으면 GC가 구독을 해지한다
         assert calls[1][1] is order
         assert calls[1][2] is True
     finally:
@@ -145,12 +152,6 @@ def test_order_mixin_once_sets_once_true():
 # 끝난다. 기존 테스트는 계좌 mixin의 on() 한 곳만 확인하고 있어 나머지 세 경로가
 # 미커버였다.
 # ---------------------------------------------------------------------------
-
-import pytest
-from vmkis.adapter.websocket.execution import (
-    KisRealtimeOrderableAccountMixin,
-    KisRealtimeOrderableOrderMixin,
-)
 
 
 @pytest.mark.parametrize(

@@ -4,6 +4,7 @@ from typing import Any
 
 from vmkis.kis import VmKis
 
+
 class SimpleKIS:
     """A very small facade for common user flows.
 
@@ -15,7 +16,7 @@ class SimpleKIS:
         self.kis = kis
 
     @classmethod
-    def from_client(cls, kis: VmKis) -> "SimpleKIS":
+    def from_client(cls, kis: VmKis) -> SimpleKIS:
         return cls(kis)
 
     def get_price(self, symbol: str) -> Any:

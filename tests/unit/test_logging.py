@@ -5,6 +5,7 @@ import logging
 from io import StringIO
 
 import pytest
+
 from vmkis import logging as vmkis_logging
 from vmkis.logging import (
     JsonFormatter,
@@ -191,7 +192,7 @@ def restore_log_level():
     yield
 
     logger.setLevel(initial)
-    for handler, level in zip(logger.handlers, initial_handler_levels):
+    for handler, level in zip(logger.handlers, initial_handler_levels, strict=False):
         handler.setLevel(level)
 
 

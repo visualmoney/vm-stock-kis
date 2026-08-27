@@ -1,10 +1,7 @@
 import gc
 
-import pytest
-
 from vmkis.utils.reference import (
     ReferenceStore,
-    ReferenceTicket,
     package_mathod,
     release_method,
 )
@@ -67,7 +64,7 @@ def test_ticket_release_contextmanager_and_del_is_idempotent():
     assert store.get("t") == 0
 
     # context manager releases on exit
-    with store.ticket("ctx") as tk:
+    with store.ticket("ctx"):
         assert store.get("ctx") == 1
     assert store.get("ctx") == 0
 

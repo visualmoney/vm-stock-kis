@@ -46,5 +46,9 @@ __url__ = "https://github.com/visualmoney/vm-stock-kis"
 __upstream_url__ = "https://github.com/Soju06/python-kis"
 __license__ = "MIT"
 
-if sys.version_info < (3, 10):
+# ruff는 target-version=py310 기준으로 이 블록을 죽은 코드로 보지만, 그렇지 않다.
+# requires-python은 pip 설치만 막을 뿐, 소스 트리에서 직접 실행하는 경우는 막지 못한다.
+# 이 파일에는 3.10 전용 문법이 없어 3.9에서도 여기까지 도달하며, 그때 이 가드가
+# 알아보기 어려운 SyntaxError 대신 명확한 메시지를 준다.
+if sys.version_info < (3, 10):  # noqa: UP036
     raise RuntimeError(f"VmKis에는 Python 3.10 이상이 필요합니다. (Current: {sys.version})")

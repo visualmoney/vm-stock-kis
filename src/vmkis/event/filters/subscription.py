@@ -13,7 +13,9 @@ __all__ = [
 ]
 
 
-class KisSubscriptionEventFilter(KisEventFilterBase["KisWebsocketClient", KisSubscriptionEventArgs[TWebsocketResponse]]):
+class KisSubscriptionEventFilter(
+    KisEventFilterBase["KisWebsocketClient", KisSubscriptionEventArgs[TWebsocketResponse]]
+):
     """TR 구독 이벤트 필터"""
 
     __slots__ = ("id", "key")

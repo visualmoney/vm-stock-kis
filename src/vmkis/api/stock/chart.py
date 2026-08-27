@@ -1,10 +1,9 @@
 import bisect
+from collections.abc import Iterable, Iterator
 from datetime import date, datetime, time, tzinfo
 from decimal import Decimal
 from typing import (
     TYPE_CHECKING,
-    Iterable,
-    Iterator,
     Literal,
     Protocol,
     TypeVar,
@@ -199,7 +198,6 @@ class KisChartRepr:
 
 
 class KisChartBase(KisChartRepr, KisProductBase):
-
     symbol: str
     """종목코드"""
     market: MARKET_TYPE
@@ -225,7 +223,11 @@ class KisChartBase(KisChartRepr, KisProductBase):
                 (
                     (lambda bar: bar.time_kst)
                     if isinstance(time, datetime)
-                    else ((lambda bar: bar.time_kst.date()) if isinstance(time, date) else (lambda bar: bar.time_kst.time()))
+                    else (
+                        (lambda bar: bar.time_kst.date())
+                        if isinstance(time, date)
+                        else (lambda bar: bar.time_kst.time())
+                    )
                 )
                 if kst
                 else (
@@ -299,7 +301,7 @@ class KisChartBase(KisChartRepr, KisProductBase):
             import pandas as pd  # type: ignore
         except ImportError as e:
             raise ImportError(
-                "Pandas가 설치되어 있지 않습니다.\n" "Pandas를 설치하려면 `pip install pandas`를 실행해주세요."
+                "Pandas가 설치되어 있지 않습니다.\nPandas를 설치하려면 `pip install pandas`를 실행해주세요."
             ) from e
 
         return pd.DataFrame(

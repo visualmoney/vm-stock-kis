@@ -59,11 +59,15 @@ def test_filter_matches_and_non_matches(monkeypatch):
     monkeypatch.setattr(order_mod, "KisSimpleRealtimeExecution", Resp)
 
     # matching order -> filter should return False (do not ignore)
-    match_order = SimpleNamespace(symbol="AAA", market="MKT", foreign=False, branch="BR", number="10", account_number=value.account_number)
+    match_order = SimpleNamespace(
+        symbol="AAA", market="MKT", foreign=False, branch="BR", number="10", account_number=value.account_number
+    )
     args_match = KisSubscriptionEventArgs(tr=None, response=Resp(match_order))
     assert f.__filter__(None, None, args_match) is False
 
     # different number -> ignored
-    nonmatch_order = SimpleNamespace(symbol="AAA", market="MKT", foreign=False, branch="BR", number="11", account_number=value.account_number)
+    nonmatch_order = SimpleNamespace(
+        symbol="AAA", market="MKT", foreign=False, branch="BR", number="11", account_number=value.account_number
+    )
     args_nonmatch = KisSubscriptionEventArgs(tr=None, response=Resp(nonmatch_order))
     assert f.__filter__(None, None, args_nonmatch) is True

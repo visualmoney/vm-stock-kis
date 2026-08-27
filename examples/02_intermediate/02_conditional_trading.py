@@ -18,11 +18,12 @@ VM-Stock-KIS 사용 예제
   - time: 폴링 간격 제어
 """
 
+import os
+import time
+from datetime import datetime
+
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
-import time
-import os
-from datetime import datetime
 
 
 def monitor_and_trade(config_path: str | None = None, profile: str | None = None) -> None:
@@ -49,7 +50,7 @@ def monitor_and_trade(config_path: str | None = None, profile: str | None = None
     print("VM-Stock-KIS 중급 예제 02: 조건 기반 자동 거래")
     print("=" * 70)
     print()
-    print(f"📋 거래 설정:")
+    print("📋 거래 설정:")
     print(f"   종목: {SYMBOL}")
     print(f"   매수 목표가: {TARGET_BUY_PRICE:,}원")
     print(f"   매도 목표가: {TARGET_SELL_PRICE:,}원")
@@ -95,15 +96,10 @@ def monitor_and_trade(config_path: str | None = None, profile: str | None = None
                 # 실계좌 거래 시 환경변수 확인
                 allow_trade = os.environ.get("ALLOW_LIVE_TRADES") == "1"
                 if not allow_trade:
-                    print(f"⚠️ 모의투자 모드 또는 안전 모드 (ALLOW_LIVE_TRADES 미설정)")
+                    print("⚠️ 모의투자 모드 또는 안전 모드 (ALLOW_LIVE_TRADES 미설정)")
 
                 try:
-                    order = simple.place_order(
-                        symbol=SYMBOL,
-                        side="buy",
-                        qty=ORDER_QTY,
-                        price=current_price
-                    )
+                    order = simple.place_order(symbol=SYMBOL, side="buy", qty=ORDER_QTY, price=current_price)
                     buy_order_id = order.order_id
                     buy_price = current_price
                     print(f"✅ 매수 주문 완료: {buy_order_id} ({current_price:,}원 x {ORDER_QTY}주)")
@@ -122,14 +118,9 @@ def monitor_and_trade(config_path: str | None = None, profile: str | None = None
                 print(f"   수익: {profit:+,}원 ({profit_rate:+.2f}%)")
 
                 try:
-                    order = simple.place_order(
-                        symbol=SYMBOL,
-                        side="sell",
-                        qty=ORDER_QTY,
-                        price=current_price
-                    )
+                    order = simple.place_order(symbol=SYMBOL, side="sell", qty=ORDER_QTY, price=current_price)
                     print(f"✅ 매도 주문 완료: {order.order_id} ({current_price:,}원 x {ORDER_QTY}주)")
-                    print(f"✨ 거래 완료!")
+                    print("✨ 거래 완료!")
                     monitoring = False
                 except Exception as e:
                     print(f"❌ 매도 주문 실패: {e}")
@@ -161,4 +152,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

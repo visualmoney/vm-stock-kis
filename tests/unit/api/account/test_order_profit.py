@@ -1,6 +1,6 @@
-from datetime import datetime, date
-from decimal import Decimal
 import types
+from datetime import date, datetime
+from decimal import Decimal
 
 import pytest
 
@@ -8,10 +8,10 @@ from vmkis.api.account import order_profit as op
 
 
 def make_order(buy_amount, sell_amount, exchange_rate=1, symbol="AAA", time_kst=None):
-    class O:
+    class Order0:
         pass
 
-    o = O()
+    o = Order0()
     o.buy_amount = Decimal(buy_amount)
     o.sell_amount = Decimal(sell_amount)
     o.exchange_rate = Decimal(exchange_rate)

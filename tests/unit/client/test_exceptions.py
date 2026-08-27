@@ -1,15 +1,14 @@
 from types import SimpleNamespace
-from urllib.parse import parse_qs
 
 from requests import Response
-
-import pytest
 
 from vmkis.client import exceptions
 from vmkis.client.exceptions import KisAPIError, KisHTTPError, safe_request_data
 
 
-def make_response_with_request(method: str = "GET", url: str = "https://api.test/path?foo=bar", headers: dict | None = None, body=None) -> Response:
+def make_response_with_request(
+    method: str = "GET", url: str = "https://api.test/path?foo=bar", headers: dict | None = None, body=None
+) -> Response:
     r = Response()
     r.status_code = 400
     r.reason = "Bad Request"

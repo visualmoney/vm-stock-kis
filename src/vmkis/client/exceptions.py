@@ -31,7 +31,7 @@ def safe_request_data(response: Response):
     if "appsecret" in header:
         header["appsecret"] = "***"
     if "Authorization" in header:
-        header["Authorization"] = f'{header["Authorization"].split()[0]} ***'
+        header["Authorization"] = f"{header['Authorization'].split()[0]} ***"
 
     if response.request.body:
         body = response.request.body
@@ -177,6 +177,7 @@ class KisConnectionError(KisHTTPError):
 
     네트워크 연결 문제, 타임아웃, DNS 실패 등으로 인한 예외
     """
+
     pass
 
 
@@ -185,6 +186,7 @@ class KisAuthenticationError(KisHTTPError):
 
     AppKey, AppSecret, 토큰이 유효하지 않거나 만료된 경우
     """
+
     pass
 
 
@@ -193,6 +195,7 @@ class KisAuthorizationError(KisHTTPError):
 
     사용자가 요청된 리소스에 접근할 권한이 없는 경우
     """
+
     pass
 
 
@@ -201,6 +204,7 @@ class KisNotFoundError(KisHTTPError):
 
     요청한 리소스가 존재하지 않는 경우
     """
+
     pass
 
 
@@ -209,6 +213,7 @@ class KisValidationError(KisHTTPError):
 
     잘못된 요청 파라미터, 형식 오류 등
     """
+
     pass
 
 
@@ -218,6 +223,7 @@ class KisRateLimitError(KisHTTPError):
     API 호출 한도를 초과한 경우
     재시도 가능 (Retryable)
     """
+
     pass
 
 
@@ -227,6 +233,7 @@ class KisServerError(KisHTTPError):
     서버 내부 오류, 게이트웨이 오류 등
     재시도 가능 (Retryable)
     """
+
     pass
 
 
@@ -236,6 +243,7 @@ class KisTimeoutError(KisConnectionError):
     서버 응답 대기 중 타임아웃 발생
     재시도 가능 (Retryable)
     """
+
     pass
 
 
@@ -244,6 +252,7 @@ class KisInternalError(KisException):
 
     VmKis 라이브러리 내부에서 발생한 예기치 않은 오류
     """
+
     pass
 
 
@@ -252,6 +261,7 @@ class KisRetryableError(Exception):
 
     이 예외가 발생한 경우, exponential backoff를 사용하여 재시도할 수 있습니다.
     """
+
     max_retries: int = 3
     initial_delay: float = 1.0  # 초
     max_delay: float = 60.0  # 초

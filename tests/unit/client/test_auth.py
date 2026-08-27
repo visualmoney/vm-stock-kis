@@ -3,9 +3,9 @@ import json
 import pytest
 
 from vmkis.__env__ import APPKEY_LENGTH, SECRETKEY_LENGTH
-from vmkis.client.auth import KisAuth
-from vmkis.client.appkey import KisKey
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.appkey import KisKey
+from vmkis.client.auth import KisAuth
 
 
 def make_key(length: int) -> str:

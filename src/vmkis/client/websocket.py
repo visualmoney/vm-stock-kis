@@ -2,10 +2,11 @@ import base64
 import json
 import threading
 import time
+from collections.abc import Callable
 from multiprocessing import Event, Lock
 from multiprocessing.synchronize import Event as EventType
 from multiprocessing.synchronize import Lock as LockType
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING
 
 from websocket import WebSocketApp, WebSocketConnectionClosedException
 

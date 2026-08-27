@@ -1,7 +1,7 @@
+from collections.abc import Callable
 from types import EllipsisType, NoneType
 from typing import (
     Any,
-    Callable,
     Generic,
     Protocol,
     TypeVar,
@@ -135,7 +135,7 @@ class KisDynamicScopedPath:
             scope = KisDynamicScopedPath(scope)
 
             if isinstance(object, type):
-                setattr(object, "__path__", scope)
+                object.__path__ = scope
 
         return scope
 
@@ -195,7 +195,7 @@ class KisTransform(Generic[T], KisType[T], metaclass=KisTransformMeta):
 
     def __init__(self, transform_fn: Callable[[dict[str, Any]], T]):
         super().__init__()
-        setattr(self, "transform", transform_fn)
+        self.transform = transform_fn
 
 
 TListItem = TypeVar("TListItem", bound=KisType[Any] | type[KisDynamic])
@@ -247,7 +247,7 @@ class KisObject(Generic[TDynamic], KisType[TDynamic], metaclass=KisTypeMeta):
         if isinstance(transform_type, type):
             if (transform_fn := getattr(transform_type, "__transform__", None)) is not None:
                 object = transform_fn(transform_type, data)
-                setattr(object, "__data__", data)
+                object.__data__ = data
 
                 if post_init and hasattr(object, "__post_init__"):
                     object.__post_init__()
@@ -348,7 +348,7 @@ class KisObject(Generic[TDynamic], KisType[TDynamic], metaclass=KisTypeMeta):
             if missing:
                 logging.logger.warning(f"{object_type.__name__}에 정의되지 않은 필드가 있습니다: {', '.join(missing)}")
 
-        setattr(object, "__data__", data)
+        object.__data__ = data
 
         if post_init and hasattr(object, "__post_init__"):
             object.__post_init__()

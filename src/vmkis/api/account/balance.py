@@ -1,6 +1,7 @@
+from collections.abc import Iterator
 from decimal import Decimal
 from functools import cached_property
-from typing import TYPE_CHECKING, Iterator, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Protocol, runtime_checkable
 
 from vmkis.adapter.account_product.order import (
     KisOrderableAccountProduct,
@@ -17,13 +18,7 @@ from vmkis.api.base.account_product import (
     KisAccountProductProtocol,
 )
 from vmkis.api.stock.info import COUNTRY_TYPE, get_market_country, resolve_market
-from vmkis.api.stock.market import (
-    CURRENCY_TYPE,
-    MARKET_TYPE,
-    KisMarketType,
-    get_market_code,
-    get_market_type
-)
+from vmkis.api.stock.market import CURRENCY_TYPE, MARKET_TYPE, get_market_code, get_market_type
 from vmkis.client.account import KisAccountNumber
 from vmkis.client.page import KisPage
 from vmkis.responses.dynamic import KisDynamic, KisList, KisObject, KisTransform

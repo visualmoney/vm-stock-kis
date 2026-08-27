@@ -3,16 +3,18 @@
 - 실계좌 주문 시 ALLOW_LIVE_TRADES=1 환경 변수를 설정해야 합니다.
 - 모의투자 계정으로 먼저 검증하고, config.yaml 설정 후 주문을 수행합니다.
 """
+
 import os
+
 import yaml
-from vmkis import VmKis, KisAuth
+
+from vmkis import KisAuth, VmKis
 
 
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
-    import os
 
     profile = profile or os.environ.get("VMKIS_PROFILE")
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
     if isinstance(cfg, dict) and "configs" in cfg:
@@ -27,7 +29,6 @@ def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
 
 def main() -> None:
     import argparse
-    import os
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
@@ -45,6 +46,11 @@ def main() -> None:
         secretkey=cfg["secretkey"],
         virtual=cfg.get("virtual", False),
     )
+
+    # 이 파일의 docstring이 약속하는 안전장치. 이전에는 allow_live를 계산만 하고
+    # 사용하지 않아, 실계좌 설정으로 실행하면 아무 확인 없이 실주문이 나갔다.
+    if not auth.virtual and not allow_live:
+        raise SystemExit("실계좌 주문입니다. 의도한 것이 맞다면 ALLOW_LIVE_TRADES=1 을 설정하고 다시 실행하세요.")
 
     kis = VmKis(auth, keep_token=True)
 

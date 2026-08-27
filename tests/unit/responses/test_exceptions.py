@@ -2,12 +2,12 @@ from types import SimpleNamespace
 
 from requests import Response
 
-import pytest
-
-from vmkis.responses.exceptions import KisNotFoundError, KisMarketNotOpenedError
+from vmkis.responses.exceptions import KisMarketNotOpenedError, KisNotFoundError
 
 
-def make_response_with_request(method="GET", url="https://api.example/test?x=1", headers=None, body: bytes | None = None):
+def make_response_with_request(
+    method="GET", url="https://api.example/test?x=1", headers=None, body: bytes | None = None
+):
     r = Response()
     r.status_code = 400
     r.reason = "Bad Request"

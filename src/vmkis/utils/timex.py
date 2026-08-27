@@ -44,7 +44,8 @@ def parse_timex(expression: str | tuple[int, str]) -> timedelta:
     else:
         i = 0
 
-        for i, c in enumerate(expression):
+        # i는 루프 본문이 아니라 루프 뒤 `if not i`에서 쓰인다.
+        for i, c in enumerate(expression):  # noqa: B007
             if not c.isdigit():
                 break
 

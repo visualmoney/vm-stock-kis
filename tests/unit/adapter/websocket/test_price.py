@@ -2,10 +2,13 @@
 
 from types import SimpleNamespace
 
+import pytest
+
+from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
+
 
 def test_websocket_quotable_product_mixin_on_price():
     """KisWebsocketQuotableProductMixin.on should forward to on_product_price for 'price' event."""
-    from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
     calls = []
 
@@ -158,9 +161,6 @@ def test_once_raises_for_unknown_event():
 # 아래 테스트들은 mixin의 진짜 본문을 실행하고, 지연 import되는 하위 함수
 # (`on_product_price`, `on_product_order_book`)를 대체해 전달 인자를 검증한다.
 # ---------------------------------------------------------------------------
-
-import pytest
-from vmkis.adapter.websocket.price import KisWebsocketQuotableProductMixin
 
 
 class Product(KisWebsocketQuotableProductMixin):

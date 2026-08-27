@@ -1,14 +1,13 @@
 """Cleaned transform tests for KisObject.transform_ edge cases."""
 
-import pytest
 from dataclasses import dataclass
 from decimal import Decimal
-from typing import List, Optional
 
-from vmkis.responses.dynamic import KisObject, KisList, KisTransform
+import pytest
+
+from vmkis.responses.dynamic import KisList, KisObject
 from vmkis.responses.response import KisResponse
-from vmkis.responses.types import KisString, KisInt, KisDecimal, KisBool
-
+from vmkis.responses.types import KisBool, KisDecimal, KisInt, KisString
 
 pytestmark = pytest.mark.unit
 
@@ -43,7 +42,7 @@ class NestedItem(KisResponse):
 class ComplexResponse(KisResponse):
     symbol: str = KisString()
     price: Decimal = KisDecimal()
-    items: List[NestedItem] = KisList(NestedItem)
+    items: list[NestedItem] = KisList(NestedItem)
     active: bool = KisBool()
 
     def __pre_init__(self, data: dict) -> None:
@@ -57,7 +56,7 @@ class ComplexResponse(KisResponse):
 @dataclass
 class OptionalFieldResponse(KisResponse):
     required: str = KisString()
-    optional: Optional[int] = KisInt()
+    optional: int | None = KisInt()
 
     def __pre_init__(self, data: dict) -> None:
         data.setdefault("rt_cd", "0")
@@ -68,7 +67,6 @@ class OptionalFieldResponse(KisResponse):
 
 
 class TestKisObjectTransformEdgeCases:
-
     def test_transform_with_valid_data(self):
         data = {"name": "test", "value": "123"}
         result = KisObject.transform_(data, SimpleResponse)
@@ -95,10 +93,7 @@ class TestKisObjectTransformEdgeCases:
         data = {
             "symbol": "000660",
             "price": "70000.50",
-            "items": [
-                {"id": "1", "name": "item1"},
-                {"id": "2", "name": "item2"}
-            ],
+            "items": [{"id": "1", "name": "item1"}, {"id": "2", "name": "item2"}],
             "active": "true",
         }
         result = KisObject.transform_(data, ComplexResponse)
@@ -144,7 +139,6 @@ class TestKisObjectTransformEdgeCases:
 
 
 class TestKisObjectTransformErrorHandling:
-
     def test_transform_with_invalid_response_type(self):
         with pytest.raises((TypeError, AttributeError)):
             KisObject.transform_({"name": "test"}, str)

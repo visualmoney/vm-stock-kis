@@ -9,7 +9,7 @@ import json
 import logging
 import sys
 from datetime import datetime, timezone
-from typing import Any, Literal
+from typing import Literal
 
 from colorlog import ColoredFormatter
 
@@ -40,9 +40,7 @@ class JsonFormatter(logging.Formatter):
             JSON 형식의 로그 문자열
         """
         log_data = {
-            "timestamp": datetime.fromtimestamp(
-                record.created, tz=timezone.utc
-            ).isoformat(),
+            "timestamp": datetime.fromtimestamp(record.created, tz=timezone.utc).isoformat(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
@@ -66,7 +64,7 @@ class JsonFormatter(logging.Formatter):
             return json.dumps(log_data, ensure_ascii=False, default=str)
         except (TypeError, ValueError):
             # JSON 직렬화 실패 시 기본 형식으로 폴백
-            return f'{log_data["timestamp"]} {log_data["level"]} {log_data["message"]}'
+            return f"{log_data['timestamp']} {log_data['level']} {log_data['message']}"
 
 
 def _create_logger(
@@ -128,9 +126,7 @@ def get_logger(name: str) -> logging.Logger:
     return logging.getLogger(name)
 
 
-def setLevel(
-    level: int | Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]
-) -> None:
+def setLevel(level: int | Literal["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"]) -> None:
     """VmKis 로거의 로깅 레벨을 설정합니다
 
     Args:

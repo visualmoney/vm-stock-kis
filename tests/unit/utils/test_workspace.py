@@ -1,7 +1,8 @@
 from pathlib import Path
-import tempfile
 
-from vmkis.utils.workspace import get_workspace_path, get_cache_path
+import pytest
+
+from vmkis.utils.workspace import get_cache_path, get_workspace_path
 
 
 def test_get_workspace_and_cache_paths_resolve(monkeypatch, tmp_path):
@@ -41,8 +42,6 @@ def test_get_workspace_path_is_idempotent_and_absolute(monkeypatch, tmp_path):
 # v3.0.0에서 작업공간이 ~/.pykis → ~/.vmkis로 바뀌었다. 기존 사용자의 토큰
 # 캐시가 고아가 되지 않도록, 새 경로가 없고 예전 경로만 있으면 예전 경로를 쓴다.
 # ---------------------------------------------------------------------------
-
-import pytest
 
 
 @pytest.fixture

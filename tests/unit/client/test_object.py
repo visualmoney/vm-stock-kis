@@ -74,9 +74,11 @@ def test__kis_spread_iterables_and_dicts_process_nested_items():
 
     a = SpyObject()
     b = SpyObject()
-    c = SpyObject()
+    SpyObject()
 
-    parent._kis_spread([a, None, (b,)],)
+    parent._kis_spread(
+        [a, None, (b,)],
+    )
     assert a.init_called and a.post_called
     assert b.init_called and b.post_called
 

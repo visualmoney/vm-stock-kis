@@ -18,23 +18,23 @@ VM-Stock-KIS 사용 예제
   - time: 폴링 간격 제어
 """
 
-from vmkis import create_client
 import argparse
-from vmkis.simple import SimpleKIS
-import time
 import os
+import time
 from datetime import datetime
-from typing import Dict, List
+
+from vmkis import create_client
+from vmkis.simple import SimpleKIS
 
 
 class StockMonitor:
     """여러 종목을 모니터링하는 클래스"""
 
-    def __init__(self, simple_kis: SimpleKIS, symbols: List[str]):
+    def __init__(self, simple_kis: SimpleKIS, symbols: list[str]):
         self.simple = simple_kis
         self.symbols = symbols
-        self.prices: Dict = {}
-        self.change_alerts: Dict = {}
+        self.prices: dict = {}
+        self.change_alerts: dict = {}
 
     def fetch_prices(self) -> None:
         """현재 가격을 조회합니다."""
@@ -52,14 +52,8 @@ class StockMonitor:
                 else:
                     self.prices[symbol]["previous"] = self.prices[symbol]["current"]
                     self.prices[symbol]["current"] = price.price
-                    self.prices[symbol]["high"] = max(
-                        self.prices[symbol]["high"],
-                        price.price
-                    )
-                    self.prices[symbol]["low"] = min(
-                        self.prices[symbol]["low"],
-                        price.price
-                    )
+                    self.prices[symbol]["high"] = max(self.prices[symbol]["high"], price.price)
+                    self.prices[symbol]["low"] = min(self.prices[symbol]["low"], price.price)
             except Exception as e:
                 print(f"⚠️ {symbol} 조회 실패: {e}")
 
@@ -189,4 +183,5 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
+
         traceback.print_exc()

@@ -1,5 +1,5 @@
 import os
-import time
+
 import pytest
 
 pytestmark = pytest.mark.performance

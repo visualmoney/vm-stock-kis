@@ -156,8 +156,44 @@ include = [
 [tool.ruff]
 line-length = 120
 target-version = "py310"
-src = ["vmkis", "tests"]
-extend-exclude = ["docs/generated", "docs/diagrams"]
+# src 레이아웃. isort의 first-party 판정에 쓰입니다.
+src = ["src", "tests"]
+# ruff는 Markdown 안의 Python 코드 블록도 포맷합니다. 문서의 예제 코드를
+# 말없이 다시 쓰게 되고, 기록물 문서까지 건드리므로 제외합니다.
+extend-exclude = ["docs/generated", "docs/diagrams", "*.md"]
+
+[tool.ruff.lint]
+# select를 명시하는 이유: 지정하지 않으면 ruff의 기본 규칙셋을 따르는데, 그 기본이
+# 마이너 버전마다 바뀝니다. 같은 코드에 v0.14.10은 228건, v0.16.4는 1003건을
+# 보고했습니다. 규칙셋을 여기에 고정해 ruff 업그레이드가 CI를 깨지 않게 합니다.
+select = [
+    "E4",  # pycodestyle: import 관련
+    "E7",  # pycodestyle: 문장 관련
+    "E9",  # pycodestyle: 런타임 오류
+    "F",   # pyflakes
+    "I",   # isort (제거한 isort 훅을 대체)
+    "UP",  # pyupgrade (제거한 pyupgrade 훅을 대체)
+    "W",   # pycodestyle 경고
+    "B",   # flake8-bugbear
+]
+ignore = [
+    # 120자 초과 라인의 대부분이 분할 불가능한 한국어 docstring과 URL입니다.
+    "E501",
+    # 한국어 문서에 전각 문장부호가 정상적으로 쓰입니다.
+    "RUF001",
+    "RUF002",
+    "RUF003",
+]
+
+[tool.ruff.lint.per-file-ignores]
+# 패키지 __init__.py는 공개 API를 재export합니다. F401(미사용 import)은 오탐이고,
+# 하위 호환용 deprecation 기계가 __all__ 뒤에 오므로 E402도 의도된 것입니다.
+"src/vmkis/__init__.py" = ["F401", "F403", "E402"]
+"src/vmkis/types.py" = ["F401"]
+"src/vmkis/public_types.py" = ["F401"]
+# 테스트의 콜백 스텁으로 람다를 쓰는 것은 관용적입니다. def로 바꾸면 오히려
+# 읽기 어려워집니다.
+"tests/**" = ["E731"]
 
 # ================================================================ pytest ====
 [tool.pytest.ini_options]

@@ -1,5 +1,6 @@
 """Unit tests for vmkis.adapter.product.quote"""
-from datetime import date, time, timedelta
+
+from datetime import date, time
 from types import SimpleNamespace
 
 
@@ -88,6 +89,7 @@ def test_chart_with_expression_converts_to_start():
 
     import vmkis.api.stock.daily_chart as daily_api
     import vmkis.api.stock.day_chart as day_api
+
     orig_daily = daily_api.product_daily_chart
     orig_day = day_api.product_day_chart
     daily_api.product_daily_chart = fake_daily
@@ -132,6 +134,7 @@ def test_chart_dispatches_by_period_type():
 
     import vmkis.api.stock.daily_chart as daily_api
     import vmkis.api.stock.day_chart as day_api
+
     orig_daily = daily_api.product_daily_chart
     orig_day = day_api.product_day_chart
     daily_api.product_daily_chart = fake_daily

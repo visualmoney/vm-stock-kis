@@ -3,8 +3,10 @@
 이 예제는 config.yaml에서 인증 정보를 로드한 뒤
 삼성전자(005930) 시세를 조회해 출력합니다.
 """
+
 import yaml
-from vmkis import VmKis, KisAuth
+
+from vmkis import KisAuth, VmKis
 
 
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
@@ -23,7 +25,7 @@ def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
     import os
 
     profile = profile or os.environ.get("VMKIS_PROFILE")
-    with open(path, "r", encoding="utf-8") as f:
+    with open(path, encoding="utf-8") as f:
         cfg = yaml.safe_load(f)
 
     if isinstance(cfg, dict) and "configs" in cfg:

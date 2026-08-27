@@ -1,7 +1,6 @@
 from types import SimpleNamespace
 
 from vmkis.api.websocket import order_book
-from vmkis.api.websocket import price as ws_price
 
 
 class FakeTicket:
@@ -49,14 +48,13 @@ def test_on_product_order_book_forwards():
 
 def test_domestic_orderbook_pre_init_parses_data():
     """국내 주식 호가 데이터 파싱 테스트"""
-    from datetime import datetime
     from decimal import Decimal
 
     # Create test data with 59 fields matching __fields__ structure
     data = [""] * 59
     data[0] = "005930"  # symbol (MKSC_SHRN_ISCD)
     data[1] = "143500"  # time (BSOP_HOUR) - 14:35:00
-    data[2] = "0"       # condition (HOUR_CLS_CODE) - normal trading
+    data[2] = "0"  # condition (HOUR_CLS_CODE) - normal trading
 
     # 매도호가 1-10 (indices 3-12)
     for i in range(10):
@@ -111,28 +109,27 @@ def test_domestic_orderbook_condition_mapping():
 
 def test_asia_orderbook_pre_init_parses_data():
     """아시아 주식 호가 데이터 파싱 테스트"""
-    from datetime import datetime
     from decimal import Decimal
 
     # Create test data with 17 fields
     data = [""] * 17
-    data[0] = "DHKS000660"   # RSYM (DHKS + symbol, HKS=Hong Kong Stock)
-    data[1] = "000660"       # SYMB (symbol)
-    data[2] = "3"            # ZDIV (decimal places)
-    data[3] = "20240115"     # XYMD (local date)
-    data[4] = "143000"       # XHMS (local time)
-    data[5] = "20240115"     # KYMD (KST date)
-    data[6] = "153000"       # KHMS (KST time)
-    data[7] = "50000"        # BVOL (total bid volume)
-    data[8] = "45000"        # AVOL (total ask volume)
-    data[9] = "1000"         # BDVL (bid volume change)
-    data[10] = "500"         # ADVL (ask volume change)
-    data[11] = "100.500"     # PBID1 (bid price 1)
-    data[12] = "101.000"     # PASK1 (ask price 1)
-    data[13] = "5000"        # VBID1 (bid volume 1)
-    data[14] = "4500"        # VASK1 (ask volume 1)
-    data[15] = "100"         # DBID1 (bid volume change 1)
-    data[16] = "50"          # DASK1 (ask volume change 1)
+    data[0] = "DHKS000660"  # RSYM (DHKS + symbol, HKS=Hong Kong Stock)
+    data[1] = "000660"  # SYMB (symbol)
+    data[2] = "3"  # ZDIV (decimal places)
+    data[3] = "20240115"  # XYMD (local date)
+    data[4] = "143000"  # XHMS (local time)
+    data[5] = "20240115"  # KYMD (KST date)
+    data[6] = "153000"  # KHMS (KST time)
+    data[7] = "50000"  # BVOL (total bid volume)
+    data[8] = "45000"  # AVOL (total ask volume)
+    data[9] = "1000"  # BDVL (bid volume change)
+    data[10] = "500"  # ADVL (ask volume change)
+    data[11] = "100.500"  # PBID1 (bid price 1)
+    data[12] = "101.000"  # PASK1 (ask price 1)
+    data[13] = "5000"  # VBID1 (bid volume 1)
+    data[14] = "4500"  # VASK1 (ask volume 1)
+    data[15] = "100"  # DBID1 (bid volume change 1)
+    data[16] = "50"  # DASK1 (ask volume change 1)
 
     orderbook_obj = order_book.KisAsiaRealtimeOrderbook()
     orderbook_obj.__pre_init__(data)
@@ -160,33 +157,32 @@ def test_asia_orderbook_pre_init_parses_data():
 
 def test_us_orderbook_pre_init_parses_data():
     """미국 주식 호가 데이터 파싱 테스트 (10 레벨)"""
-    from datetime import datetime
     from decimal import Decimal
 
     # Create test data with 71 fields
     data = [""] * 71
-    data[0] = "DNASAAPL"     # RSYM (realtime symbol for NASDAQ)
-    data[1] = "AAPL"         # SYMB (symbol)
-    data[2] = "4"            # ZDIV (decimal places - US stocks have 4)
-    data[3] = "20240115"     # XYMD (local date)
-    data[4] = "093000"       # XHMS (local time) - 09:30:00
-    data[5] = "20240115"     # KYMD (KST date)
-    data[6] = "233000"       # KHMS (KST time) - 23:30:00
-    data[7] = "100000"       # BVOL (total bid volume)
-    data[8] = "95000"        # AVOL (total ask volume)
-    data[9] = "5000"         # BDVL (bid volume change)
-    data[10] = "3000"        # ADVL (ask volume change)
+    data[0] = "DNASAAPL"  # RSYM (realtime symbol for NASDAQ)
+    data[1] = "AAPL"  # SYMB (symbol)
+    data[2] = "4"  # ZDIV (decimal places - US stocks have 4)
+    data[3] = "20240115"  # XYMD (local date)
+    data[4] = "093000"  # XHMS (local time) - 09:30:00
+    data[5] = "20240115"  # KYMD (KST date)
+    data[6] = "233000"  # KHMS (KST time) - 23:30:00
+    data[7] = "100000"  # BVOL (total bid volume)
+    data[8] = "95000"  # AVOL (total ask volume)
+    data[9] = "5000"  # BDVL (bid volume change)
+    data[10] = "3000"  # ADVL (ask volume change)
 
     # Fill 10 levels of bid/ask data
     # Each level has: bid_price, ask_price, bid_volume, ask_volume, bid_change, ask_change (6 fields)
     for i in range(10):
         base_index = 11 + (i * 6)
-        data[base_index] = f"{148.00 - i * 0.01:.2f}"      # PBID (bid price)
+        data[base_index] = f"{148.00 - i * 0.01:.2f}"  # PBID (bid price)
         data[base_index + 1] = f"{148.01 + i * 0.01:.2f}"  # PASK (ask price)
-        data[base_index + 2] = str(1000 + i * 100)         # VBID (bid volume)
-        data[base_index + 3] = str(900 + i * 100)          # VASK (ask volume)
-        data[base_index + 4] = str(50 + i * 10)            # DBID (bid change)
-        data[base_index + 5] = str(40 + i * 10)            # DASK (ask change)
+        data[base_index + 2] = str(1000 + i * 100)  # VBID (bid volume)
+        data[base_index + 3] = str(900 + i * 100)  # VASK (ask volume)
+        data[base_index + 4] = str(50 + i * 10)  # DBID (bid change)
+        data[base_index + 5] = str(40 + i * 10)  # DASK (ask change)
 
     orderbook_obj = order_book.KisUSRealtimeOrderbook()
     orderbook_obj.__pre_init__(data)
@@ -221,13 +217,7 @@ def test_on_order_book_with_extended_flag():
     fake = FakeClient()
 
     # Test with extended=True for US market
-    ticket = order_book.on_order_book(
-        fake,
-        "NASDAQ",
-        "TSLA",
-        lambda *_: None,
-        extended=True
-    )
+    ticket = order_book.on_order_book(fake, "NASDAQ", "TSLA", lambda *_: None, extended=True)
 
     # Should use extended realtime symbol starting with 'R'
     assert isinstance(ticket.key, str)
@@ -245,12 +235,7 @@ def test_on_order_book_asia_market_routing():
 
     for market in asian_markets:
         fake.calls.clear()
-        ticket = order_book.on_order_book(
-            fake,
-            market,
-            "TEST",
-            lambda *_: None
-        )
+        ticket = order_book.on_order_book(fake, market, "TEST", lambda *_: None)
 
         # Asian markets should use HDFSASP1
         assert ticket.id == "HDFSASP1", f"Failed for market {market}"
@@ -263,11 +248,7 @@ def test_on_product_order_book_with_extended():
     prod.symbol = "NVDA"
     prod.kis = SimpleNamespace(websocket=FakeClient())
 
-    ticket = order_book.on_product_order_book(
-        prod,
-        lambda *_: None,
-        extended=True
-    )
+    ticket = order_book.on_product_order_book(prod, lambda *_: None, extended=True)
 
     # Should forward extended flag
     assert ticket.id == "HDFSASP0"  # US market
@@ -281,12 +262,8 @@ def test_on_order_book_with_where_filter():
     def my_filter(*args):
         return True
 
-    ticket = order_book.on_order_book(
-        fake,
-        "KRX",
-        "005930",
-        lambda *_: None,
-        where=my_filter
+    ticket = order_book.on_order_book(  # noqa: F841 - 티켓을 붙잡지 않으면 GC가 구독을 해지한다
+        fake, "KRX", "005930", lambda *_: None, where=my_filter
     )
 
     # Should combine filters (KisProductEventFilter + user filter)
@@ -300,12 +277,8 @@ def test_on_order_book_with_once_flag():
     """한번만 실행 플래그 테스트"""
     fake = FakeClient()
 
-    ticket = order_book.on_order_book(
-        fake,
-        "KRX",
-        "005930",
-        lambda *_: None,
-        once=True
+    ticket = order_book.on_order_book(  # noqa: F841 - 티켓을 붙잡지 않으면 GC가 구독을 해지한다
+        fake, "KRX", "005930", lambda *_: None, once=True
     )
 
     # Should pass once flag

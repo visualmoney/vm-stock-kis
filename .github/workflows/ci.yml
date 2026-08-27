@@ -95,6 +95,15 @@ jobs:
       - name: Lockfile is up to date
         run: uv lock --check
 
+      - name: Install lint tools
+        run: uv sync --locked --group lint
+
+      # 규칙셋은 pyproject.toml의 [tool.ruff.lint] select에 고정되어 있습니다.
+      - name: Ruff
+        run: |
+          uv run ruff check --output-format=github .
+          uv run ruff format --check .
+
   # 브랜치 보호에 등록할 단일 집계 잡.
   #
   # 매트릭스 잡 이름은 버전을 바꿀 때마다 달라지므로 보호 규칙이 매번 깨집니다.

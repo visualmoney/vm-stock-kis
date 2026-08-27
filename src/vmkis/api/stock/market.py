@@ -75,9 +75,7 @@ MARKET_SHORT_TYPE_MAP: dict[MARKET_TYPE, str] = {
     "SZSE": "SZS",
 }
 
-REVERSE_MARKET_SHORT_TYPE_MAP: dict[str, MARKET_TYPE] = {
-    value: key for key, value in MARKET_SHORT_TYPE_MAP.items()
-}
+REVERSE_MARKET_SHORT_TYPE_MAP: dict[str, MARKET_TYPE] = {value: key for key, value in MARKET_SHORT_TYPE_MAP.items()}
 
 DAYTIME_MARKETS = {
     "NASDAQ",
@@ -223,4 +221,5 @@ class KisMarketType(KisType[MARKET_TYPE], metaclass=KisTypeMeta[MARKET_TYPE]):
         try:
             return get_market_type(data)
         except KeyError:
-            raise ValueError(f"올바르지 않은 시장 종류입니다: {data}")
+            # KeyError는 내부 조회 실패라는 구현 세부사항이다.
+            raise ValueError(f"올바르지 않은 시장 종류입니다: {data}") from None

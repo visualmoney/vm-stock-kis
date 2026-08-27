@@ -1,7 +1,7 @@
 import pytest
 
-from vmkis.utils.rate_limit import RateLimiter
 import vmkis.utils.rate_limit as rl
+from vmkis.utils.rate_limit import RateLimiter
 
 
 def _make_fake_time(monkeypatch, start: float = 0.0):
@@ -105,7 +105,7 @@ def test_blocking_calls_callback_and_sleeps_then_allows(monkeypatch):
 
     # expected sleep: period - (time.time() - last) + 0.05
     # right before sleeping, time.time() == last_before, so expected = period + 0.05
-    expected_sleep = limiter.period - (last_before - limiter._last) + 0.05
+    limiter.period - (last_before - limiter._last) + 0.05
     # since last_before == limiter._last for our sequence, this is period + 0.05
     assert pytest.approx(sleeps[0], rel=1e-6) == limiter.period + 0.05
 

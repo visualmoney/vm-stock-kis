@@ -45,7 +45,6 @@ class KisSimpleProduct:
 
 
 class KisProductEventFilter(KisEventFilterBase["KisWebsocketClient", KisSubscriptionEventArgs[TWebsocketResponse]]):
-
     _product: KisSimpleProductProtocol
 
     @overload

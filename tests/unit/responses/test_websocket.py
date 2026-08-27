@@ -1,10 +1,8 @@
 import pytest
 
-from types import SimpleNamespace
-
 import vmkis.responses.websocket as wsmod
-from vmkis.responses.websocket import KisWebsocketResponse
 from vmkis.responses.dynamic import KisNoneValueError, empty
+from vmkis.responses.websocket import KisWebsocketResponse
 
 
 def test_parse_no_fields_calls_pre_and_post_init_and_sets_data():
@@ -14,16 +12,16 @@ def test_parse_no_fields_calls_pre_and_post_init_and_sets_data():
         __fields__ = []
 
         def __pre_init__(self, data):
-            called['pre'] = True
+            called["pre"] = True
 
         def __post_init__(self):
-            called['post'] = True
+            called["post"] = True
 
     items = list(wsmod.KisWebsocketResponse.parse("A^B", response_type=R))
     assert len(items) == 1
     inst = items[0]
     assert inst.__data__ == ["A", "B"]
-    assert called.get('pre') and called.get('post')
+    assert called.get("pre") and called.get("post")
 
 
 def test_parse_invalid_data_length_raises():
@@ -54,8 +52,8 @@ def test_parse_with_field_transform_sets_attributes():
             return value.upper()
 
     class Resp(KisWebsocketResponse):
-        __fields__ = [Field('x'), Field('y')]
-        __annotations__ = {'x': str, 'y': str}
+        __fields__ = [Field("x"), Field("y")]
+        __annotations__ = {"x": str, "y": str}
 
     res_list = list(KisWebsocketResponse.parse("a^b", response_type=Resp))
     assert len(res_list) == 1
@@ -76,16 +74,16 @@ def test_parse_kisnonevalueerror_uses_default_or_raises():
             raise KisNoneValueError()
 
     class Resp1(KisWebsocketResponse):
-        __fields__ = [FieldDefault('v', default=5)]
-        __annotations__ = {'v': int}
+        __fields__ = [FieldDefault("v", default=5)]
+        __annotations__ = {"v": int}
 
     out1 = list(KisWebsocketResponse.parse("x", response_type=Resp1))
     assert out1[0].v == 5
 
     # no default and not nullable -> should raise ValueError about None
     class Resp2(KisWebsocketResponse):
-        __fields__ = [FieldDefault('v')]
-        __annotations__ = {'v': int}
+        __fields__ = [FieldDefault("v")]
+        __annotations__ = {"v": int}
 
     with pytest.raises(ValueError, match="필드가 None일 수 없습니다"):
         list(KisWebsocketResponse.parse("x", response_type=Resp2))
@@ -102,8 +100,8 @@ def test_parse_transform_exception_is_wrapped():
             raise RuntimeError("boom")
 
     class Resp(KisWebsocketResponse):
-        __fields__ = [FieldErr('z')]
-        __annotations__ = {'z': str}
+        __fields__ = [FieldErr("z")]
+        __annotations__ = {"z": str}
 
     with pytest.raises(ValueError) as excinfo:
         list(KisWebsocketResponse.parse("x", response_type=Resp))

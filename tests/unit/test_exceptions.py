@@ -5,9 +5,13 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from vmkis.client.exceptions import (KisAuthenticationError, KisRateLimitError,
-                                     KisServerError, KisTimeoutError,
-                                     KisValidationError)
+from vmkis.client.exceptions import (
+    KisAuthenticationError,
+    KisRateLimitError,
+    KisServerError,
+    KisTimeoutError,
+    KisValidationError,
+)
 from vmkis.utils.retry import RetryConfig, with_async_retry, with_retry
 
 

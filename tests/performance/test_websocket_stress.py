@@ -4,12 +4,13 @@ WebSocket 스트레스 테스트
 40개 동시 구독 시나리오를 테스트합니다.
 """
 
-import pytest
-import time
 import threading
-from unittest.mock import Mock, patch, MagicMock
-from vmkis import VmKis, KisAuth
-from vmkis.client.websocket import KisWebsocketClient
+import time
+from unittest.mock import MagicMock, Mock, patch
+
+import pytest
+
+from vmkis import KisAuth, VmKis
 
 
 @pytest.fixture
@@ -68,7 +69,7 @@ class StressTestResult:
 class TestWebSocketStress:
     """WebSocket 스트레스 테스트"""
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_stress_40_subscriptions(self, mock_ws_class, mock_real_auth, mock_auth):
         """40개 동시 구독"""
         result = StressTestResult("40개 동시 구독")
@@ -79,26 +80,26 @@ class TestWebSocketStress:
 
         # 연결 성공
         def run_forever_mock(*args, **kwargs):
-            if hasattr(mock_ws, 'on_open'):
+            if hasattr(mock_ws, "on_open"):
                 mock_ws.on_open(mock_ws)
 
         mock_ws.run_forever.side_effect = run_forever_mock
 
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             # 토큰 발급
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "test_token", "token_type": "Bearer"}
             mock_post.return_value = mock_response
 
-            kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+            VmKis(mock_real_auth, mock_auth, use_websocket=True)
 
             # 40개 구독 시도
             symbols = [f"{100000 + i:06d}" for i in range(40)]
 
             start_time = time.time()
 
-            for symbol in symbols:
+            for _symbol in symbols:
                 try:
                     # 구독 (실제로는 모의)
                     # kis.websocket.subscribe_price(symbol)
@@ -114,7 +115,7 @@ class TestWebSocketStress:
         # 기대: 90% 이상 성공
         assert result.success_rate >= 90.0
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_stress_rapid_subscribe_unsubscribe(self, mock_ws_class, mock_real_auth, mock_auth):
         """빠른 구독/구독취소 반복"""
         result = StressTestResult("빠른 구독/취소 (100회)")
@@ -123,25 +124,25 @@ class TestWebSocketStress:
         mock_ws_class.return_value = mock_ws
 
         def run_forever_mock(*args, **kwargs):
-            if hasattr(mock_ws, 'on_open'):
+            if hasattr(mock_ws, "on_open"):
                 mock_ws.on_open(mock_ws)
 
         mock_ws.run_forever.side_effect = run_forever_mock
 
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "test_token", "token_type": "Bearer"}
             mock_post.return_value = mock_response
 
-            kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+            VmKis(mock_real_auth, mock_auth, use_websocket=True)
 
             start_time = time.time()
 
             # 100회 구독/취소
             for i in range(100):
                 try:
-                    symbol = f"{100000 + (i % 10):06d}"
+                    f"{100000 + (i % 10):06d}"
 
                     # 구독
                     # kis.websocket.subscribe_price(symbol)
@@ -162,7 +163,7 @@ class TestWebSocketStress:
         assert result.success_rate >= 95.0
         assert result.elapsed < 3.0
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_stress_concurrent_connections(self, mock_ws_class, mock_real_auth, mock_auth):
         """동시 연결 스트레스"""
         result = StressTestResult("10개 동시 WebSocket 연결")
@@ -173,28 +174,28 @@ class TestWebSocketStress:
                 mock_ws_class.return_value = mock_ws
 
                 def run_forever_mock(*args, **kwargs):
-                    if hasattr(mock_ws, 'on_open'):
+                    if hasattr(mock_ws, "on_open"):
                         mock_ws.on_open(mock_ws)
 
                 mock_ws.run_forever.side_effect = run_forever_mock
 
-                with patch('requests.post') as mock_post:
+                with patch("requests.post") as mock_post:
                     mock_response = Mock()
                     mock_response.status_code = 200
                     mock_response.json.return_value = {"access_token": f"token_{index}", "token_type": "Bearer"}
                     mock_post.return_value = mock_response
 
-                    auth = KisAuth(
+                    KisAuth(
                         id=f"user_{index}",
                         account=f"5000000{index}-01",
                         appkey="P" + "A" * 35,
                         secretkey="S" * 180,
                     )
 
-                    kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+                    VmKis(mock_real_auth, mock_auth, use_websocket=True)
 
                     # 각 연결에서 5개 구독
-                    for j in range(5):
+                    for _j in range(5):
                         # kis.websocket.subscribe_price(f"{100000 + j:06d}")
                         pass
 
@@ -207,10 +208,7 @@ class TestWebSocketStress:
         start_time = time.time()
 
         # 10개 스레드
-        threads = [
-            threading.Thread(target=create_connection, args=(i,))
-            for i in range(10)
-        ]
+        threads = [threading.Thread(target=create_connection, args=(i,)) for i in range(10)]
 
         for t in threads:
             t.start()
@@ -229,7 +227,7 @@ class TestWebSocketStress:
         # 기대: 80% 이상 성공
         assert result.success_rate >= 80.0
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_stress_message_flood(self, mock_ws_class, mock_real_auth, mock_auth):
         """대량 메시지 처리"""
         result = StressTestResult("1000개 메시지 처리")
@@ -240,11 +238,11 @@ class TestWebSocketStress:
         messages_processed = []
 
         def run_forever_mock(*args, **kwargs):
-            if hasattr(mock_ws, 'on_open'):
+            if hasattr(mock_ws, "on_open"):
                 mock_ws.on_open(mock_ws)
 
             # 1000개 메시지 시뮬레이션
-            if hasattr(mock_ws, 'on_message'):
+            if hasattr(mock_ws, "on_message"):
                 for i in range(1000):
                     msg = f'{{"type": "price", "symbol": "005930", "price": {70000 + i}}}'
                     try:
@@ -255,7 +253,7 @@ class TestWebSocketStress:
 
         mock_ws.run_forever.side_effect = run_forever_mock
 
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "test_token", "token_type": "Bearer"}
@@ -263,7 +261,7 @@ class TestWebSocketStress:
 
             start_time = time.time()
 
-            kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+            VmKis(mock_real_auth, mock_auth, use_websocket=True)
 
             result.elapsed = time.time() - start_time
             result.messages_received = len(messages_processed)
@@ -278,7 +276,7 @@ class TestWebSocketStress:
         # 기대: 모의 환경에서도 콜백이 최소 1회는 실행
         assert result.success_count >= 1
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_stress_connection_stability(self, mock_ws_class, mock_real_auth, mock_auth):
         """연결 안정성 (10초간 유지)"""
         result = StressTestResult("10초 연결 유지")
@@ -290,13 +288,13 @@ class TestWebSocketStress:
         connection_alive.set()
 
         def run_forever_mock(*args, **kwargs):
-            if hasattr(mock_ws, 'on_open'):
+            if hasattr(mock_ws, "on_open"):
                 mock_ws.on_open(mock_ws)
 
             # 10초간 메시지 전송 시뮬레이션 (1초당 10개)
             start = time.time()
             while time.time() - start < 10 and connection_alive.is_set():
-                if hasattr(mock_ws, 'on_message'):
+                if hasattr(mock_ws, "on_message"):
                     msg = '{"type": "heartbeat"}'
                     try:
                         mock_ws.on_message(mock_ws, msg)
@@ -309,7 +307,7 @@ class TestWebSocketStress:
 
         mock_ws.run_forever.side_effect = run_forever_mock
 
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "test_token", "token_type": "Bearer"}
@@ -317,7 +315,7 @@ class TestWebSocketStress:
 
             start_time = time.time()
 
-            kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+            VmKis(mock_real_auth, mock_auth, use_websocket=True)
 
             # 10초 대기
             time.sleep(10.5)
@@ -339,8 +337,8 @@ class TestWebSocketStress:
 
     def test_stress_memory_under_load(self):
         """부하 시 메모리 사용량"""
-        import tracemalloc
         import gc
+        import tracemalloc
 
         tracemalloc.start()
         gc.collect()
@@ -351,11 +349,11 @@ class TestWebSocketStress:
         messages = []
         for i in range(10000):
             msg = {
-                'type': 'price',
-                'symbol': f'{100000 + (i % 100):06d}',
-                'price': 70000 + i,
-                'volume': 1000 + i,
-                'timestamp': f'2024010109{i % 60:02d}00',
+                "type": "price",
+                "symbol": f"{100000 + (i % 100):06d}",
+                "price": 70000 + i,
+                "volume": 1000 + i,
+                "timestamp": f"2024010109{i % 60:02d}00",
             }
             messages.append(msg)
 
@@ -364,7 +362,7 @@ class TestWebSocketStress:
         current, peak = tracemalloc.get_traced_memory()
         tracemalloc.stop()
 
-        diff_stats = snapshot_after.compare_to(snapshot_before, 'lineno')
+        diff_stats = snapshot_after.compare_to(snapshot_before, "lineno")
         total_diff = sum(stat.size_diff for stat in diff_stats)
 
         print(f"\n10000개 메시지: {total_diff / 1024 / 1024:.1f}MB")
@@ -377,7 +375,7 @@ class TestWebSocketStress:
 class TestWebSocketResilience:
     """WebSocket 복원력 테스트"""
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_resilience_reconnect_after_errors(self, mock_ws_class, mock_real_auth, mock_auth):
         """에러 후 재연결"""
         result = StressTestResult("10회 재연결")
@@ -394,7 +392,7 @@ class TestWebSocketResilience:
                 if len(connection_attempts) % 2 == 1:
                     raise Exception("Connection failed")
 
-                if hasattr(mock_ws, 'on_open'):
+                if hasattr(mock_ws, "on_open"):
                     mock_ws.on_open(mock_ws)
 
             mock_ws.run_forever.side_effect = run_forever_mock
@@ -402,7 +400,7 @@ class TestWebSocketResilience:
 
         mock_ws_class.side_effect = create_mock_ws
 
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "test_token", "token_type": "Bearer"}
@@ -411,9 +409,9 @@ class TestWebSocketResilience:
             start_time = time.time()
 
             # 10번 재연결 시도
-            for i in range(10):
+            for _i in range(10):
                 try:
-                    kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+                    VmKis(mock_real_auth, mock_auth, use_websocket=True)
                     result.success_count += 1
                 except Exception as e:
                     result.error_count += 1
@@ -429,7 +427,7 @@ class TestWebSocketResilience:
         # 기대: 최소 5회 성공
         assert result.success_count >= 5
 
-    @patch('websocket.WebSocketApp')
+    @patch("websocket.WebSocketApp")
     def test_resilience_handle_malformed_messages(self, mock_ws_class, mock_real_auth, mock_auth):
         """잘못된 메시지 처리"""
         result = StressTestResult("100개 메시지 (50% 잘못됨)")
@@ -438,11 +436,11 @@ class TestWebSocketResilience:
         mock_ws_class.return_value = mock_ws
 
         def run_forever_mock(*args, **kwargs):
-            if hasattr(mock_ws, 'on_open'):
+            if hasattr(mock_ws, "on_open"):
                 mock_ws.on_open(mock_ws)
 
             # 100개 메시지 (50개 정상, 50개 비정상)
-            if hasattr(mock_ws, 'on_message'):
+            if hasattr(mock_ws, "on_message"):
                 for i in range(100):
                     if i % 2 == 0:
                         # 정상 메시지
@@ -455,12 +453,12 @@ class TestWebSocketResilience:
                         mock_ws.on_message(mock_ws, msg)
                         if i % 2 == 0:
                             result.success_count += 1
-                    except Exception as e:
+                    except Exception:
                         result.error_count += 1
 
         mock_ws.run_forever.side_effect = run_forever_mock
 
-        with patch('requests.post') as mock_post:
+        with patch("requests.post") as mock_post:
             mock_response = Mock()
             mock_response.status_code = 200
             mock_response.json.return_value = {"access_token": "test_token", "token_type": "Bearer"}
@@ -468,7 +466,7 @@ class TestWebSocketResilience:
 
             start_time = time.time()
 
-            kis = VmKis(mock_real_auth, mock_auth, use_websocket=True)
+            VmKis(mock_real_auth, mock_auth, use_websocket=True)
 
             result.elapsed = time.time() - start_time
 
