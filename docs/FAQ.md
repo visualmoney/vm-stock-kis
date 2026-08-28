@@ -406,7 +406,7 @@ kis = VmKis(...)
 
 A: 다음 단계를 따르세요:
 
-1. [GitHub Issues](https://github.com/QuantumOmega/vm-stock-kis/issues) 방문
+1. [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues) 방문
 2. "New Issue" 클릭
 3. 버그 설명 (제목, 상세 내용, 재현 방법, 환경 정보 포함)
 4. 제출
@@ -553,14 +553,14 @@ def get_quote(symbol):
 
 ## 추가 리소스
 
-- 📚 [공식 문서](https://github.com/QuantumOmega/vm-stock-kis)
-- 💬 [GitHub Discussions](https://github.com/QuantumOmega/vm-stock-kis/discussions)
-- 🐛 [Bug Reports](https://github.com/QuantumOmega/vm-stock-kis/issues)
+- 📚 [공식 문서](https://github.com/visualmoney/vm-stock-kis)
+- 💬 [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
+- 🐛 [Bug Reports](https://github.com/visualmoney/vm-stock-kis/issues)
 - 📖 [Tutorial](../QUICKSTART.md)
 - 🔗 [한국투자증권 API](https://www.truefriend.com)
 
 ---
 
 **마지막 업데이트**: 2025-12-20
-**문의**: [GitHub Discussions](https://github.com/QuantumOmega/vm-stock-kis/discussions) 또는 [Issues](https://github.com/QuantumOmega/vm-stock-kis/issues)
+**문의**: [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions) 또는 [Issues](https://github.com/visualmoney/vm-stock-kis/issues)
 """

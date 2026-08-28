@@ -90,7 +90,7 @@ except KisAuthenticationError:
 pip install vmkis
 
 # Or from source
-git clone https://github.com/yourusername/vm-stock-kis.git
+git clone https://github.com/visualmoney/vm-stock-kis.git
 cd vm-stock-kis
 pip install -e .
 ```
@@ -250,8 +250,8 @@ for order in orders:
 
 ## Community & Support
 
-- 📝 **Issues**: [GitHub Issues](https://github.com/yourusername/vm-stock-kis/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/yourusername/vm-stock-kis/discussions)
+- 📝 **Issues**: [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
 - 📧 **Email**: <support@vm-stock-kis.org>
 - 🌐 **Website**: [https://vm-stock-kis.org](https://vm-stock-kis.org)
 
@@ -265,7 +265,7 @@ We welcome contributions! Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md)
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/vm-stock-kis.git
+git clone https://github.com/visualmoney/vm-stock-kis.git
 cd vm-stock-kis
 
 # Install development dependencies

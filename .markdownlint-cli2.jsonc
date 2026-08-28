@@ -7,6 +7,10 @@
     "dist/**",
     "docs/generated/**",
     // 보존용 동결 문서. 분할 과정에서 생긴 파일 간 네비게이션 앵커가 남아 있어 제외합니다.
-    "docs/reports/archive/**"
+    "docs/reports/archive/**",
+    // 동결 보관소. 당시 서술을 그대로 두므로 린트하지 않습니다. archive/README.md는 예외.
+    "archive/docs/**",
+    "archive/src/**",
+    "archive/scripts/**"
   ]
 }

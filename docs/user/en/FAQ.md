@@ -32,7 +32,7 @@ pip install vmkis
 For development:
 
 ```bash
-git clone https://github.com/yourusername/vm-stock-kis.git
+git clone https://github.com/visualmoney/vm-stock-kis.git
 cd vm-stock-kis
 pip install -e ".[dev]"
 ```
@@ -546,8 +546,8 @@ pip install -e .
 
 ## Getting Help
 
-- 💬 **GitHub Issues**: Report bugs at [GitHub Issues](https://github.com/yourusername/vm-stock-kis/issues)
-- 💭 **Discussions**: Ask questions at [GitHub Discussions](https://github.com/yourusername/vm-stock-kis/discussions)
+- 💬 **GitHub Issues**: Report bugs at [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
+- 💭 **Discussions**: Ask questions at [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
 - 📧 **Email**: <support@vm-stock-kis.org>
 
 ---

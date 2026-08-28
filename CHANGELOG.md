@@ -24,6 +24,9 @@
   - `PYKIS_*` 환경변수 폴백.
 - `SECURITY.md` / `SECURITY.en.md` — 보안 정책 및 자격증명 취급 방식.
 - `CHANGELOG.md` (이 파일), `.python-version`, `.github/dependabot.yml`.
+- `archive/` — 동결 보관소. 수명이 끝난 문서·코드를 당시 상태 그대로 두는
+  자리이며 린트·포맷·이름 스윕·배포 대상에서 제외합니다.
+  규칙은 [archive/README.md](./archive/README.md) 참고.
 - `publish.yml`에 게시 전 검증 — 태그/버전 일치, `twine check --strict`,
   휠 내용(`py.typed` 포함, `pykis/`·`tests/` 부재), 격리 환경 스모크 테스트.
 - `ci.yml`에 `Version sanity`, `uv lock --check`, 브랜치 보호용 `ci-ok` 집계 잡.
@@ -53,6 +56,14 @@
   정정했습니다.
 - `.github/ISSUE_TEMPLATE/*`와 `CONTRIBUTING.md`의 링크가 업스트림 저장소를
   가리키고 있었습니다.
+- **사용자 문서의 GitHub 링크 19곳이 존재하지 않는 저장소를 가리켰습니다.**
+  소유자가 `QuantumOmega`(`docs/FAQ.md`, `examples/tutorial_basic.ipynb`) 또는
+  자리표시자 그대로인 `yourusername`(`docs/user/en/**`, `examples/README.md`)
+  이었습니다. 이름 스윕이 `python-kis` → `vm-stock-kis`만 바꾸고 소유자는
+  그대로 둬서 오히려 그럴듯한 죽은 링크가 됐습니다.
+- `docs/NEWSLETTER_TEMPLATE.md`가 서식이 아니라 2025년 12월에 발행된 한 호였고
+  옛 이름을 담고 있었습니다. 기록물을 `archive/docs/2025-12_NEWSLETTER.md`로
+  분리하고, 그 자리에 실제 빈 서식을 새로 썼습니다.
 
 ### 제거
 

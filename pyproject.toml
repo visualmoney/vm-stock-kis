@@ -171,7 +171,10 @@ target-version = "py310"
 src = ["src", "tests"]
 # ruff는 Markdown 안의 Python 코드 블록도 포맷합니다. 문서의 예제 코드를
 # 말없이 다시 쓰게 되고, 기록물 문서까지 건드리므로 제외합니다.
-extend-exclude = ["docs/generated", "docs/diagrams", "*.md"]
+#
+# archive/는 동결 보관소입니다(archive/README.md 참고). 옛 이름과 옛 관례를 그대로
+# 두는 것이 목적이므로 여기 담긴 파이썬 코드를 린트하거나 포맷하지 않습니다.
+extend-exclude = ["docs/generated", "docs/diagrams", "*.md", "archive"]
 
 [tool.ruff.lint]
 # select를 명시하는 이유: 지정하지 않으면 ruff의 기본 규칙셋을 따르는데, 그 기본이
