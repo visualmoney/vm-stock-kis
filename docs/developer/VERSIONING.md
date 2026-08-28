@@ -42,13 +42,89 @@ git tag ──hatch-vcs──► 휠/sdist METADATA "Version:"
 위해서입니다. `2.1.7.dev4+g<sha>`처럼 그럴듯한 값을 만들면 아직 존재하지 않는
 릴리스를 가리키게 됩니다.
 
+## 태그 규칙
+
+### ① 태그는 `v` + PEP 440 정규형이며, 글자 그대로 일치해야 합니다
+
+`publish.yml`은 태그에서 `v`만 떼어내고, 빌드된 휠 파일명에서 파싱한 버전과
+**문자열 비교**를 합니다. 후자는 PEP 440 정규화를 거친 값입니다.
+
+```bash
+tag="${GITHUB_REF_NAME#v}"
+if [ "$tag" != "$BUILT_VERSION" ]; then ... fi
+```
+
+정규화는 여러 표기를 같은 값으로 모으므로, 사람이 자연스럽게 쓰는 표기가
+대부분 여기서 어긋납니다.
+
+| 태그 | 정규형 | 결과 |
+|---|---|---|
+| `v3.0.0` | `3.0.0` | ✅ |
+| `v3.0.0rc1` | `3.0.0rc1` | ✅ |
+| `v3.0.0b1` | `3.0.0b1` | ✅ |
+| `v3.0.0-rc1` | `3.0.0rc1` | ❌ 빌드 잡 실패 |
+| `v3.0.0.rc1` | `3.0.0rc1` | ❌ |
+| `v3.0.0RC1` | `3.0.0rc1` | ❌ |
+| `v3.0.0-beta.1` | `3.0.0b1` | ❌ |
+
+**`rc`/`a`/`b` 뒤에 구분자 없이 숫자만 붙이세요.** 어긋나면 게시 *전* 잡에서
+막히므로 잘못된 아티팩트가 올라가지는 않지만, 태그를 지우고 다시 만들어야 합니다.
+
+직접 확인하려면:
+
+```console
+$ uv run --with packaging python -c "from packaging.version import Version; t='3.0.0rc1'; print(str(Version(t))==t)"
+True
+```
+
+### ② 사전 릴리스는 태그 표기만으로 갈립니다
+
+`publish.yml`이 휠 버전을 `packaging` 으로 파싱해 `is_prerelease or is_devrelease`
+를 판정하고, 그 결과로 업로드 대상이 정해집니다.
+
+| 태그 | 업로드 | GitHub Release |
+|---|---|---|
+| `v3.0.0rc2` / `v3.0.0a1` / `v3.0.0b1` | TestPyPI | 만들지 않음 |
+| `v3.0.0` | PyPI | 만듦 |
+
+### ③ 번호는 되돌리지 않고 올립니다
+
+PyPI도 TestPyPI도 **같은 버전의 재업로드를 영구히 거부합니다.** 파일을 지워도
+그 버전 이름은 되살아나지 않습니다. 리허설을 다시 하려면 `rc2`, `rc3` 으로
+올리세요.
+
+### ④ 밀어버린 태그는 옮기지 않습니다
+
+이미 빌드된 아티팩트와 어긋나고, 받은 사람의 `git describe` 결과가 조용히
+달라집니다. 잘못 만들었으면 지우고 다시 붙이지 말고 번호를 올리세요.
+
+### ⑤ `main` 의 CI 초록 커밋에만, annotated 로 붙입니다
+
+```bash
+git tag -a v3.0.0 -m "v3.0.0"     # -a 로 작성자와 날짜를 남깁니다
+```
+
 ## 릴리스 절차
 
 ```bash
 git switch main && git pull
 uv run pytest -m 'not requires_api' --cov     # 로컬 확인
+
+# 1) 리허설 — TestPyPI 로 갑니다
+git tag -a v3.0.0rc2 -m "v3.0.0rc2"
+git push origin v3.0.0rc2
+
+# 2) 통과를 확인한 뒤 정식 배포 — 되돌릴 수 없습니다
 git tag -a v3.0.0 -m "v3.0.0"
 git push origin v3.0.0                        # publish.yml 이 실행됩니다
+```
+
+**배포물에 들어가는 파일이 바뀌었다면 리허설을 다시 하세요.** 문서만 바뀌었다면
+필요 없습니다. `[tool.hatch.build.targets.sdist] include` 와
+`[tool.hatch.build.targets.wheel] packages` 가 실제로 실리는 범위입니다.
+
+```bash
+git diff --stat <직전-rc-태그>..main -- src/ pyproject.toml uv.lock
 ```
 
 `publish.yml`은 게시 전에 다음을 검증합니다. 하나라도 실패하면 PyPI에 올라가지
