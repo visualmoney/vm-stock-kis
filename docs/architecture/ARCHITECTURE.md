@@ -114,13 +114,13 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    │  scope/ │───▶│ adapter/ │◀────▶│   api/   │ ◀─ api ↔ adapter 순환은
    └─────────┘    └──────────┘ 의도적└─┬───┬────┘    의도적 (rich object)
                         순환           │   │ ▲
-                                       │   │ └── client 가 응답맵을 참조
-                                       ▼   ▼      [정리 대상: 자기등록으로 역전]
+                                       │   │
+                                       ▼   ▼
                                  ┌──────────┐   ┌────────────┐
                                  │responses/│──▶│  client/   │◀── event/
                                  └──────────┘   └─────┬──────┘   (구독·필터)
-                                  의도적:              │ utils/retry 가 참조
-                                  응답은 client 위에   ▼ [정리 대상]
+                                  의도적:              │
+                                  응답은 client 위에   ▼
                                                  ┌──────────┐
                                                  │  utils/  │
                                                  └──────────┘
@@ -151,10 +151,11 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    |---|---|---|
    | `responses → client` | `responses/response.py`, `responses/exceptions.py` | 의도적 — 응답은 client 타입 위에 성립 |
    | `api ↔ adapter` | 주문/잔고 계열 | 의도적 — 응답 객체가 Mixin 을 상속 (rich object) |
-   | `client → api` | `client/websocket.py` | **정리 대상** — 자기등록으로 역전 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17)) |
+   | ~~`client → api`~~ | ~~`client/websocket.py`~~ | ✅ **해소됨** — 자기등록으로 역전 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17)) |
    | ~~`utils → client`~~ | ~~`utils/retry.py`~~ | ✅ **해소됨** ([#18](https://github.com/visualmoney/vm-stock-kis/issues/18)) |
 
-   `utils → client` 를 없앤 방법이 이 표의 나머지에도 참고가 됩니다.
+   **정리 대상 두 건이 모두 해소됐습니다.** 남은 역방향은 전부 의도적입니다.
+   두 건을 없앤 방법이 같은 발상이라 앞으로도 참고가 됩니다.
    `utils/retry.py` 는 재시도 대상 예외 **목록**을 들고 있느라 `client` 를
    참조했습니다. 목록을 옮기는 대신 **판단 근거를 예외 자신에게 넘겼습니다** —
    `KisException.retryable` 표식을 보고 `getattr` 로 확인하므로 유틸은 아무것도
@@ -710,18 +711,28 @@ Exception
 1. **응답 클래스 정의** (`api/websocket/<feature>.py`)
    `__fields__` 를 `^` 분리 **순서 그대로** 나열하고 미사용 필드는 `None` 으로 둡니다.
 
-2. **⚠️ `WEBSOCKET_RESPONSES_MAP` 에 등록** (`api/websocket/__init__.py`)
+2. **⚠️ `@register_websocket_response(...)` 데코레이터 부착**
+
+   ```python
+   @register_websocket_response("H0STANC0")
+   class KisDomesticRealtimeExpectedPrice(KisWebsocketResponse, ...):
+       ...
+   ```
 
    > **이 한 줄이 없으면 구독 메시지는 전송되지만 수신 이벤트가 조용히
-   > 버려집니다.** `client/websocket.py` 의 dispatch 가 이 맵을 조회해
-   > 없으면 경고 로그만 남기고 드롭합니다. **가장 빠뜨리기 쉬운 단계입니다.**
+   > 버려집니다.** dispatch 가 레지스트리를 조회해 없으면 경고 로그만 남기고
+   > 드롭합니다. **가장 빠뜨리기 쉬운 단계입니다.**
+   >
+   > 암호화 TR 이면 `encrypted=True` 를 함께 줍니다. 예전에는 암호화 TR 목록이
+   > `client/websocket.py` 에 튜플로 하드코딩돼 있었습니다 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17)).
 
 3. **`on_xxx` / `on_product_xxx` 구독 함수 작성** — 이벤트 필터 + `client.on(...)`
 
 4. **adapter 확장** — `adapter/websocket/*.py` 의 `on()` 문자열 분기에 추가하고
    Protocol / Mixin 양쪽에 `@overload` 를 답니다. 보일러플레이트가 가장 많은 지점입니다.
 
-5. **암호화 TR 인 경우** — `client/websocket.py` 의 암호화 TR ID 목록도 함께 수정합니다.
+5. **새 모듈이면 `api/websocket/__init__.py` 에 import 추가** — 그 import 가
+   곧 등록입니다. 모듈이 로드되지 않으면 데코레이터가 실행되지 않습니다.
 
 ---
 

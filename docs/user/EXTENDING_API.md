@@ -195,21 +195,36 @@ KisStock.my_feature = my_feature
 1. **응답 클래스 정의** — `KisWebsocketResponse` 를 상속하고 `__fields__` 를
    `^` 분리 **순서 그대로** 나열합니다. 미사용 필드는 `None`.
 
-2. **⚠️ `WEBSOCKET_RESPONSES_MAP` 에 등록** — 이게 이 절의 전부입니다.
+2. **⚠️ 레지스트리에 등록** — 이게 이 절의 전부입니다.
 
    ```python
-   from vmkis.api.websocket import WEBSOCKET_RESPONSES_MAP
+   from vmkis.responses.websocket import register_websocket_response
 
-   WEBSOCKET_RESPONSES_MAP["H0STANC0"] = MyRealtimeResponse
+   @register_websocket_response("H0STANC0")
+   class MyRealtimeResponse(KisWebsocketResponse, ...):
+       ...
    ```
 
    > **이 한 줄이 없으면 구독 메시지는 정상 전송되고 서버도 데이터를 보내지만,
    > 수신 이벤트가 조용히 버려집니다.** 경고 로그만 남습니다. 실시간 TR 추가에서
    > 가장 자주 빠뜨리는 단계입니다.
    >
-   > `client/websocket.py` 가 **같은 dict 객체**를 import 하므로 위처럼 **항목을
-   > 추가**하는 것은 반영됩니다. 다만 `WEBSOCKET_RESPONSES_MAP = {...}` 처럼
-   > **재할당하면 반영되지 않습니다.**
+   > 암호화되는 TR 이면 `encrypted=True` 를 함께 줍니다.
+   >
+   > 데코레이터는 **클래스 정의 시점에** 등록합니다. 따라서 그 모듈이 한 번은
+   > import 되어야 합니다. 사용자 코드에서는 클래스를 정의한 모듈을 import 하면
+   > 됩니다.
+
+   기존 dict 에 직접 넣는 방식도 여전히 동작합니다.
+
+   ```python
+   from vmkis.responses.websocket import WEBSOCKET_RESPONSES_MAP
+
+   WEBSOCKET_RESPONSES_MAP["H0STANC0"] = MyRealtimeResponse
+   ```
+
+   > 같은 dict 객체를 참조하므로 **항목 추가**는 반영됩니다. 다만
+   > `WEBSOCKET_RESPONSES_MAP = {...}` 처럼 **재할당하면 반영되지 않습니다.**
 
 3. **구독** — `kis.websocket.on(...)` 으로 붙입니다.
 

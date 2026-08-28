@@ -20,7 +20,7 @@ from vmkis.event.filters.product import KisProductEventFilter
 from vmkis.event.handler import KisEventFilter, KisEventTicket, KisMultiEventFilter
 from vmkis.event.subscription import KisSubscriptionEventArgs
 from vmkis.responses.types import KisAny, KisInt, KisString
-from vmkis.responses.websocket import KisWebsocketResponse, KisWebsocketResponseProtocol
+from vmkis.responses.websocket import KisWebsocketResponse, KisWebsocketResponseProtocol, register_websocket_response
 from vmkis.utils.timezone import TIMEZONE
 from vmkis.utils.typing import Checkable
 
@@ -73,6 +73,7 @@ class KisDomesticRealtimeOrderbookItem(KisOrderbookItemBase):
     """국내주식 실시간 호가"""
 
 
+@register_websocket_response("H0STASP0")
 class KisDomesticRealtimeOrderbook(KisRealtimeOrderbookBase):
     """국내주식 실시간 호가"""
 
@@ -191,6 +192,7 @@ class KisAsiaRealtimeOrderbookItem(KisOrderbookItemBase):
     """아시아 주식 실시간 호가"""
 
 
+@register_websocket_response("HDFSASP1")
 class KisAsiaRealtimeOrderbook(KisRealtimeOrderbookBase):
     """아시아 주식 실시간 호가"""
 
@@ -268,6 +270,7 @@ class KisUSRealtimeOrderbookItem(KisOrderbookItemBase):
     """미국 주식 실시간 호가"""
 
 
+@register_websocket_response("HDFSASP0")
 class KisUSRealtimeOrderbook(KisRealtimeOrderbookBase):
     """미국 주식 실시간 호가"""
 
