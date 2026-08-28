@@ -10,8 +10,8 @@ class DummyDist:
 
 def _set_vmkis_attrs(monkeypatch, version="1.2.3", package_name="vm-stock-kis"):
     # Ensure the runtime strings printed by diagnosis.check are stable
-    monkeypatch.setattr(diagnosis.vmkis, "__version__", version, raising=False)
-    monkeypatch.setattr(diagnosis.vmkis, "__package_name__", package_name, raising=False)
+    monkeypatch.setattr(diagnosis.__env__, "__version__", version, raising=False)
+    monkeypatch.setattr(diagnosis.__env__, "__package_name__", package_name, raising=False)
 
 
 def test_check_no_dependencies(monkeypatch, capsys):

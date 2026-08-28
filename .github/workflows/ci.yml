@@ -116,6 +116,17 @@ jobs:
           uv run ruff check --output-format=github .
           uv run ruff format --check .
 
+      # 아키텍처 계약. 계약은 pyproject.toml의 [tool.importlinter]에 있습니다.
+      # ARCHITECTURE.md 불변식 2번("새로운 모듈-레벨 역방향 간선을 만들지
+      # 않습니다")을 기계화한 것으로, 이슈 #17·#18이 없앤 역방향 간선 2건이
+      # 되살아나는 것을 막습니다.
+      #
+      # 이 스텝은 계약이 "지켜지는지"만 봅니다. 계약이 패키지 전체를 보고 있는지는
+      # tests/unit/test_import_contracts.py가 test 잡에서 확인합니다. 둘 다
+      # 필요합니다 - 그래프가 비어 있어도 lint-imports는 초록으로 통과합니다.
+      - name: Import contracts
+        run: uv run lint-imports
+
   # 성능 테스트는 머지를 막지 않습니다.
   #
   # 결과가 러너 성능에 좌우되므로 게이트에 두면 코드와 무관한 이유로 red 가 됩니다.

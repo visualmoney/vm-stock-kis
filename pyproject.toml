@@ -107,6 +107,11 @@ lint = [
     # 실측: 같은 코드에 v0.14.10은 228건, v0.16.4는 1003건을 보고합니다.
     "ruff>=0.16.4,<0.17",
     "pre-commit>=3.7.1",
+    # 아키텍처 계약 검사. 규칙은 [tool.importlinter] 에 있습니다.
+    # 상한을 두는 이유는 ruff 와 다릅니다. 계약은 여기에 명시되어 있으므로 규칙셋이
+    # 조용히 바뀌지는 않지만, 메이저 업그레이드에서 grimp 의 import 탐지 범위
+    # (지연 import·TYPE_CHECKING 처리)가 바뀌면 계약의 의미가 달라집니다.
+    "import-linter>=2.14,<3",
 ]
 docs = [
     "plantuml>=0.3.0",
@@ -227,6 +232,80 @@ ignore = [
 # 테스트의 콜백 스텁으로 람다를 쓰는 것은 관용적입니다. def로 바꾸면 오히려
 # 읽기 어려워집니다.
 "tests/**" = ["E731"]
+
+# ========================================================== import-linter ====
+# ARCHITECTURE.md 불변식 2번("새로운 모듈-레벨 역방향 간선을 만들지 않습니다")의
+# 기계화입니다. 이슈 #17 · #18 이 없앤 역방향 간선 2건이 되살아나는 것을 막습니다.
+#
+# 여기에 **모든** 역방향 간선을 넣지는 않습니다. `responses -> client` 와
+# `api <-> adapter` 는 의도적으로 동결된 간선이고(불변식 2번의 표),
+# `event -> api` 는 아직 판정되지 않았습니다(이슈 #50 의 범위 밖).
+# 계약은 "해소된 것이 되살아나지 않는다"만 지킵니다.
+[tool.importlinter]
+# root_package(단수)로 "vmkis" 만 주면 **계약이 조용히 아무것도 검사하지 않습니다.**
+# src/vmkis 의 디렉터리 18개 중 13개에 __init__.py 가 없어 암묵적 네임스페이스
+# 패키지이고, grimp 은 상위 패키지를 스캔할 때 이들을 건너뜁니다. 실측으로
+# "vmkis" 하나만 주면 모듈 20개만 잡히고 utils/client/responses/api/adapter 가
+# 통째로 사라집니다(전부 주면 92개 = .py 79개 + 네임스페이스 패키지 13개).
+#
+# 계약의 source_modules 가 그래프에 없으면 import-linter 가
+# "Module 'vmkis.utils' does not exist." 로 죽으므로 이 함정 자체는 소리를 냅니다.
+# 다만 **새 서브패키지가 목록에서 빠지는 것은 소리를 내지 않습니다.**
+# tests/unit/test_import_contracts.py 가 그 누락을 잡습니다.
+root_packages = [
+    "vmkis",
+    "vmkis.adapter",
+    "vmkis.api",
+    "vmkis.client",
+    "vmkis.responses",
+    "vmkis.utils",
+]
+# 불변식 2번이 막는 것은 **모듈 레벨** 역방향 간선입니다. 불변식 1번은 반대로
+# `if TYPE_CHECKING:` 안의 상위 import 를 명시적으로 허용합니다(`vmkis.kis` 가
+# 그렇게만 import 됩니다). 이 옵션이 없으면 계약이 불변식 1번을 위반으로 잡습니다.
+exclude_type_checking_imports = true
+
+[[tool.importlinter.contracts]]
+name = "utils 는 vmkis 의 상위 계층을 import 하지 않는다"
+type = "forbidden"
+source_modules = ["vmkis.utils"]
+# utils 는 현재 vmkis 내부를 **하나도** import 하지 않습니다(실측).
+# 이슈 #18 이 `utils/retry.py -> client.exceptions` 를 없앤 결과입니다.
+# 재시도 대상 판단은 예외 자신의 `retryable` 표식이 들고 있습니다.
+forbidden_modules = [
+    "vmkis.client",
+    "vmkis.responses",
+    "vmkis.event",
+    "vmkis.api",
+    "vmkis.adapter",
+    "vmkis.scope",
+    "vmkis.kis",
+    # 최상위 파사드·조립 모듈. 전부 utils 보다 위입니다.
+    # `vmkis.exceptions` 는 client 와 responses 를 재export 하므로, 이것을
+    # 경유하면 #18 이 없앤 간선이 그대로 되살아납니다.
+    "vmkis.exceptions",
+    "vmkis.types",
+    "vmkis.public_types",
+    "vmkis.helpers",
+    "vmkis.simple",
+]
+
+[[tool.importlinter.contracts]]
+name = "client 는 api 를 import 하지 않는다"
+type = "forbidden"
+source_modules = ["vmkis.client"]
+forbidden_modules = [
+    "vmkis.api",
+    "vmkis.adapter",
+    "vmkis.scope",
+]
+# 순환 회피용 지연 import 1건. 함수 안에 있어 import 시점에는 실행되지 않지만
+# grimp 은 모듈 레벨과 구분하지 않으므로 여기서 면제합니다.
+# 사유는 client/messaging.py 의 해당 줄 주석에 있습니다. 이 목록이 늘어난다면
+# 그것은 예외가 아니라 계약이 깨지고 있다는 신호입니다.
+ignore_imports = [
+    "vmkis.client.messaging -> vmkis.api.auth.websocket",
+]
 
 # ================================================================ pytest ====
 [tool.pytest.ini_options]

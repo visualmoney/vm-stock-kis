@@ -49,6 +49,13 @@ class KisWebsocketRequest(KisForm, KisObjectBase):
         self.domain = domain
 
     def build(self, dict: dict[str, Any] | None = None) -> dict[str, Any]:
+        # 순환 회피용 지연 import. 파일 상단으로 올리지 마세요.
+        # vmkis.api.auth.websocket 이 다시 client 를 import 하므로, 모듈 레벨로
+        # 올리면 패키지가 로드 불능이 됩니다(ARCHITECTURE.md 불변식 3번).
+        #
+        # client -> api 는 이슈 #17 이 없앤 역방향 간선이고 pyproject.toml 의
+        # import-linter 계약 "client 는 api 를 import 하지 않는다" 가 이를 막습니다.
+        # 이 한 줄만 그 계약의 ignore_imports 에 면제로 등록되어 있습니다.
         from vmkis.api.auth.websocket import websocket_approval_key
 
         dict = dict or {}
