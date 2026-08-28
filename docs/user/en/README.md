@@ -251,7 +251,7 @@ for order in orders:
 ## Community & Support
 
 - 📝 **Issues**: [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
-- 💬 **Discussions**: [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
+- 💬 **Questions**: [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
 - 📧 **Email**: <support@vm-stock-kis.org>
 - 🌐 **Website**: [https://vm-stock-kis.org](https://vm-stock-kis.org)
 

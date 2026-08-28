@@ -305,7 +305,7 @@ Closed:         Weekends & Korean holidays
 ## Getting Help
 
 - 💬 **GitHub Issues**: [Report bugs](https://github.com/visualmoney/vm-stock-kis/issues)
-- 💭 **GitHub Discussions**: [Ask questions](https://github.com/visualmoney/vm-stock-kis/discussions)
+- 💭 **GitHub Issues**: [Ask questions](https://github.com/visualmoney/vm-stock-kis/issues)
 - 📧 **Email**: <support@vm-stock-kis.org>
 - 📚 **Wiki**: [Community documentation](https://github.com/visualmoney/vm-stock-kis/wiki)
 

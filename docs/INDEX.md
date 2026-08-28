@@ -62,7 +62,6 @@
 | [AGENT_WORKFLOW_RULES](guidelines/AGENT_WORKFLOW_RULES.md) | AI 에이전트 작업 규칙 |
 | [MULTILINGUAL_SUPPORT](guidelines/MULTILINGUAL_SUPPORT.md) | 다국어 지원 정책 |
 | [REGIONAL_GUIDES](guidelines/REGIONAL_GUIDES.md) | 지역별 설정 |
-| [GITHUB_DISCUSSIONS_SETUP](guidelines/GITHUB_DISCUSSIONS_SETUP.md) | Discussions 설정 |
 | [PLANTUML_SETUP](guidelines/PLANTUML_SETUP.md) | 다이어그램 도구 |
 | [VIDEO_SCRIPT](guidelines/VIDEO_SCRIPT.md) | 튜토리얼 영상 대본 |
 
@@ -80,6 +79,11 @@
 | [`generated/`](generated/) | 자동 생성물 (API 레퍼런스 등) |
 | [`rules/`](rules/) | 옛 테스트 규칙 |
 | [`../archive/`](../archive/README.md) | 저장소 루트의 동결 보관소 — 보관 기준은 여기 |
+
+**Discussions 는 쓰지 않습니다.** 2025-12-20 에 켠 뒤 8개월간 게시물이 자동
+생성 환영글 1건뿐이어서 2026-08-28 에 껐습니다. 설정 가이드는
+[`../archive/docs/guidelines/2025-12-20_GITHUB_DISCUSSIONS_SETUP.md`](../archive/docs/guidelines/2025-12-20_GITHUB_DISCUSSIONS_SETUP.md)
+에 있습니다. **창구는 GitHub Issues 하나입니다.**
 
 > ⚠️ [`reports/ARCHITECTURE_QUALITY_KR.md`](reports/ARCHITECTURE_QUALITY_KR.md)
 > 의 **수치를 인용하지 마세요.** 포크 이전 트리에서 측정한 값입니다.

@@ -270,7 +270,7 @@ quote = kis.stock("005930").quote()
 | **일반 지원** | 버그 수정, 성능 개선 | 최신 0.0.x |
 | **보안 패치** | 보안 취약점 수정 | 최신 0.0.x ([SECURITY.md](../../SECURITY.md)) |
 | **하위 호환성** | 공개 API 시그니처 유지 | 0.0.x 구간 |
-| **질문/이슈** | GitHub Issues / Discussions | 지속 |
+| **질문/이슈** | GitHub Issues | 지속 |
 
 ---
 

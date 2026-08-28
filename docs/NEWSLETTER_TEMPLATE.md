@@ -152,7 +152,6 @@ def reliable_fetch(kis, symbol):
 ## 🔗 유용한 링크
 
 - 📖 [저장소](https://github.com/visualmoney/vm-stock-kis)
-- 💬 [Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
 - 🐛 [Issues](https://github.com/visualmoney/vm-stock-kis/issues)
 - 📦 [PyPI](https://pypi.org/project/vm-stock-kis/)
 - 📚 [FAQ](./FAQ.md)
@@ -165,8 +164,7 @@ def reliable_fetch(kis, symbol):
 
 ## 📝 피드백
 
-- 제안·질문: [Issues](https://github.com/visualmoney/vm-stock-kis/issues) 또는
-  [Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
+- 제안·질문: [Issues](https://github.com/visualmoney/vm-stock-kis/issues)
 
 ---
 
