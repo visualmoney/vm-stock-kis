@@ -2,9 +2,10 @@ from unittest.mock import MagicMock, mock_open, patch
 
 import pytest
 
+from vmkis.__env__ import API_RETRY_MAX_ATTEMPTS, API_TOKEN_REISSUE_LIMIT
 from vmkis.api.auth.token import KisAccessToken
 from vmkis.client.auth import KisAuth
-from vmkis.client.exceptions import KisHTTPError
+from vmkis.client.exceptions import KisAuthenticationError, KisHTTPError, KisRateLimitError
 from vmkis.client.form import KisForm
 from vmkis.kis import VmKis
 from vmkis.responses.dynamic import KisObject
@@ -199,9 +200,122 @@ def test_request_rate_limit_and_token_expiry(mock_session):
 
             assert response.json()["rt_cd"] == "0"
             assert mock_request.call_count == 3
-            mock_sleep.assert_called_once_with(0.1)  # Rate limit 대기
+
+            # 첫 재시도는 API_RETRY_INITIAL_DELAY 근처. 지터가 ±10% 흔듭니다.
+            mock_sleep.assert_called_once()
+            (delay,) = mock_sleep.call_args.args
+            assert 0.09 <= delay <= 0.11
+
             mock_token_issue.assert_called_once()  # 토큰 재발급
             assert kis.token.token == "new_token"
+
+
+# ---------------------------------------------------------------------------
+# 재시도 상한 (이슈 #14)
+#
+# 예전에는 `while True` 안에서 상한 없이 재시도했다. 서버가 EGW00201(유량 초과)
+# 이나 EGW00123(토큰 만료)을 계속 반환하면 호출이 영원히 반환되지 않았다.
+# 자동매매에서는 "느리다"가 아니라 "멈춘다"이므로, 아래 테스트들은 실패보다
+# **끝난다는 것** 자체를 검증한다.
+# ---------------------------------------------------------------------------
+
+
+def _error_response(msg_cd: str) -> MagicMock:
+    resp = MagicMock(ok=False, status_code=429)
+    resp.json.return_value = {"msg_cd": msg_cd}
+    resp.request = MagicMock()
+    resp.request.url = "https://example.local/test"
+    resp.request.method = "GET"
+    resp.request.headers = {}
+    resp.request.body = None
+    resp.reason = "Too Many Requests"
+    resp.text = "rate limited"
+    return resp
+
+
+def _bounded_side_effect(resp: MagicMock, limit: int) -> list[MagicMock]:
+    """같은 응답을 `limit` 번만 돌려주는 side_effect.
+
+    `return_value` 로 두면 상한이 회귀했을 때 테스트가 **실패가 아니라 무한
+    정지**한다. CI를 멈추게 하는 것은 빨간 줄보다 나쁘다. 목록으로 주면
+    소진되는 순간 StopIteration 으로 즉시 터진다.
+    """
+    return [resp] * limit
+
+
+def _authed_kis() -> VmKis:
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
+    kis.token = KisObject.transform_(
+        {
+            "access_token": "test_token",
+            "token_type": "Bearer",
+            "access_token_token_expired": "2099-01-01 00:00:00",
+            "expires_in": 86400,
+        },
+        KisAccessToken,
+    )
+    return kis
+
+
+@patch("vmkis.kis.requests.Session")
+def test_rate_limit_retries_are_bounded(mock_session):
+    """유량 초과가 계속돼도 무한 루프에 빠지지 않고 예외로 끝난다."""
+    kis = _authed_kis()
+    mock_session.return_value.request.side_effect = _bounded_side_effect(
+        _error_response("EGW00201"), API_RETRY_MAX_ATTEMPTS + 1
+    )
+
+    with patch("vmkis.kis.sleep") as mock_sleep, pytest.raises(KisRateLimitError):
+        kis.request("/")
+
+    # 최초 1회 + 재시도 N회
+    assert mock_session.return_value.request.call_count == API_RETRY_MAX_ATTEMPTS + 1
+    assert mock_sleep.call_count == API_RETRY_MAX_ATTEMPTS
+
+
+@patch("vmkis.kis.requests.Session")
+def test_rate_limit_backoff_is_exponential(mock_session):
+    """고정 간격이 아니라 지수적으로 물러난다. 고정 간격은 유량 제한을 악화시킨다."""
+    kis = _authed_kis()
+    mock_session.return_value.request.side_effect = _bounded_side_effect(
+        _error_response("EGW00201"), API_RETRY_MAX_ATTEMPTS + 1
+    )
+
+    with patch("vmkis.kis.sleep") as mock_sleep, pytest.raises(KisRateLimitError):
+        kis.request("/")
+
+    delays = [call.args[0] for call in mock_sleep.call_args_list]
+
+    assert delays == sorted(delays), f"대기가 단조 증가하지 않습니다: {delays}"
+    assert delays[-1] > delays[0] * 2, f"백오프가 적용되지 않았습니다: {delays}"
+    # 지터가 붙으므로 값이 서로 정확히 같지 않아야 한다.
+    assert len(set(delays)) > 1
+
+
+@patch("vmkis.kis.requests.Session")
+def test_token_reissue_is_limited(mock_session):
+    """재발급 후에도 만료 오류가 반복되면 인증 문제이므로 즉시 실패한다."""
+    kis = _authed_kis()
+    mock_session.return_value.request.side_effect = _bounded_side_effect(
+        _error_response("EGW00123"), API_TOKEN_REISSUE_LIMIT + 1
+    )
+
+    with patch("vmkis.api.auth.token.token_issue") as mock_token_issue:
+        mock_token_issue.return_value = KisObject.transform_(
+            {
+                "access_token": "new_token",
+                "token_type": "Bearer",
+                "access_token_token_expired": "2099-01-01 00:00:00",
+                "expires_in": 86400,
+            },
+            KisAccessToken,
+        )
+
+        with pytest.raises(KisAuthenticationError):
+            kis.request("/")
+
+    assert mock_token_issue.call_count == API_TOKEN_REISSUE_LIMIT
+    assert mock_session.return_value.request.call_count == API_TOKEN_REISSUE_LIMIT + 1
 
 
 @patch("vmkis.kis.requests.Session")

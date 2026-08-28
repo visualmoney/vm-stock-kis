@@ -12,6 +12,10 @@ from requests import Response
 
 from vmkis import logging
 from vmkis.__env__ import (
+    API_RETRY_INITIAL_DELAY,
+    API_RETRY_MAX_ATTEMPTS,
+    API_RETRY_MAX_DELAY,
+    API_TOKEN_REISSUE_LIMIT,
     REAL_API_REQUEST_PER_SECOND,
     REAL_DOMAIN,
     USER_AGENT,
@@ -23,15 +27,27 @@ from vmkis.client.account import KisAccountNumber
 from vmkis.client.appkey import KisKey
 from vmkis.client.auth import KisAuth
 from vmkis.client.cache import KisCacheStorage
-from vmkis.client.exceptions import KisHTTPError
+from vmkis.client.exceptions import KisAuthenticationError, KisHTTPError, KisRateLimitError
 from vmkis.client.form import KisForm
 from vmkis.client.object import KisObjectBase, kis_object_init
 from vmkis.client.websocket import KisWebsocketClient
 from vmkis.responses.dynamic import KisObject, TDynamic
 from vmkis.responses.types import KisDynamicDict
 from vmkis.utils.rate_limit import RateLimiter
+from vmkis.utils.retry import RetryConfig
 from vmkis.utils.thread_safe import thread_safe
 from vmkis.utils.workspace import get_cache_path
+
+# 전역 `retry_config` 싱글턴을 쓰지 않고 전용 인스턴스를 둡니다.
+# `with_retry` 데코레이터가 그 싱글턴을 제자리에서 변형하므로, 공유하면
+# 데코레이터를 한 번 쓰는 순간 이쪽 정책까지 바뀝니다.
+_REQUEST_RETRY_POLICY = RetryConfig(
+    max_retries=API_RETRY_MAX_ATTEMPTS,
+    initial_delay=API_RETRY_INITIAL_DELAY,
+    max_delay=API_RETRY_MAX_DELAY,
+    exponential_base=2.0,
+    jitter=True,
+)
 
 
 class VmKis:
@@ -557,6 +573,11 @@ class VmKis:
 
         rate_limit = self._rate_limiters[domain]
 
+        # 재시도는 반드시 끝나야 합니다. 예전에는 상한이 없어, 서버가 유량 초과를
+        # 계속 반환하면 이 호출이 영원히 반환되지 않았습니다.
+        rate_limit_retries = 0
+        token_reissues = 0
+
         while True:
             rate_limit.acquire(blocking_callback=self._rate_limit_exceeded)
 
@@ -584,12 +605,36 @@ class VmKis:
             match error_code:
                 case "EGW00201":
                     # Rate limit exceeded
-                    logging.logger.warning("API 호출 횟수를 초과하였습니다.")
-                    sleep(0.1)
+                    #
+                    # 로컬 유량 제한기를 통과했는데도 서버가 초과라고 답하는
+                    # 상황입니다(같은 계정을 쓰는 다른 프로세스 등). 고정 간격으로
+                    # 되받아치면 상황을 악화시키므로 지수 백오프 + 지터로 물러납니다.
+                    if rate_limit_retries >= API_RETRY_MAX_ATTEMPTS:
+                        logging.logger.error(
+                            f"API 호출 유량 초과가 계속되어 중단합니다. ({API_RETRY_MAX_ATTEMPTS}회 재시도)"
+                        )
+                        raise KisRateLimitError(response=resp)
+
+                    delay = _REQUEST_RETRY_POLICY.calculate_delay(rate_limit_retries)
+                    rate_limit_retries += 1
+                    logging.logger.warning(
+                        f"API 호출 횟수를 초과하였습니다. "
+                        f"{delay:.2f}초 후 재시도 ({rate_limit_retries}/{API_RETRY_MAX_ATTEMPTS})"
+                    )
+                    sleep(delay)
                     continue
 
                 case "EGW00123":
                     # Token expired
+                    #
+                    # 재발급 후에도 같은 오류가 나면 만료가 아니라 인증 문제입니다.
+                    # 반복해도 결과가 달라지지 않으므로 즉시 실패합니다.
+                    if token_reissues >= API_TOKEN_REISSUE_LIMIT:
+                        logging.logger.error("토큰을 재발급했는데도 만료 오류가 반복됩니다. 인증 정보를 확인하세요.")
+                        raise KisAuthenticationError(response=resp)
+
+                    token_reissues += 1
+
                     if domain == "real":
                         self._token = None
                     else:

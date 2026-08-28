@@ -1,6 +1,6 @@
 import pytest
 
-from vmkis.client.page import KisPage, to_page_status
+from vmkis.client.page import NO_SUFFIX, KisPage, to_page_status
 
 
 def test_to_page_status_begin_and_end_and_invalid():
@@ -83,3 +83,68 @@ def test_build_requires_size_and_builds_keys():
     p2 = KisPage()
     with pytest.raises(ValueError):
         p2.build()
+
+
+# ---------------------------------------------------------------------------
+# 커서 접미사 4변형 (이슈 #16)
+#
+# KIS API의 커서 파라미터는 CTX_AREA_FK100 / FK200 / FK50 / FK(접미사 없음)
+# 네 가지다. 예전에는 100·200만 파싱해, 접미사 없는 변형을 쓰는 API가
+# KisPaginationAPIResponse를 상속하는 순간 파싱 단계에서 죽었다.
+# ---------------------------------------------------------------------------
+
+VARIANTS = [
+    pytest.param("100", 100, id="fk100"),
+    pytest.param("200", 200, id="fk200"),
+    pytest.param("50", 50, id="fk50"),
+    pytest.param("", NO_SUFFIX, id="fk-접미사없음"),
+]
+
+
+@pytest.mark.parametrize("suffix, expected_size", VARIANTS)
+def test_pre_init_parses_every_cursor_variant(suffix, expected_size):
+    page = KisPage()
+    page.__pre_init__({f"ctx_area_fk{suffix}": "S", f"ctx_area_nk{suffix}": "K"})
+
+    assert page.search == "S"
+    assert page.key == "K"
+    assert page.size == expected_size
+
+
+@pytest.mark.parametrize("suffix, size", VARIANTS)
+def test_build_emits_matching_field_names(suffix, size):
+    data = KisPage(size=size, search="S", key="K").build()
+
+    assert data == {f"ctx_area_fk{suffix}": "S", f"ctx_area_nk{suffix}": "K"}
+
+
+@pytest.mark.parametrize("suffix, size", VARIANTS)
+def test_parse_then_build_round_trips(suffix, size):
+    """응답에서 읽은 커서를 그대로 다음 요청에 실을 수 있어야 한다."""
+    source = {f"ctx_area_fk{suffix}": "S", f"ctx_area_nk{suffix}": "K"}
+
+    page = KisPage()
+    page.__pre_init__(source)
+
+    assert page.build() == source
+
+
+def test_no_suffix_size_is_not_a_length():
+    """NO_SUFFIX(0)는 '길이 0'이 아니라 '접미사 없음'이다.
+
+    길이로 취급하면 `to(NO_SUFFIX)`가 비어 있지 않은 커서에서 항상 실패한다.
+    """
+    page = KisPage(size=100, search="문자열이_길어도", key="상관없음")
+
+    moved = page.to(NO_SUFFIX)
+
+    assert moved.size == NO_SUFFIX
+    assert moved.field_suffix == ""
+    assert moved.build() == {"ctx_area_fk": "문자열이_길어도", "ctx_area_nk": "상관없음"}
+
+
+def test_field_suffix_requires_size():
+    page = KisPage()
+
+    with pytest.raises(ValueError):
+        _ = page.field_suffix
