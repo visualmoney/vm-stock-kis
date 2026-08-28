@@ -20,15 +20,15 @@ __all__ = ["create_client", "load_config", "save_config_interactive"]
 def _env(name: str) -> str | None:
     """`VMKIS_<name>`을 읽고, 없으면 `PYKIS_<name>`으로 폴백합니다.
 
-    v3.0.0에서 접두사가 `PYKIS_`에서 `VMKIS_`로 바뀌었습니다.
-    이 폴백은 v4.0.0에서 제거됩니다.
+    0.0.1에서 접두사가 `PYKIS_`에서 `VMKIS_`로 바뀌었습니다.
+    이 폴백은 1.0.0에서 제거됩니다.
     """
     if (value := os.environ.get(f"VMKIS_{name}")) is not None:
         return value
 
     if (value := os.environ.get(f"PYKIS_{name}")) is not None:
         warnings.warn(
-            f"환경변수 `PYKIS_{name}`은 `VMKIS_{name}`으로 이름이 바뀌었습니다. v4.0.0에서 제거됩니다.",
+            f"환경변수 `PYKIS_{name}`은 `VMKIS_{name}`으로 이름이 바뀌었습니다. 1.0.0에서 제거됩니다.",
             DeprecationWarning,
             stacklevel=3,
         )

@@ -320,6 +320,12 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 
 ## 4. Changelog ✨
 
+> 아래 항목은 **업스트림 [`Soju06/python-kis`](https://github.com/Soju06/python-kis)
+> 의 이력**입니다. 이 포크는 그 2.1.6 에서 갈라져 나왔고, 배포명이 바뀌면서
+> 버전을 `0.0.1` 부터 새로 시작합니다. 두 번호는 서로 비교되지 않습니다 —
+> 자세한 이유는 [MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md#2-버전-번호가-낮아지는-이유)
+> 를 보세요. 이 포크의 변경 이력은 [CHANGELOG.md](CHANGELOG.md) 에 있습니다.
+
 ### ver 2.1.3
 
 - [HTTPSConnectionPool이 제대로 닫히지 않는 것 같습니다.](https://github.com/Soju06/python-kis/issues/58) [fixed #58: session 추가](https://github.com/Soju06/python-kis/pull/59) by @tasoo-oos

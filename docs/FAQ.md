@@ -422,7 +422,7 @@ Description:
 Environment:
 - OS: Windows 11
 - Python: 3.11.9
-- vmkis: 2.1.7
+- vm-stock-kis: 0.0.1
 
 Steps to reproduce:
 1. 잘못된 AppKey로 인증 시도
@@ -501,7 +501,7 @@ CMD ["python", "main.py"]
 **requirements.txt:**
 
 ```text
-vmkis>=2.1.0
+vm-stock-kis>=0.0.1,<1.0.0
 pyyaml>=6.0
 python-dotenv>=1.2.0
 ```

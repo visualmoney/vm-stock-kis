@@ -11,7 +11,7 @@ cp docs/NEWSLETTER_TEMPLATE.md archive/docs/YYYY-MM_NEWSLETTER.md
 않고 보존할 수 있습니다. 지난 호는
 [2025-12_NEWSLETTER.md](../archive/docs/2025-12_NEWSLETTER.md) 를 참고하세요.
 
-> 이 템플릿의 코드 예제는 **v3.0.0 이후 이름**(`vmkis` / `VmKis`)을 씁니다.
+> 이 템플릿의 코드 예제는 **0.0.1 이후 이름**(`vmkis` / `VmKis`)을 씁니다.
 > 예제를 새로 쓸 때는 `docs/MIGRATION_GUIDE.md` 의 대조표를 확인하세요.
 
 작성 규칙:

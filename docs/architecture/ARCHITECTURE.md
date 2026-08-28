@@ -1,4 +1,4 @@
-# Python KIS - 소프트웨어 아키텍처 문서
+# VM-Stock-KIS - 소프트웨어 아키텍처 문서
 
 ## 목차
 
@@ -88,11 +88,10 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 
 ### 2.3 마이그레이션 타임라인
 
-| 버전 | 상태 | 기존 import | 새 import |
-|------|------|-------------|-----------|
-| v2.2.0 | ✅ 현재 | 동작 (경고) | ✅ 권장 |
-| v2.3.0~v2.9.x | 유지보수 | 동작 (경고) | ✅ 권장 |
-| v3.0.0 | Breaking | ❌ 제거 | ✅ 필수 |
+| 버전 | 상태 | 루트 import | 명시적 경로 |
+|---|---|---|---|
+| 0.0.x | ✅ 현재 | 동작 (DeprecationWarning) | ✅ 권장 |
+| 1.0.0 | Breaking | ❌ 제거 | ✅ 필수 |
 
 ---
 

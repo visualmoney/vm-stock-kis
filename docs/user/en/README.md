@@ -87,7 +87,7 @@ except KisAuthenticationError:
 
 ```bash
 # Install from PyPI
-pip install vmkis
+pip install vm-stock-kis
 
 # Or from source
 git clone https://github.com/visualmoney/vm-stock-kis.git

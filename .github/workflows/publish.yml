@@ -56,8 +56,8 @@ jobs:
       # 앞 스텝이 packaging으로 이미 정규화한 값을 씁니다. 파일명을 다시 파싱하면
       # 같은 정보를 두 방식으로 구하게 되어 어긋날 수 있습니다.
       #
-      # 태그에 붙임표를 쓰면(v3.0.0-rc1) PEP 440 정규화 결과가 3.0.0rc1이 되어
-      # 여기서 걸립니다. v3.0.0rc1 형태로 쓰세요.
+      # 태그에 붙임표를 쓰면(v0.0.1-rc1) PEP 440 정규화 결과가 0.0.1rc1이 되어
+      # 여기서 걸립니다. v0.0.1rc1 형태로 쓰세요.
       - name: Tag matches built version
         if: startsWith(github.ref, 'refs/tags/')
         env:

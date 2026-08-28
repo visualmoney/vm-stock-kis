@@ -19,7 +19,7 @@ Get up and running with VM-Stock-KIS in 5 minutes!
 
 ```bash
 # Install VmKis from PyPI
-pip install vmkis
+pip install vm-stock-kis
 
 # Verify installation
 python -c "import vmkis; print(f'VmKis {vmkis.__version__} installed successfully')"
