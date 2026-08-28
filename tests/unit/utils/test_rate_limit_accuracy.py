@@ -170,7 +170,11 @@ class TestRateLimiterAccuracy:
         elapsed = time.time() - start_time
 
         # 20개 요청, 초당 10개 제한 -> 구현상 총 약 1초 대기
-        assert 0.9 <= elapsed <= 1.3
+        #
+        # 상한에 SCHEDULING_SLACK 을 쓴다. 614b68e 가 같은 이유로 6곳을 고치면서
+        # 이 한 곳을 빠뜨렸는데, 하필 스레드 4개를 동시에 돌려 스케줄링에 가장
+        # 민감한 테스트다. 커버리지를 켜면 10회 중 1회꼴로 터졌다(이슈 #59).
+        assert 0.9 <= elapsed <= 1.0 + SCHEDULING_SLACK
         assert len(results) == 20
 
     def test_rate_limiter_zero_wait_when_under_limit(self):
