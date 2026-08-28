@@ -93,7 +93,7 @@ examples/
 
 ```bash
 # 저장소 클론
-git clone https://github.com/yourusername/vm-stock-kis.git
+git clone https://github.com/visualmoney/vm-stock-kis.git
 cd vm-stock-kis
 
 # 환경 활성화

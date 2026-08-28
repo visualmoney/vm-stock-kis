@@ -298,16 +298,16 @@ Closed:         Weekends & Korean holidays
 
 - [KIS API Documentation](https://www.kis.co.kr/api)
 - [Korea Exchange (KRX)](http://www.krx.co.kr/)
-- [VmKis GitHub](https://github.com/yourusername/vm-stock-kis)
+- [VmKis GitHub](https://github.com/visualmoney/vm-stock-kis)
 
 ---
 
 ## Getting Help
 
-- 💬 **GitHub Issues**: [Report bugs](https://github.com/yourusername/vm-stock-kis/issues)
-- 💭 **GitHub Discussions**: [Ask questions](https://github.com/yourusername/vm-stock-kis/discussions)
+- 💬 **GitHub Issues**: [Report bugs](https://github.com/visualmoney/vm-stock-kis/issues)
+- 💭 **GitHub Discussions**: [Ask questions](https://github.com/visualmoney/vm-stock-kis/discussions)
 - 📧 **Email**: <support@vm-stock-kis.org>
-- 📚 **Wiki**: [Community documentation](https://github.com/yourusername/vm-stock-kis/wiki)
+- 📚 **Wiki**: [Community documentation](https://github.com/visualmoney/vm-stock-kis/wiki)
 
 ---
 
