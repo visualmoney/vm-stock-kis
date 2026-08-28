@@ -75,13 +75,24 @@ jobs:
 
       # 휠 내용 검증. 이름 변경 이후 옛 패키지가 섞여 들어가거나
       # py.typed가 빠지는 회귀를 잡습니다.
+      #
+      # core metadata 버전도 여기서 봅니다. twine check는 형식만 보고 PyPI가
+      # 그 버전을 받는지는 모릅니다. hatchling이 기본값을 올려도(1.32.0이 2.4→2.5로
+      # 이미 한 번 올렸습니다) 게시 시도 전에 잡히도록 합니다. 이슈 #27 참고.
       - name: Wheel contents
         run: |
           python - <<'PY'
-          import glob, sys, zipfile
+          import email, glob, re, sys, tarfile, zipfile
 
-          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          # warehouse/forklift/metadata.py 의 SUPPORTED_METADATA_VERSIONS.
+          # PyPI가 받는 값이 늘면 여기도 함께 늘리세요.
+          SUPPORTED_METADATA_VERSIONS = {"1.0", "1.1", "1.2", "2.1", "2.2", "2.3", "2.4", "2.5"}
+
           problems = []
+
+          whl = glob.glob("dist/*.whl")[0]
+          zf = zipfile.ZipFile(whl)
+          names = zf.namelist()
 
           if "vmkis/py.typed" not in names:
               problems.append("vmkis/py.typed 누락 (Typing :: Typed classifier와 어긋남)")
@@ -90,12 +101,36 @@ jobs:
           if any(n.startswith("tests/") for n in names):
               problems.append("tests/ 가 휠에 포함됨")
 
+
+          def metadata_version(raw: bytes) -> str | None:
+              return email.message_from_bytes(raw).get("Metadata-Version")
+
+          checked = {}
+
+          meta_name = next(n for n in names if re.fullmatch(r"[^/]+\.dist-info/METADATA", n))
+          checked["휠"] = metadata_version(zf.read(meta_name))
+
+          sdists = glob.glob("dist/*.tar.gz")
+          if sdists:
+              with tarfile.open(sdists[0]) as tf:
+                  pkg_info = next(n for n in tf.getnames() if re.fullmatch(r"[^/]+/PKG-INFO", n))
+                  checked["sdist"] = metadata_version(tf.extractfile(pkg_info).read())
+
+          for label, version in checked.items():
+              if version not in SUPPORTED_METADATA_VERSIONS:
+                  problems.append(
+                      f"{label}의 Metadata-Version 이 {version!r} 입니다. "
+                      f"PyPI가 받는 값: {sorted(SUPPORTED_METADATA_VERSIONS)}. "
+                      "pyproject.toml 의 core-metadata-version 고정을 확인하세요."
+                  )
+
           if problems:
               for p in problems:
                   print(f"::error::{p}")
               sys.exit(1)
 
           print("휠 내용 정상:", sorted({n.split("/")[0] for n in names}))
+          print("Metadata-Version:", checked)
           PY
 
       # 격리 환경에서 실제로 import되는지 확인합니다.
