@@ -161,6 +161,31 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    `KisException.retryable` 표식을 보고 `getattr` 로 확인하므로 유틸은 아무것도
    import 하지 않습니다. 하위 계층이 상위 지식을 필요로 할 때의 일반적인 해법입니다.
 
+   **이 불변식은 기계가 지킵니다** ([#50](https://github.com/visualmoney/vm-stock-kis/issues/50)).
+   `pyproject.toml` 의 `[tool.importlinter]` 에 계약 2개가 있고 CI 의 `lint` 잡이
+   `lint-imports` 로 검사합니다. 계약이 덮는 것은 **해소된 위 두 간선뿐**입니다 —
+   `responses → client` 와 `api ↔ adapter` 는 의도적이라 넣지 않았고,
+   `event → api` 는 아직 판정되지 않았습니다(불변식 4번).
+
+   계약을 넣으면서 **세 번째 역방향 간선이 드러났습니다.** `utils/diagnosis.py` 가
+   `import vmkis` 로 루트 파사드를 모듈 레벨에서 끌어오고 있었습니다. 루트는
+   `kis` · `api` · `client` · `scope` 를 전부 import 하므로 `utils` 가 패키지 전체에
+   의존한 셈입니다. 필요한 값은 버전과 배포명 둘뿐이어서 `vmkis.__env__` 를 직접
+   보도록 바꿨습니다. **`import <루트패키지>` 한 줄은 간선 하나처럼 보이지만
+   그래프에서는 상위 전체입니다.** 그룹 단위로만 보는 눈(그리고 사람이 쓴 AST
+   스캔)은 이것을 놓칩니다.
+
+   계약이 못 보는 것도 두 가지 적어 둡니다.
+
+   - **면제는 모듈 쌍 단위입니다.** `client/messaging.py` 의 지연 import 1건이
+     `ignore_imports` 에 있는데, 이 import 를 파일 상단으로 올려도 `lint-imports`
+     는 통과합니다(실측). `tests/unit/test_import_contracts.py` 의 AST 검사가
+     그 자리를 막습니다.
+   - **그래프가 비어 있어도 통과합니다.** `src/vmkis` 의 디렉터리 대부분에
+     `__init__.py` 가 없어 `root_packages` 를 일일이 나열해야 합니다. 빠뜨리면
+     그 서브패키지는 검사되지 않은 채 초록이 됩니다. 같은 테스트 파일이
+     "모든 모듈이 그래프에 있는가"를 확인합니다.
+
 3. **순환 우회용 지연 import 에는 사유 주석을 답니다.**
    함수 안의 import 를 "정리"하려고 파일 상단으로 올리면 패키지가 로드 불능이
    될 수 있습니다. 왜 거기 있는지 적혀 있지 않으면 다음 사람이 반드시 옮깁니다.
