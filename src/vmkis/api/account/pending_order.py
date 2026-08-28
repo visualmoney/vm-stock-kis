@@ -712,34 +712,20 @@ def domestic_pending_orders(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = page or KisPage.first()
-    first = None
-
-    while True:
-        result = self.call(
-            _DOMESTIC_PENDING_ORDERS,
-            params={
-                "INQR_DVSN_1": "1",
-                "INQR_DVSN_2": "0",
-            },
-            form=[account],
-            page=page,
-            response_type=KisDomesticPendingOrders(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.orders.extend(result.orders)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _DOMESTIC_PENDING_ORDERS,
+        params={
+            "INQR_DVSN_1": "1",
+            "INQR_DVSN_2": "0",
+        },
+        form=[account],
+        response_type=lambda: KisDomesticPendingOrders(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.orders.extend(more.orders),
+    )
 
 
 def _foreign_pending_orders(
@@ -768,34 +754,20 @@ def _foreign_pending_orders(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = page or KisPage.first()
-    first = None
-
-    while True:
-        result = self.call(
-            _FOREIGN_PENDING_ORDERS,
-            params={
-                "OVRS_EXCG_CD": get_market_code(market) if market is not None else "",
-                "SORT_SQN": "DS" if self.virtual else "",
-            },
-            form=[account],
-            page=page,
-            response_type=KisForeignPendingOrders(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.orders.extend(result.orders)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _FOREIGN_PENDING_ORDERS,
+        params={
+            "OVRS_EXCG_CD": get_market_code(market) if market is not None else "",
+            "SORT_SQN": "DS" if self.virtual else "",
+        },
+        form=[account],
+        response_type=lambda: KisForeignPendingOrders(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.orders.extend(more.orders),
+    )
 
 
 FOREIGN_COUNTRY_MARKET_MAP: dict[str | None, list[MARKET_TYPE | None]] = {

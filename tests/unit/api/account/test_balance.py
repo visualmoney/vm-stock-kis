@@ -282,10 +282,13 @@ def test_domestic_balance_fetch_pagination(monkeypatch):
             self.virtual = False
             self.call_count = 0
 
-        # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
-        # 스펙 해석(TR ID·도메인·커서 길이)까지 함께 검증한다.
+        # 이슈 #43·#44 이후 api/ 는 `fetch_pages()` -> `call()` 을 거친다.
+        # 실제 구현을 붙여 스펙 해석과 페이징 루프까지 함께 검증한다.
         def call(self, *args, **kwargs):
             return VmKis.call(self, *args, **kwargs)
+
+        def fetch_pages(self, *args, **kwargs):
+            return VmKis.fetch_pages(self, *args, **kwargs)
 
         def fetch(self, *args, **kwargs):
             self.call_count += 1
@@ -297,10 +300,8 @@ def test_domestic_balance_fetch_pagination(monkeypatch):
 
     kis = FakeKis()
 
-    # Mock KisPage — `call()` 이 page.to(size) 를 호출하므로 to 를 제공한다.
-    fake_page = SimpleNamespace(is_first=True)
-    fake_page.to = lambda size: fake_page
-    monkeypatch.setattr(bal, "KisPage", SimpleNamespace(first=lambda: fake_page))
+    # `fetch_pages()` 가 첫 페이지를 만들므로 실제 `KisPage` 를 쓴다.
+    # 예전에는 `bal.KisPage` 를 monkeypatch 했지만 이제 발동하지 않는다.
 
     result = bal.domestic_balance(kis, "12345678-01", continuous=True)
 

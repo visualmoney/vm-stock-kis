@@ -646,42 +646,28 @@ def _domestic_daily_orders(
     if end.month + (now.year - end.year) * 12 - now.month > 3 and is_recent:
         raise ValueError("조회 기간은 최근 3개월 이내거나 3개월 이상이어야 합니다.")
 
-    page = page or KisPage.first()
-    first = None
-
-    while True:
-        result = self.call(
-            DOMESTIC_DAILY_ORDERS_ENDPOINTS[is_recent],
-            params={
-                "INQR_STRT_DT": start.strftime("%Y%m%d"),
-                "INQR_END_DT": end.strftime("%Y%m%d"),
-                "SLL_BUY_DVSN_CD": "00" if type is None else ("02" if type == "buy" else "01"),
-                "INQR_DVSN": "00",
-                "PDNO": "",
-                "CCLD_DVSN": "00",
-                "ORD_GNO_BRNO": "",
-                "ODNO": "",
-                "INQR_DVSN_3": "00",
-                "INQR_DVSN_1": "",
-            },
-            form=[account],
-            page=page,
-            response_type=KisDomesticDailyOrders(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.orders.extend(result.orders)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        DOMESTIC_DAILY_ORDERS_ENDPOINTS[is_recent],
+        params={
+            "INQR_STRT_DT": start.strftime("%Y%m%d"),
+            "INQR_END_DT": end.strftime("%Y%m%d"),
+            "SLL_BUY_DVSN_CD": "00" if type is None else ("02" if type == "buy" else "01"),
+            "INQR_DVSN": "00",
+            "PDNO": "",
+            "CCLD_DVSN": "00",
+            "ORD_GNO_BRNO": "",
+            "ODNO": "",
+            "INQR_DVSN_3": "00",
+            "INQR_DVSN_1": "",
+        },
+        form=[account],
+        response_type=lambda: KisDomesticDailyOrders(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.orders.extend(more.orders),
+    )
 
 
 def domestic_daily_orders(
@@ -759,42 +745,28 @@ def _internal_foreign_daily_orders(
     if start > end:
         start, end = end, start
 
-    page = page or KisPage.first()
-    first = None
-
-    while True:
-        result = self.call(
-            _FOREIGN_DAILY_ORDERS,
-            params={
-                "PDNO": "" if self.virtual else "%",
-                "ORD_STRT_DT": start.strftime("%Y%m%d"),
-                "ORD_END_DT": end.strftime("%Y%m%d"),
-                "SLL_BUY_DVSN": "00",
-                "CCLD_NCCS_DVSN": "00",
-                "OVRS_EXCG_CD": ("" if self.virtual else "%") if market is None else get_market_code(market),
-                "SORT_SQN": "DS",
-                "ORD_DT": "",
-                "ORD_GNO_BRNO": "",
-                "ODNO": "",
-            },
-            form=[account],
-            page=page,
-            response_type=KisForeignDailyOrders(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.orders.extend(result.orders)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _FOREIGN_DAILY_ORDERS,
+        params={
+            "PDNO": "" if self.virtual else "%",
+            "ORD_STRT_DT": start.strftime("%Y%m%d"),
+            "ORD_END_DT": end.strftime("%Y%m%d"),
+            "SLL_BUY_DVSN": "00",
+            "CCLD_NCCS_DVSN": "00",
+            "OVRS_EXCG_CD": ("" if self.virtual else "%") if market is None else get_market_code(market),
+            "SORT_SQN": "DS",
+            "ORD_DT": "",
+            "ORD_GNO_BRNO": "",
+            "ODNO": "",
+        },
+        form=[account],
+        response_type=lambda: KisForeignDailyOrders(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.orders.extend(more.orders),
+    )
 
 
 FOREIGN_COUNTRY_MARKET_MAP: dict[str | None, list[MARKET_TYPE | None]] = {

@@ -19,6 +19,7 @@ from vmkis.api.stock.market import (
     get_market_code_timezone,
 )
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.page import KisPage
 from vmkis.responses.dynamic import KisDynamic, KisList, KisTransform
 from vmkis.responses.response import KisPaginationAPIResponse
@@ -35,6 +36,21 @@ __all__ = [
     "KisOrderProfits",
     "order_profits",
 ]
+
+
+# 기간 손익 조회는 모의투자를 지원하지 않습니다(`tr_virtual` 생략).
+# 커서 길이는 각 API 의 `CTX_AREA_FK{n}` 에서 옵니다.
+_DOMESTIC_ORDER_PROFITS = KisEndpoint(
+    path="/uapi/domestic-stock/v1/trading/inquire-period-trade-profit",
+    tr_real="TTTC8715R",
+    page_size=100,
+)
+
+_FOREIGN_ORDER_PROFITS = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/inquire-period-profit",
+    tr_real="TTTS3039R",
+    page_size=200,
+)
 
 
 @runtime_checkable
@@ -556,41 +572,23 @@ def domestic_order_profits(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = (page or KisPage.first()).to(100)
-    first = None
-
-    while True:
-        result = self.fetch(
-            "/uapi/domestic-stock/v1/trading/inquire-period-trade-profit",
-            api="TTTC8715R",
-            params={
-                "SORT_DVSN": "00",
-                "PDNO": "",
-                "INQR_STRT_DT": start.strftime("%Y%m%d"),
-                "INQR_END_DT": end.strftime("%Y%m%d"),
-                "CBLC_DVSN": "00",
-            },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
-            response_type=KisDomesticOrderProfits(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.orders.extend(result.orders)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _DOMESTIC_ORDER_PROFITS,
+        params={
+            "SORT_DVSN": "00",
+            "PDNO": "",
+            "INQR_STRT_DT": start.strftime("%Y%m%d"),
+            "INQR_END_DT": end.strftime("%Y%m%d"),
+            "CBLC_DVSN": "00",
+        },
+        form=[account],
+        response_type=lambda: KisDomesticOrderProfits(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.orders.extend(more.orders),
+    )
 
 
 FOREIGN_ORDER_PROFIT_MARKET_MAP: dict[COUNTRY_TYPE, MARKET_TYPE] = {
@@ -641,46 +639,28 @@ def foreign_order_profits(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = (page or KisPage.first()).to(200)
-    first = None
-
-    while True:
-        result = self.fetch(
-            "/uapi/overseas-stock/v1/trading/inquire-period-profit",
-            api="TTTS3039R",
-            params={
-                "OVRS_EXCG_CD": get_market_code(FOREIGN_ORDER_PROFIT_MARKET_MAP[country]) if country else "",
-                "NATN_CD": "",
-                "CRCY_CD": "",
-                "PDNO": "",
-                "INQR_STRT_DT": start.strftime("%Y%m%d"),
-                "INQR_END_DT": end.strftime("%Y%m%d"),
-                "WCRC_FRCR_DVSN_CD": "01",
-            },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
-            response_type=KisForeignOrderProfits(
-                account_number=account,
-                start=start,
-                end=end,
-                country=country,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.orders.extend(result.orders)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _FOREIGN_ORDER_PROFITS,
+        params={
+            "OVRS_EXCG_CD": get_market_code(FOREIGN_ORDER_PROFIT_MARKET_MAP[country]) if country else "",
+            "NATN_CD": "",
+            "CRCY_CD": "",
+            "PDNO": "",
+            "INQR_STRT_DT": start.strftime("%Y%m%d"),
+            "INQR_END_DT": end.strftime("%Y%m%d"),
+            "WCRC_FRCR_DVSN_CD": "01",
+        },
+        form=[account],
+        response_type=lambda: KisForeignOrderProfits(
+            account_number=account,
+            start=start,
+            end=end,
+            country=country,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.orders.extend(more.orders),
+    )
 
 
 def foreign_order_fees(
