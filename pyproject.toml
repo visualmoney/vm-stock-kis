@@ -46,7 +46,11 @@ keywords = [
 # NOTE: "License :: OSI Approved :: MIT License" classifier는 의도적으로 없습니다.
 # PEP 639의 license SPDX 표현식과 license classifier를 함께 쓰면 PyPI가 업로드를 거부합니다.
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    # 0.0.x 구간입니다. 코드베이스는 성숙한 포크지만 이 배포명으로는 아직 첫
+    # 릴리스이고, SemVer 0.y.z 는 안정성을 약속하지 않습니다. 두 표기가 어긋나면
+    # PyPI 페이지에서 바로 드러나므로 버전에 맞춥니다.
+    # 1.0.0 에서 "5 - Production/Stable" 로 올립니다.
+    "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
     "Intended Audience :: Education",
     "Intended Audience :: Information Technology",

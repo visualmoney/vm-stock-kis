@@ -51,7 +51,7 @@ def test_check_with_installed_dependency(monkeypatch, capsys):
 
 
 def test_check_dependency_not_found(monkeypatch, capsys):
-    _set_vmkis_attrs(monkeypatch, version="3.0.0", package_name="vm-stock-kis")
+    _set_vmkis_attrs(monkeypatch, version="0.1.0", package_name="vm-stock-kis")
 
     monkeypatch.setattr(diagnosis.metadata, "distribution", lambda name: DummyDist(["bar==0.1.0"]))
 
@@ -64,7 +64,7 @@ def test_check_dependency_not_found(monkeypatch, capsys):
     diagnosis.check()
     out = capsys.readouterr().out
 
-    assert "Version: VmKis/3.0.0" in out
+    assert "Version: VmKis/0.1.0" in out
     assert "Installed: Not Found" in out
 
 

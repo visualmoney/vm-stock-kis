@@ -5,7 +5,18 @@
 
 버전은 git 태그에서 만들어집니다. [VERSIONING.md](./docs/developer/VERSIONING.md) 참고.
 
-## [미출시]
+## [미출시] — 0.0.1
+
+### 버전 번호 재시작
+
+이 배포판(`vm-stock-kis`)의 **첫 릴리스**입니다. 업스트림 `python-kis` 2.1.6에서
+갈라져 나왔지만 배포명이 다르므로 pip이 두 버전을 비교하지 않으며, 번호를
+이어받을 이유가 없습니다. `0.0.1`부터 시작합니다.
+
+- 호환 폴백 제거 시점을 `v4.0.0` → **`1.0.0`** 으로 재지정.
+- `Development Status` classifier를 `5 - Production/Stable` → **`4 - Beta`** 로
+  조정. `0.0.1`과 `Production/Stable`은 함께 설 수 없습니다. `1.0.0`에서
+  되돌립니다.
 
 ### 변경 (Breaking)
 
@@ -17,7 +28,7 @@
 
 ### 추가
 
-- v2.x 호환 폴백 3종. 모두 `DeprecationWarning`을 내며 v4.0.0에서 제거합니다.
+- v2.x 호환 폴백 3종. 모두 `DeprecationWarning`을 내며 1.0.0에서 제거합니다.
   - `vmkis.PyKis` — `VmKis`와 동일 객체를 반환하므로 `isinstance` 검사도 동작합니다.
     `__all__`에는 넣지 않았습니다.
   - `~/.pykis` 작업공간 폴백 — 기존 사용자의 토큰 캐시 보존.

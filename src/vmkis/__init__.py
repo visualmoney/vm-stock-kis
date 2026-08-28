@@ -70,7 +70,7 @@ _DEPRECATED_SOURCE = "vmkis.types"
 
 
 def __getattr__(name: str) -> Any:
-    # v3.0.0에서 `PyKis`가 `VmKis`로 이름이 바뀌었습니다.
+    # 0.0.1에서 `PyKis`가 `VmKis`로 이름이 바뀌었습니다.
     #
     # 이 별칭은 `vmkis` 패키지 *내부* 이름이라 업스트림 `python-kis` 배포판과
     # 파일이 충돌하지 않습니다. (호환용 `pykis` 패키지를 휠에 넣지 않는 이유가
@@ -78,10 +78,10 @@ def __getattr__(name: str) -> Any:
     #
     # 동일 객체를 반환하므로 isinstance 검사도 그대로 동작합니다.
     # `__all__`에는 넣지 않습니다. 넣으면 `from vmkis import *`가 옛 이름을
-    # 계속 퍼뜨립니다. 이 별칭은 v4.0.0에서 제거됩니다.
+    # 계속 퍼뜨립니다. 이 별칭은 1.0.0에서 제거됩니다.
     if name == "PyKis":
         warnings.warn(
-            "`PyKis`는 `VmKis`로 이름이 바뀌었습니다. v4.0.0에서 제거됩니다.",
+            "`PyKis`는 `VmKis`로 이름이 바뀌었습니다. 1.0.0에서 제거됩니다.",
             DeprecationWarning,
             stacklevel=2,
         )

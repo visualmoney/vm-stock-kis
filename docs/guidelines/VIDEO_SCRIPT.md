@@ -69,22 +69,22 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 ### 시각 요소
 
 ```text
-┌─────────────────────────────────────────┐
-│  [터미널 창 - 검은 배경]               │
-│                                         │
-│  $ pip install vmkis                   │
-│  Collecting vmkis...                    │
-│  Successfully installed vmkis-2.2.0     │
-│                                         │
-│  [효과음: 설치 완료 신호음]             │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────────────────┐
+│  [터미널 창 - 검은 배경]                    │
+│                                             │
+│  $ pip install vm-stock-kis                 │
+│  Collecting vm-stock-kis...                 │
+│  Successfully installed vm-stock-kis-0.0.1  │
+│                                             │
+│  [효과음: 설치 완료 신호음]                 │
+└─────────────────────────────────────────────┘
 ```
 
 ### 스크립트 (60초)
 
 **한국어 음성**:
 > "먼저 설치부터 시작합니다.
-> 터미널에서 `pip install vmkis`를 입력하기만 하면 됩니다.
+> 터미널에서 `pip install vm-stock-kis`를 입력하기만 하면 됩니다.
 > [일시정지 2초]
 > 설치가 완료되었습니다!
 > 정말 간단하죠?
@@ -94,7 +94,7 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 
 **영어 자막**:
 > "First, let's install the library.
-> Just type `pip install vmkis` in the terminal.
+> Just type `pip install vm-stock-kis` in the terminal.
 > Installation complete!
 > Now we need authentication credentials.
 > Get your App Key and Secret from the KIS Developer Portal.
@@ -320,7 +320,7 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 
 🔔 구독과 좋아요를 눌러주세요!
 
-#PythonKIS #거래 #API #한국투자증권"
+#VMStockKIS #거래 #API #한국투자증권"
 
 태그:
 python, trading, api, korea, kis, finance, tutorial, beginner

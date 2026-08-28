@@ -26,7 +26,7 @@
 **A**: Install from PyPI using pip:
 
 ```bash
-pip install vmkis
+pip install vm-stock-kis
 ```
 
 For development:
@@ -526,7 +526,7 @@ See [REGIONAL_GUIDES.md](../../../docs/guidelines/REGIONAL_GUIDES.md) for Korean
 **Solution**:
 
 ```bash
-pip install vmkis
+pip install vm-stock-kis
 # or for development
 pip install -e .
 ```

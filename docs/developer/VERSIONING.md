@@ -33,8 +33,8 @@ git tag ──hatch-vcs──► 휠/sdist METADATA "Version:"
 
 | 상황 | 버전 | 출처 |
 |---|---|---|
-| 태그된 커밋에서 빌드 | `3.0.0` | `git describe` |
-| `v3.0.0` 이후 4커밋 | `3.0.1.dev4+g<sha>` | `no-guess-dev` |
+| 태그된 커밋에서 빌드 | `0.0.1` | `git describe` |
+| `v0.0.1` 이후 4커밋 | `0.0.2.dev4+g<sha>` | `no-guess-dev` |
 | sdist에서 설치 (git 없음) | 태그 버전 | 빌드 시점 `PKG-INFO`에 baked |
 | git 없고 미설치 | `0.0.0+unknown` | `fallback-version` / `PackageNotFoundError` |
 
@@ -59,13 +59,13 @@ if [ "$tag" != "$BUILT_VERSION" ]; then ... fi
 
 | 태그 | 정규형 | 결과 |
 |---|---|---|
-| `v3.0.0` | `3.0.0` | ✅ |
-| `v3.0.0rc1` | `3.0.0rc1` | ✅ |
-| `v3.0.0b1` | `3.0.0b1` | ✅ |
-| `v3.0.0-rc1` | `3.0.0rc1` | ❌ 빌드 잡 실패 |
-| `v3.0.0.rc1` | `3.0.0rc1` | ❌ |
-| `v3.0.0RC1` | `3.0.0rc1` | ❌ |
-| `v3.0.0-beta.1` | `3.0.0b1` | ❌ |
+| `v0.0.1` | `0.0.1` | ✅ |
+| `v0.0.1rc1` | `0.0.1rc1` | ✅ |
+| `v0.0.1b1` | `0.0.1b1` | ✅ |
+| `v0.0.1-rc1` | `0.0.1rc1` | ❌ 빌드 잡 실패 |
+| `v0.0.1.rc1` | `0.0.1rc1` | ❌ |
+| `v0.0.1RC1` | `0.0.1rc1` | ❌ |
+| `v0.0.1-beta.1` | `0.0.1b1` | ❌ |
 
 **`rc`/`a`/`b` 뒤에 구분자 없이 숫자만 붙이세요.** 어긋나면 게시 *전* 잡에서
 막히므로 잘못된 아티팩트가 올라가지는 않지만, 태그를 지우고 다시 만들어야 합니다.
@@ -73,7 +73,7 @@ if [ "$tag" != "$BUILT_VERSION" ]; then ... fi
 직접 확인하려면:
 
 ```console
-$ uv run --with packaging python -c "from packaging.version import Version; t='3.0.0rc1'; print(str(Version(t))==t)"
+$ uv run --with packaging python -c "from packaging.version import Version; t='0.0.1rc1'; print(str(Version(t))==t)"
 True
 ```
 
@@ -84,8 +84,8 @@ True
 
 | 태그 | 업로드 | GitHub Release |
 |---|---|---|
-| `v3.0.0rc2` / `v3.0.0a1` / `v3.0.0b1` | TestPyPI | 만들지 않음 |
-| `v3.0.0` | PyPI | 만듦 |
+| `v0.0.1rc1` / `v0.0.1a1` / `v0.0.1b1` | TestPyPI | 만들지 않음 |
+| `v0.0.1` | PyPI | 만듦 |
 
 ### ③ 번호는 되돌리지 않고 올립니다
 
@@ -101,7 +101,7 @@ PyPI도 TestPyPI도 **같은 버전의 재업로드를 영구히 거부합니다
 ### ⑤ `main` 의 CI 초록 커밋에만, annotated 로 붙입니다
 
 ```bash
-git tag -a v3.0.0 -m "v3.0.0"     # -a 로 작성자와 날짜를 남깁니다
+git tag -a v0.0.1 -m "v0.0.1"     # -a 로 작성자와 날짜를 남깁니다
 ```
 
 ## 릴리스 절차
@@ -111,12 +111,12 @@ git switch main && git pull
 uv run pytest -m 'not requires_api' --cov     # 로컬 확인
 
 # 1) 리허설 — TestPyPI 로 갑니다
-git tag -a v3.0.0rc2 -m "v3.0.0rc2"
-git push origin v3.0.0rc2
+git tag -a v0.0.1rc1 -m "v0.0.1rc1"
+git push origin v0.0.1rc1
 
 # 2) 통과를 확인한 뒤 정식 배포 — 되돌릴 수 없습니다
-git tag -a v3.0.0 -m "v3.0.0"
-git push origin v3.0.0                        # publish.yml 이 실행됩니다
+git tag -a v0.0.1 -m "v0.0.1"
+git push origin v0.0.1                        # publish.yml 이 실행됩니다
 ```
 
 **배포물에 들어가는 파일이 바뀌었다면 리허설을 다시 하세요.** 문서만 바뀌었다면
