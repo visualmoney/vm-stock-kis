@@ -149,7 +149,7 @@ def __transform__(cls, data):
    - 기술적 해결책
    - 권장사항
 
-2. To-Do List (`docs/generated/TODO_LIST.md`)
+2. To-Do List (`archive/docs/generated/2025-12-17_TODO_LIST.md` — 동결됨)
    - 향후 계획
    - 우선순위 및 일정
    - 리소스 추정

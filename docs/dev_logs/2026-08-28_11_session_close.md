@@ -108,7 +108,9 @@ self.fetch(path, api="FHKST01010100", domain="real", ...)  # 시세 (미이관)
 
 ## 다음 세션에서 볼 것
 
-[To-Do List](../reports/2026-08-28_TODO_LIST.md) 에 우선순위와 블로커를 정리했습니다.
+[To-Do List](../../archive/docs/reports/2026-08-28_TODO_LIST.md) 에 우선순위와 블로커를
+정리했습니다. (이 문서는 이후 `archive/` 로 옮겨졌습니다. **작업 목록은 이슈 트래커가
+유일한 출처입니다** — `gh issue list`.)
 
 ## 테스트 결과
 
