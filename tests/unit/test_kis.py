@@ -93,13 +93,13 @@ def test_init_with_virtual_kwargs():
     assert kis.virtual
 
 
-@patch("vmkis.kis.VmKis.__del__", new=lambda self: None)
 def test_init_value_errors():
     """초기화 시 발생하는 ValueError 테스트
 
-    `VmKis.__del__`가 부분 초기화된 객체에서 `AttributeError`를 일으키는
-    테스트 실행 환경에서 UnraisableExceptionWarning을 막기 위해 소멸자를
-    임시로 무력화합니다.
+    소멸자를 무력화하지 않습니다. 부분 초기화된 객체가 GC 될 때
+    `__del__` -> `close()` 가 조용히 끝나는 것까지 이 테스트가 함께 봅니다
+    (이슈 #38 · #42). `close()` 의 `getattr` 가드가 사라지면
+    `PytestUnraisableExceptionWarning` 이 오류로 올라옵니다.
     """
     with pytest.raises(ValueError, match="id를 입력해야 합니다."):
         VmKis(use_websocket=False)
@@ -495,9 +495,8 @@ def test_init_with_virtual_auth_validation():
     virtual_auth.key = MagicMock()
     virtual_auth.key.appkey = VALID_APPKEY
 
-    with patch("vmkis.kis.VmKis.__del__", new=lambda self: None):
-        with pytest.raises(ValueError, match="virtual_auth에는 모의도메인 인증 정보를 입력해야 합니다."):
-            VmKis(real_auth, virtual_auth, use_websocket=False)
+    with pytest.raises(ValueError, match="virtual_auth에는 모의도메인 인증 정보를 입력해야 합니다."):
+        VmKis(real_auth, virtual_auth, use_websocket=False)
 
 
 def test_init_with_auth_virtual_error():
@@ -508,9 +507,8 @@ def test_init_with_auth_virtual_error():
     virtual_auth.key = MagicMock()
     virtual_auth.account_number = "12345678-01"
 
-    with patch("vmkis.kis.VmKis.__del__", new=lambda self: None):
-        with pytest.raises(ValueError, match="auth에는 실전도메인 인증 정보를 입력해야 합니다."):
-            VmKis(virtual_auth, use_websocket=False)
+    with pytest.raises(ValueError, match="auth에는 실전도메인 인증 정보를 입력해야 합니다."):
+        VmKis(virtual_auth, use_websocket=False)
 
 
 def test_init_with_both_auth_objects():

@@ -325,6 +325,18 @@ addopts = [
 #     함수가 디버거와 충돌) 모든 `pytest -k` 실행을 느리게 만듭니다.
 #   * --html/--junitxml은 로컬 실행마다 reports/를 씁니다.
 # CI에서만 명시적으로 전달합니다.
+# `__del__` 안에서 삼켜진 예외를 **실패로** 만듭니다.
+#
+# 이 한 줄이 없으면 소멸자 회귀가 경고로만 남습니다. 실측: `VmKis.close()` 의
+# `getattr(self, "_sessions", {})` 가드(이슈 #38)를 걷어내고 돌리면
+# "42 passed, 3 warnings" 입니다 - 초록입니다. 경고는 CI 를 막지 않습니다.
+#
+# 전역 `filterwarnings = ["error"]` 는 쓰지 않습니다. 서드파티 DeprecationWarning
+# 까지 전부 실패로 만들어 우리 코드와 무관한 이유로 red 가 됩니다.
+# 이 경고 하나만 좁혀서 올립니다. (이슈 #42)
+filterwarnings = [
+    "error::pytest.PytestUnraisableExceptionWarning",
+]
 markers = [
     "unit: Unit tests - fast, isolated tests without external dependencies",
     "integration: Integration tests - tests with mocked API calls",

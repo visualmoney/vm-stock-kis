@@ -941,6 +941,11 @@ class VmKis:
         # `__del__` -> `close()` 가 없는 속성을 참조해 AttributeError 를 냅니다.
         # 파이썬이 `__del__` 의 예외를 삼키므로 치명적이지는 않지만, 실행할 때마다
         # PytestUnraisableExceptionWarning 노이즈가 쌓입니다.
+        #
+        # 이 가드를 걷어내면 `tests/unit/test_kis.py` 의 초기화 실패 테스트 3건이
+        # 실패합니다. 예전에는 그 테스트들이 `__del__` 을 무력화해 우회하고 있어서
+        # 아무 일도 일어나지 않았습니다(이슈 #42). 지금은 `pyproject.toml` 의
+        # `filterwarnings` 가 그 경고를 오류로 올립니다.
         for session in getattr(self, "_sessions", {}).values():
             session.close()
 
