@@ -1,7 +1,7 @@
 name: 🐛 Bug Report
 description: 라이브러리가 예상대로 작동하지 않나요?
 title: "[버그]: "
-labels: ["버그"]
+labels: ["bug"]
 body:
   - type: markdown
     attributes:
@@ -35,7 +35,7 @@ body:
         `from vmkis.utils.diagnosis import check; check()` 실행 결과를 붙여넣어주세요.
 
         ```
-        Version: VmKis/2.0.0
+        Version: VmKis/0.0.1
         Python: CPython 3.11.7
         System: Windows 10.0.26120 [AMD64]
 

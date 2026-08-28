@@ -1,7 +1,7 @@
 name: ❓ Question
 description: VmKis 라이브러리에 대해 궁금한 점이 있나요?
 title: "[질문]: "
-labels: ["질문"]
+labels: ["question"]
 body:
   - type: markdown
     attributes:
