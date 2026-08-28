@@ -21,7 +21,7 @@ from vmkis.client.account import KisAccountNumber
 from vmkis.event.handler import KisEventFilter, KisEventTicket
 from vmkis.event.subscription import KisSubscriptionEventArgs
 from vmkis.responses.types import KisAny, KisDecimal, KisString, KisTimeToDatetime
-from vmkis.responses.websocket import KisWebsocketResponse, KisWebsocketResponseProtocol
+from vmkis.responses.websocket import KisWebsocketResponse, KisWebsocketResponseProtocol, register_websocket_response
 from vmkis.utils.repr import kis_repr
 from vmkis.utils.timezone import TIMEZONE
 from vmkis.utils.typing import Checkable
@@ -218,6 +218,7 @@ class KisRealtimeExecutionBase(KisRealtimeExecutionRepr, KisWebsocketResponse, K
     """거부사유"""
 
 
+@register_websocket_response("H0STCNI0", "H0STCNI9", encrypted=True)
 class KisDomesticRealtimeOrderExecution(KisRealtimeExecutionBase):
     """한국투자증권 국내주식 실시간 체결"""
 
@@ -371,6 +372,7 @@ FOREIGN_ORDER_CONDITION_MAP: dict[str, tuple[bool, ORDER_CONDITION | None]] = {
 }
 
 
+@register_websocket_response("H0GSCNI0", "H0GSCNI9", encrypted=True)
 class KisForeignRealtimeOrderExecution(KisRealtimeExecutionBase):
     """한국투자증권 해외주식 실시간 체결"""
 

@@ -153,3 +153,46 @@ class KisWebsocketResponse:
 
 
 TWebsocketResponse = TypeVar("TWebsocketResponse", bound=KisWebsocketResponseProtocol)
+
+#: TR ID -> 실시간 응답 클래스. **client 가 소유하고 api 가 자기등록합니다.**
+#:
+#: 예전에는 `api/websocket/__init__.py` 가 이 dict 를 소유하고
+#: `client/websocket.py` 가 그것을 import 했습니다. 통신 계층이 상위 계층에
+#: 의존하는 역방향 간선이었고(이슈 #17), TR 하나를 추가할 때마다 client 까지
+#: 함께 바뀌었습니다.
+#:
+#: 여기(responses)에 두면 client 와 api 양쪽에서 **정방향** 참조가 됩니다.
+WEBSOCKET_RESPONSES_MAP: dict[str, type["KisWebsocketResponse"]] = {}
+
+#: 수신 본문이 AES 로 암호화되는 TR ID.
+#:
+#: 예전에는 `client/websocket.py` 에 튜플로 하드코딩돼 있어, 암호화 TR 을
+#: 추가할 때 그 파일도 함께 고쳐야 했습니다.
+ENCRYPTED_TR_IDS: set[str] = set()
+
+
+def register_websocket_response(*tr_ids: str, encrypted: bool = False):
+    """실시간 응답 클래스를 TR ID 에 등록하는 데코레이터.
+
+    **등록하지 않으면 구독 메시지는 전송되지만 수신 이벤트가 조용히
+    버려집니다.** 클래스 정의 바로 위에 붙여 두면 빠뜨리기 어렵습니다.
+
+        @register_websocket_response("H0STCNT0")
+        class KisDomesticRealtimePrice(KisWebsocketResponse, ...):
+            ...
+
+    Args:
+        *tr_ids: 이 클래스가 처리할 TR ID. 실전/모의처럼 여러 개일 수 있습니다.
+        encrypted: 수신 본문이 암호화되는 TR 인지 여부.
+    """
+
+    def decorator(cls):
+        for tr_id in tr_ids:
+            WEBSOCKET_RESPONSES_MAP[tr_id] = cls
+
+            if encrypted:
+                ENCRYPTED_TR_IDS.add(tr_id)
+
+        return cls
+
+    return decorator

@@ -22,7 +22,7 @@ from vmkis.event.filters.product import KisProductEventFilter
 from vmkis.event.handler import KisEventFilter, KisEventTicket, KisMultiEventFilter
 from vmkis.event.subscription import KisSubscriptionEventArgs
 from vmkis.responses.types import KisAny, KisDecimal, KisInt, KisString
-from vmkis.responses.websocket import KisWebsocketResponse, KisWebsocketResponseProtocol
+from vmkis.responses.websocket import KisWebsocketResponse, KisWebsocketResponseProtocol, register_websocket_response
 from vmkis.utils.math import safe_divide
 from vmkis.utils.repr import kis_repr
 from vmkis.utils.timezone import TIMEZONE
@@ -442,6 +442,7 @@ DOMESTIC_REALTIME_PRICE_ORDER_CONDITION_MAP: dict[str, ORDER_CONDITION | None] =
 }
 
 
+@register_websocket_response("H0STCNT0")
 class KisDomesticRealtimePrice(KisRealtimePriceBase):
     """국내주식 실시간 체결가"""
 
@@ -615,6 +616,7 @@ def build_foreign_realtime_symbol(market: MARKET_TYPE, symbol: str, extended: bo
     return f"D{MARKET_SHORT_TYPE_MAP[market]}{symbol}"
 
 
+@register_websocket_response("HDFSCNT0")
 class KisForeignRealtimePrice(KisRealtimePriceBase):
     """해외주식 실시간 체결가"""
 

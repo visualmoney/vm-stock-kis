@@ -1,3 +1,13 @@
+# 실시간 응답 클래스 등록 (부수효과 목적의 import).
+#
+# 각 응답 클래스의 `@register_websocket_response(...)` 가 클래스 정의 시점에
+# 레지스트리를 채웁니다. 이 모듈이 로드되지 않으면 레지스트리가 비고,
+# **구독은 되지만 수신 이벤트가 조용히 버려집니다.**
+#
+# 지금도 `VmKis` -> adapter -> api 경로로 우연히 로드되기는 하지만, 어댑터를
+# 리팩터링하면 그 경로가 끊길 수 있습니다. 여기서 명시적으로 고정합니다.
+# `tests/unit/api/websocket/test_registry.py` 가 이것을 지킵니다. (이슈 #17)
+import vmkis.api.websocket  # noqa: F401
 from vmkis.__env__ import (
     __author__,
     __author_email__,

@@ -16,7 +16,6 @@ from vmkis.__env__ import (
     WEBSOCKET_REAL_DOMAIN,
     WEBSOCKET_VIRTUAL_DOMAIN,
 )
-from vmkis.api.websocket import WEBSOCKET_RESPONSES_MAP
 from vmkis.client.messaging import (
     TR_SUBSCRIBE_TYPE,
     TR_UNSUBSCRIBE_TYPE,
@@ -34,7 +33,12 @@ from vmkis.event.handler import (
     KisMultiEventFilter,
 )
 from vmkis.event.subscription import KisSubscribedEventArgs, KisSubscriptionEventArgs
-from vmkis.responses.websocket import KisWebsocketResponse, TWebsocketResponse
+from vmkis.responses.websocket import (
+    ENCRYPTED_TR_IDS,
+    WEBSOCKET_RESPONSES_MAP,
+    KisWebsocketResponse,
+    TWebsocketResponse,
+)
 from vmkis.utils.reference import ReferenceStore, ReferenceTicket, package_mathod
 from vmkis.utils.thread_safe import thread_safe
 
@@ -509,8 +513,10 @@ class KisWebsocketClient:
 
     def _set_encryption_key(self, tr: KisWebsocketTR, body: dict):
         """암호화 키를 설정합니다."""
-        # 국내주식 실시간체결통보 실전, 모의 해외주식 실시간체결통보 실전, 모의
-        if tr.id in ("H0STCNI0", "H0STCNI9", "H0GSCNI0", "H0GSCNI9"):
+        # 암호화 TR 목록은 응답 클래스가 `@register_websocket_response(...,
+        # encrypted=True)` 로 선언합니다. 예전에는 여기 튜플로 하드코딩돼 있어
+        # 암호화 TR 을 추가할 때 이 파일도 함께 고쳐야 했습니다 (이슈 #17).
+        if tr.id in ENCRYPTED_TR_IDS:
             # 체결통보의 경우 tr key를 사용하지 않음
             tr = KisWebsocketTR(tr.id, "")
 
