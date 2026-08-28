@@ -40,31 +40,35 @@ def _source_modules() -> set[str]:
 
 
 def test_contract_graph_covers_every_source_module() -> None:
-    """설정된 `root_packages` 가 `src/vmkis` 의 모든 모듈을 그래프에 담아야 합니다.
+    """설정된 루트가 `src/vmkis` 의 모든 모듈을 그래프에 담아야 합니다.
 
-    `src/vmkis` 의 디렉터리 18개 중 13개에 `__init__.py` 가 없습니다. grimp 은 루트
-    패키지 하나만 받으면 이 암묵적 네임스페이스 패키지들을 건너뛰므로,
-    `root_packages = ["vmkis"]` 로 두면 모듈 92개 중 20개만 잡히고
-    `utils` · `client` · `responses` · `api` · `adapter` 가 통째로 사라집니다.
+    grimp 은 루트 패키지를 스캔할 때 `__init__.py` 가 없는 디렉터리(암묵적
+    네임스페이스 패키지)를 **건너뜁니다.** 이슈 #50 당시 `src/vmkis` 의 디렉터리
+    18개 중 13개가 그 상태여서, 루트 하나만 주면 모듈 92개 중 20개만 잡히고
+    `utils` · `client` · `responses` · `api` · `adapter` 가 통째로 사라졌습니다.
 
     빠진 것이 계약의 `source_modules` 면 import-linter 가
     `Module 'vmkis.utils' does not exist.` 로 죽어 소리를 냅니다. 그러나 빠진 것이
     `forbidden_modules` 쪽이거나 계약에 아직 안 걸린 서브패키지면 **조용히 통과**합니다.
-    `__init__.py` 없는 서브패키지가 새로 생길 때가 정확히 그 경우입니다.
+
+    이슈 #64 에서 `__init__.py` 를 채워 원인을 없앴습니다. 이 테스트는 그것이
+    유지되는지를 봅니다 — `__init__.py` 없는 디렉터리가 새로 생기면 여기서 잡힙니다.
     """
     # grimp 은 lint 그룹(import-linter)이 끌고 옵니다. `--group test` 만 설치한
     # 환경에서는 이 검사를 건너뜁니다. 아래 AST 검사는 그런 환경에서도 돕니다.
     grimp = pytest.importorskip("grimp", reason="import-linter(lint 그룹)가 설치되어야 합니다")
 
-    root_packages = _load_pyproject()["tool"]["importlinter"]["root_packages"]
-    graph = grimp.build_graph(*root_packages)
+    # `root_package`(단수) / `root_packages`(복수) 둘 다 import-linter 의 유효한
+    # 설정입니다. 어느 쪽으로 적혀 있든 같은 성질을 검사합니다.
+    session = _load_pyproject()["tool"]["importlinter"]
+    roots = session.get("root_packages") or [session["root_package"]]
+    graph = grimp.build_graph(*roots)
 
     missing = sorted(_source_modules() - set(graph.modules))
 
     assert not missing, (
         "다음 모듈이 import-linter 그래프에 없습니다. 계약이 이들을 검사하지 않습니다.\n"
-        "pyproject.toml 의 [tool.importlinter] root_packages 에 해당 서브패키지를 추가하세요.\n  "
-        + "\n  ".join(missing)
+        "해당 디렉터리에 __init__.py 가 있는지 확인하세요(이슈 #64).\n  " + "\n  ".join(missing)
     )
 
 
