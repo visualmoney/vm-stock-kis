@@ -57,3 +57,29 @@ archive/
 | 경로 | 원래 자리 | 시점 | 비고 |
 |---|---|---|---|
 | [docs/2025-12_NEWSLETTER.md](./docs/2025-12_NEWSLETTER.md) | `docs/NEWSLETTER_TEMPLATE.md` | 2025-12 | 서식이 아니라 실제 발행된 한 호였음 ([#2](https://github.com/visualmoney/vm-stock-kis/issues/2)) |
+| [docs/reports/2026-08-28_TODO_LIST.md](./docs/reports/2026-08-28_TODO_LIST.md) | `docs/reports/2026-08-28_TODO_LIST.md` | 2026-08-28 | 아래 "To-Do 문서를 왜 전부 옮겼나" 참고 |
+| [docs/reports/2025-12-17_TODO_LIST.md](./docs/reports/2025-12-17_TODO_LIST.md) | `docs/reports/TODO_LIST_2025_12_17.md` | 2025-12-17 | P0~P3 체계. 쓰지 않음 |
+| [docs/generated/2025-12-17_TODO_LIST.md](./docs/generated/2025-12-17_TODO_LIST.md) | `docs/generated/TODO_LIST.md` | 2025-12-17 | 본문은 "2024년 12월 · PyKIS 테스트 프로젝트"라고 적고 있음 |
+| [docs/generated/2025-12-17_todo.md](./docs/generated/2025-12-17_todo.md) | `docs/generated/todo.md` | 2025-12-17 | poetry 시절 임시 메모 |
+
+## To-Do 문서를 왜 전부 옮겼나
+
+**작업 목록이 저장소에 네 벌 있었고, 서로를 몰랐습니다.**
+
+```text
+docs/reports/TODO_LIST_2025_12_17.md   2025-12-17, 명명 규칙 A
+docs/reports/2026-08-28_TODO_LIST.md   2026-08-28, 명명 규칙 B
+docs/generated/TODO_LIST.md            본문은 "2024년 12월"
+docs/generated/todo.md                 poetry 시절
+```
+
+정렬 순서로는 `2026-08-28_TODO_LIST.md` 가 `TODO_LIST_2025_12_17.md` **앞**에
+옵니다(`2` < `T`). `grep TODO_LIST` 로 시작하는 사람은 8개월 낡은 문서를 먼저
+만납니다.
+
+가장 최근 것(2026-08-28)조차 **고유한 정보가 없었습니다.** 116줄을 줄 단위로
+추적한 결과 이슈 본문·이슈 코멘트·개발 일지·`pyproject.toml` 주석 어딘가에
+전부 있었습니다. 게다가 "갱신하지 않는다"고 선언된 `docs/reports/` 안에
+**아무도 켤 수 없는 체크박스 3개**를 두고 있었습니다.
+
+**작업 목록은 이슈 트래커가 유일한 출처입니다** — `gh issue list`.
