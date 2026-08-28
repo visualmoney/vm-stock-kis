@@ -20,6 +20,7 @@ from vmkis.api.base.account_product import (
 from vmkis.api.stock.info import COUNTRY_TYPE, get_market_country, resolve_market
 from vmkis.api.stock.market import CURRENCY_TYPE, MARKET_TYPE, get_market_code, get_market_type
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.page import KisPage
 from vmkis.responses.dynamic import KisDynamic, KisList, KisObject, KisTransform
 from vmkis.responses.response import KisAPIResponse, KisPaginationAPIResponse
@@ -37,6 +38,27 @@ __all__ = [
     "KisBalance",
     "balance",
 ]
+
+
+_DOMESTIC_BALANCE = KisEndpoint(
+    path="/uapi/domestic-stock/v1/trading/inquire-balance",
+    tr_real="TTTC8434R",
+    tr_virtual="VTTC8434R",
+    page_size=100,
+)
+
+_FOREIGN_BALANCE = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/inquire-balance",
+    tr_real="TTTS3012R",
+    tr_virtual="VTTS3012R",
+    page_size=200,
+)
+
+_FOREIGN_PRESENT_BALANCE = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/inquire-present-balance",
+    tr_real="CTRP6504R",
+    tr_virtual="VTRP6504R",
+)
 
 
 def _market_from_code(code):
@@ -928,13 +950,12 @@ def domestic_balance(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = (page or KisPage.first()).to(100)
+    page = page or KisPage.first()
     first = None
 
     while True:
-        result = self.fetch(
-            "/uapi/domestic-stock/v1/trading/inquire-balance",
-            api="VTTC8434R" if self.virtual else "TTTC8434R",
+        result = self.call(
+            _DOMESTIC_BALANCE,
             params={
                 "AFHR_FLPR_YN": "N",
                 "OFL_YN": "",
@@ -944,11 +965,8 @@ def domestic_balance(
                 "FNCG_AMT_AUTO_RDPT_YN": "N",
                 "PRCS_DVSN": "00",
             },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
+            form=[account],
+            page=page,
             response_type=KisDomesticBalance(
                 account_number=account,
             ),
@@ -993,22 +1011,18 @@ def _internal_foreign_balance(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = (page or KisPage.first()).to(200)
+    page = page or KisPage.first()
     first = None
 
     while True:
-        result = self.fetch(
-            "/uapi/overseas-stock/v1/trading/inquire-balance",
-            api="VTTS3012R" if self.virtual else "TTTS3012R",
+        result = self.call(
+            _FOREIGN_BALANCE,
             params={
                 "OVRS_EXCG_CD": get_market_code(market) if market else "",
                 "TR_CRCY_CD": "",
             },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
+            form=[account],
+            page=page,
             response_type=KisForeignBalance(
                 account_number=account,
             ),
@@ -1110,9 +1124,8 @@ def foreign_balance(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    result = self.fetch(
-        "/uapi/overseas-stock/v1/trading/inquire-present-balance",
-        api="VTRP6504R" if self.virtual else "CTRP6504R",
+    result = self.call(
+        _FOREIGN_PRESENT_BALANCE,
         params={
             "WCRC_FRCR_DVSN_CD": "02",
             "NATN_CD": FOREIGN_COUNTRY_MAP[country],

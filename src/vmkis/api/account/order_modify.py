@@ -16,6 +16,7 @@ from vmkis.api.account.order import (
 from vmkis.api.stock.info import get_market_country
 from vmkis.api.stock.market import DAYTIME_MARKETS, MARKET_TYPE, get_market_code
 from vmkis.api.stock.quote import quote
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.exceptions import KisAPIError
 from vmkis.responses.response import KisAPIResponse
 from vmkis.responses.types import KisString
@@ -30,6 +31,14 @@ __all__ = [
     "modify_order",
     "cancel_order",
 ]
+
+
+_DOMESTIC_ORDER_MODIFY = KisEndpoint(
+    path="/uapi/domestic-stock/v1/trading/order-rvsecncl",
+    tr_real="TTTC0803U",
+    tr_virtual="VTTC0803U",
+    method="POST",
+)
 
 
 class KisDomesticModifyOrder(KisAPIResponse, KisOrderBase):
@@ -166,9 +175,8 @@ def domestic_modify_order(
         quote_data = quote(self, symbol=order.symbol, market="KRX")
         price = quote_data.high_limit if price_setting == "upper" else quote_data.low_limit
 
-    return self.fetch(
-        "/uapi/domestic-stock/v1/trading/order-rvsecncl",
-        api="VTTC0803U" if self.virtual else "TTTC0803U",
+    return self.call(
+        _DOMESTIC_ORDER_MODIFY,
         body={
             "KRX_FWDG_ORD_ORGNO": order.branch,
             "ORGN_ODNO": order.number,
@@ -184,7 +192,6 @@ def domestic_modify_order(
             symbol=order.symbol,
             market="KRX",
         ),
-        method="POST",
     )
 
 
@@ -201,9 +208,8 @@ def domestic_cancel_order(
     Args:
         order (KisOrderNumber): 주문번호
     """
-    return self.fetch(
-        "/uapi/domestic-stock/v1/trading/order-rvsecncl",
-        api="VTTC0803U" if self.virtual else "TTTC0803U",
+    return self.call(
+        _DOMESTIC_ORDER_MODIFY,
         body={
             "KRX_FWDG_ORD_ORGNO": order.branch,
             "ORGN_ODNO": order.number,
@@ -219,7 +225,6 @@ def domestic_cancel_order(
             symbol=order.symbol,
             market="KRX",
         ),
-        method="POST",
     )
 
 

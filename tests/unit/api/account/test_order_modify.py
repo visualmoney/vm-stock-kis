@@ -21,6 +21,13 @@ class FakeKis:
         self.virtual = virtual
         self._fetch_calls = []
 
+    # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
+    # 스펙 해석(TR ID·도메인)까지 함께 검증한다.
+    def call(self, *args, **kwargs):
+        from vmkis.kis import VmKis
+
+        return VmKis.call(self, *args, **kwargs)
+
     def fetch(self, *args, **kwargs):
         # record call and return a sentinel
         self._fetch_calls.append((args, kwargs))

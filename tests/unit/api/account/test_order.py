@@ -8,6 +8,19 @@ from vmkis.api.account import order as ordmod
 from vmkis.client.account import KisAccountNumber
 
 
+def _bind_real_call(mock_kis):
+    """목에 실제 `VmKis.call` 을 바인딩한다.
+
+    주문 함수가 `fetch` 대신 `call` 을 쓰게 됐지만(이슈 #43), 테스트의
+    가치는 "국내 매수는 TTTC0802U 로 나간다"를 확인하는 데 있다. 실제
+    `call` 을 태우면 스펙 해석까지 함께 검증하면서 `fetch(api=...)` 단언을
+    그대로 유지할 수 있다.
+    """
+    from vmkis.kis import VmKis
+
+    mock_kis.call = lambda *args, **kwargs: VmKis.call(mock_kis, *args, **kwargs)
+
+
 def test_ensure_price_and_quantity_preserve_when_digit_none():
     # When digit is None, the original Decimal is preserved
     p = Decimal("1.23")
@@ -339,15 +352,27 @@ def test_get_order_price_lower_limit(monkeypatch):
     assert price == Decimal("60000")
 
 
-def test_domestic_order_api_codes_mapping():
-    # Test DOMESTIC_ORDER_API_CODES contains expected mappings
-    assert (True, "buy") in ordmod.DOMESTIC_ORDER_API_CODES
-    assert (True, "sell") in ordmod.DOMESTIC_ORDER_API_CODES
-    assert (False, "buy") in ordmod.DOMESTIC_ORDER_API_CODES
-    assert (False, "sell") in ordmod.DOMESTIC_ORDER_API_CODES
+def test_domestic_order_endpoints_mapping():
+    """국내 주문 스펙이 실전/모의 TR 을 둘 다 들고 있어야 한다.
 
-    assert ordmod.DOMESTIC_ORDER_API_CODES[(True, "buy")] == "TTTC0802U"
-    assert ordmod.DOMESTIC_ORDER_API_CODES[(True, "sell")] == "TTTC0801U"
+    예전에는 `(실전여부, 주문종류) -> TR` 표였고 호출부가
+    `if self.virtual` 로 골랐다. 지금은 실전/모의 차원이 스펙 안으로 들어가
+    호출부에서 분기가 사라졌다 (이슈 #43).
+    """
+    assert set(ordmod.DOMESTIC_ORDER_ENDPOINTS) == {"buy", "sell"}
+
+    buy = ordmod.DOMESTIC_ORDER_ENDPOINTS["buy"]
+    assert buy.tr_real == "TTTC0802U"
+    assert buy.tr_virtual == "VTTC0802U"
+    assert buy.method == "POST"
+
+    sell = ordmod.DOMESTIC_ORDER_ENDPOINTS["sell"]
+    assert sell.tr_real == "TTTC0801U"
+    assert sell.tr_virtual == "VTTC0801U"
+
+    # 스펙은 데이터라 네트워크 없이 규칙을 검증할 수 있다.
+    assert buy.resolve(virtual=False) == ("TTTC0802U", "real")
+    assert buy.resolve(virtual=True) == ("VTTC0802U", "virtual")
 
 
 def test_order_condition_fallback_market_none():
@@ -616,6 +641,7 @@ def test_domestic_order_converts_string_account(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("100"), None))
 
@@ -635,6 +661,7 @@ def test_domestic_order_sets_price_upper_when_market_buy(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
@@ -659,6 +686,7 @@ def test_domestic_order_uses_orderable_quantity_when_qty_none(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = True
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     orderable_qty_called = []
 
@@ -681,6 +709,7 @@ def test_domestic_order_fetch_with_correct_api_code(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
@@ -702,6 +731,7 @@ def test_domestic_order_virtual_api_codes(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = True
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
@@ -745,6 +775,7 @@ def test_foreign_order_uses_correct_market_api_code(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
@@ -764,6 +795,7 @@ def test_foreign_order_tokyo_market(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("100"), None))
 
@@ -797,6 +829,7 @@ def test_foreign_daytime_order_uses_daytime_market_code(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
@@ -1021,14 +1054,14 @@ def test_orderable_quantity_buy_with_zero_qty(monkeypatch):
 
 
 def test_foreign_order_api_codes_mapping():
-    # Test FOREIGN_ORDER_API_CODES contains expected mappings
-    assert (True, "NASDAQ", "buy") in ordmod.FOREIGN_ORDER_API_CODES
-    assert (True, "NYSE", "sell") in ordmod.FOREIGN_ORDER_API_CODES
-    assert (True, "TYO", "buy") in ordmod.FOREIGN_ORDER_API_CODES
-    assert (False, "NASDAQ", "buy") in ordmod.FOREIGN_ORDER_API_CODES
+    # 해외 주문 스펙: 키는 (시장, 주문종류), 실전/모의는 스펙 안에
+    assert ("NASDAQ", "buy") in ordmod.FOREIGN_ORDER_ENDPOINTS
+    assert ("NYSE", "sell") in ordmod.FOREIGN_ORDER_ENDPOINTS
+    assert ("TYO", "buy") in ordmod.FOREIGN_ORDER_ENDPOINTS
+    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NASDAQ", "buy")].tr_virtual == "VTTT1002U"
 
-    assert ordmod.FOREIGN_ORDER_API_CODES[(True, "NASDAQ", "buy")] == "TTTT1002U"
-    assert ordmod.FOREIGN_ORDER_API_CODES[(True, "NYSE", "sell")] == "TTTT1006U"
+    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NASDAQ", "buy")].tr_real == "TTTT1002U"
+    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NYSE", "sell")].tr_real == "TTTT1006U"
 
 
 def test_order_routes_to_domestic_for_krx(monkeypatch):
@@ -1147,6 +1180,7 @@ def test_domestic_order_with_explicit_qty(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     ordmod.domestic_order(
         mock_kis,
@@ -1168,6 +1202,7 @@ def test_foreign_order_with_explicit_qty(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     ordmod.foreign_order(
         mock_kis,
@@ -1189,6 +1224,7 @@ def test_foreign_daytime_order_with_explicit_qty(monkeypatch):
     mock_kis = Mock()
     mock_kis.virtual = False
     mock_kis.fetch = Mock(return_value=Mock())
+    _bind_real_call(mock_kis)
 
     ordmod.foreign_daytime_order(
         mock_kis,

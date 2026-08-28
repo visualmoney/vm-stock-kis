@@ -27,9 +27,11 @@ from vmkis.client.account import KisAccountNumber
 from vmkis.client.appkey import KisKey
 from vmkis.client.auth import KisAuth
 from vmkis.client.cache import KisCacheStorage
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.exceptions import KisAuthenticationError, KisHTTPError, KisRateLimitError
 from vmkis.client.form import KisForm
 from vmkis.client.object import KisObjectBase, kis_object_init
+from vmkis.client.page import KisPage
 from vmkis.client.websocket import KisWebsocketClient
 from vmkis.responses.dynamic import KisObject, TDynamic
 from vmkis.responses.types import KisDynamicDict
@@ -710,6 +712,61 @@ class VmKis:
             kis_object_init(self, response_object)
 
         return response_object  # type: ignore
+
+    def call(
+        self,
+        endpoint: KisEndpoint,
+        *,
+        params: dict[str, str] | None = None,
+        body: dict[str, str] | None = None,
+        form: Iterable[KisForm | None] | None = None,
+        page: KisPage | None = None,
+        response_type: TDynamic | type[TDynamic] | Callable[[], TDynamic] = KisDynamicDict,
+        **kwargs,
+    ) -> TDynamic:
+        """엔드포인트 스펙으로 API 를 호출합니다.
+
+        `fetch()` 위에 얹은 얇은 층입니다. 흩어져 있던 세 가지 규칙을 여기서만
+        처리합니다.
+
+        1. **실전/모의 TR ID 선택** — 예전에는 호출부마다
+           `api="VTTC8434R" if self.virtual else "TTTC8434R"` 를 적었습니다
+        2. **도메인 라우팅** — 모의 미지원 TR 은 실전으로 보냅니다.
+           예전에는 `domain="real"` 을 손으로 붙였고, **빠뜨리면 모의 계정에서만
+           터지는 버그**가 됐습니다
+        3. **커서 길이와 연속조회** — `page.to(100)` / `continuous=not page.is_first`
+
+        Args:
+            endpoint: 엔드포인트 스펙
+            page: 연속조회 커서. 주면 `endpoint.page_size` 로 길이를 맞추고
+                `form` 뒤에 붙입니다. 첫 페이지가 아니면 `continuous=True`.
+
+        `fetch()` 의 나머지 인자는 `**kwargs` 로 그대로 넘어갑니다.
+        """
+        tr_id, domain = endpoint.resolve(self.virtual)
+
+        forms = list(form) if form is not None else []
+        continuous = False
+
+        if page is not None:
+            if endpoint.page_size is not None:
+                page = page.to(endpoint.page_size)
+
+            forms.append(page)
+            continuous = not page.is_first
+
+        return self.fetch(
+            endpoint.path,
+            method=endpoint.method,
+            api=tr_id,
+            domain=domain,
+            params=params,
+            body=body,
+            form=forms or None,
+            continuous=continuous,
+            response_type=response_type,
+            **kwargs,
+        )
 
     @property
     @thread_safe("token")

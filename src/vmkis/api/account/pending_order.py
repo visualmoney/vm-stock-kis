@@ -34,6 +34,7 @@ from vmkis.api.stock.market import (
     get_market_code_timezone,
 )
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.page import KisPage
 from vmkis.event.filters.order import KisOrderNumberEventFilter
 from vmkis.responses.dynamic import KisDynamic, KisList
@@ -51,6 +52,14 @@ __all__ = [
     "KisPendingOrders",
     "pending_orders",
 ]
+
+
+_FOREIGN_PENDING_ORDERS = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/inquire-nccs",
+    tr_real="TTTS3018R",
+    tr_virtual="VTTS3018R",
+    page_size=200,
+)
 
 
 @runtime_checkable
@@ -695,7 +704,7 @@ def domestic_pending_orders(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = (page or KisPage.first()).to(100)
+    page = page or KisPage.first()
     first = None
 
     while True:
@@ -706,11 +715,8 @@ def domestic_pending_orders(
                 "INQR_DVSN_1": "1",
                 "INQR_DVSN_2": "0",
             },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
+            form=[account],
+            page=page,
             response_type=KisDomesticPendingOrders(
                 account_number=account,
             ),
@@ -755,22 +761,18 @@ def _foreign_pending_orders(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = (page or KisPage.first()).to(200)
+    page = page or KisPage.first()
     first = None
 
     while True:
-        result = self.fetch(
-            "/uapi/overseas-stock/v1/trading/inquire-nccs",
-            api="VTTS3018R" if self.virtual else "TTTS3018R",
+        result = self.call(
+            _FOREIGN_PENDING_ORDERS,
             params={
                 "OVRS_EXCG_CD": get_market_code(market) if market is not None else "",
                 "SORT_SQN": "DS" if self.virtual else "",
             },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
+            form=[account],
+            page=page,
             response_type=KisForeignPendingOrders(
                 account_number=account,
             ),
