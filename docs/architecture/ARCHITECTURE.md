@@ -126,6 +126,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
                                                  └──────────┘
 
    느슨한 상하 순서: scope → adapter/api → event → responses → client → utils
+   순환 2쌍은 의도적: api ↔ adapter, api ↔ event  (불변식 2번 표 참고)
 ```
 
 > **이 그림은 "계층"이 아닙니다.** 예전 문서는 `API → Client → Response Transform
@@ -151,6 +152,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    |---|---|---|
    | `responses → client` | `responses/response.py`, `responses/exceptions.py` | 의도적 — 응답은 client 타입 위에 성립 |
    | `api ↔ adapter` | 주문/잔고 계열 | 의도적 — 응답 객체가 Mixin 을 상속 (rich object) |
+   | `api ↔ event` | `api/websocket/price.py` ↔ `event/filters/*` | 의도적 — 아래 참고 ([#63](https://github.com/visualmoney/vm-stock-kis/issues/63)) |
    | ~~`client → api`~~ | ~~`client/websocket.py`~~ | ✅ **해소됨** — 자기등록으로 역전 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17)) |
    | ~~`utils → client`~~ | ~~`utils/retry.py`~~ | ✅ **해소됨** ([#18](https://github.com/visualmoney/vm-stock-kis/issues/18)) |
 
@@ -181,10 +183,12 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
      `ignore_imports` 에 있는데, 이 import 를 파일 상단으로 올려도 `lint-imports`
      는 통과합니다(실측). `tests/unit/test_import_contracts.py` 의 AST 검사가
      그 자리를 막습니다.
-   - **그래프가 비어 있어도 통과합니다.** `src/vmkis` 의 디렉터리 대부분에
-     `__init__.py` 가 없어 `root_packages` 를 일일이 나열해야 합니다. 빠뜨리면
-     그 서브패키지는 검사되지 않은 채 초록이 됩니다. 같은 테스트 파일이
-     "모든 모듈이 그래프에 있는가"를 확인합니다.
+   - **그래프가 비어 있어도 통과합니다.** grimp 은 `__init__.py` 없는 디렉터리를
+     스캔에서 놓칠 수 있고, 그 상태에서도 `lint-imports` 는 초록입니다.
+     [#64](https://github.com/visualmoney/vm-stock-kis/issues/64) 에서
+     `__init__.py` 13개를 채워 원인을 없앴습니다(아래 §1.2). 그래도 같은 테스트
+     파일이 "모든 모듈이 그래프에 있는가"를 계속 확인합니다 — 원인은 언제든
+     되돌아올 수 있습니다.
 
 3. **순환 우회용 지연 import 에는 사유 주석을 답니다.**
    함수 안의 import 를 "정리"하려고 파일 상단으로 올리면 패키지가 로드 불능이
@@ -193,6 +197,46 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 4. **`event/` 는 이 그림에 포함됩니다.**
    예전 다이어그램에는 `event/` 가 아예 없어서 `client → event`, `event → api`
    간선을 위반인지 아닌지 판정할 수 없었습니다.
+
+   **`event → api` 는 2026-08-29 에 "의도적"으로 판정했습니다**
+   ([#63](https://github.com/visualmoney/vm-stock-kis/issues/63)). 근거 셋입니다.
+
+   - **한쪽만 떼어낼 수 없습니다.** `api → event` 12건, `event → api` 4건의
+     **양방향 순환**입니다(`api/websocket/price.py → event/filters/product`,
+     `api/account/pending_order.py → event/filters/order`). `event → api` 만
+     없애도 순환은 그대로 남습니다.
+   - **이미 동결한 `api ↔ adapter`(6 ↔ 32)와 구조가 같습니다.** 한쪽은 의도적이고
+     다른 쪽은 위반이라고 할 근거가 없습니다.
+   - **떼어내면 손해입니다.** `event → api` 4건은 전부 어노테이션 전용이라
+     `TYPE_CHECKING` 으로 옮길 수 있습니다. 실제로 옮겨 보니
+     `get_type_hints(KisSimpleProduct)` · `get_type_hints(KisSimpleOrderNumber)`
+     가 **동작하던 것이 `NameError` 가 됐습니다.** 그래프를 위해 런타임 타입
+     해석을 버리는 거래입니다.
+
+   > **이 판정을 뒤집을 수 있는 유일한 조건**: `MARKET_TYPE`(`Literal` 문자열
+   > 유니온)이 `api/stock/market.py` 를 떠나 하위 계층으로 내려가는 경우입니다.
+   > 이것은 `adapter` · `api` · `event` · `scope` 26개 파일이 쓰는 **공용 어휘**인데
+   > `KisType` 기계가 함께 든 api 모듈에 얹혀 있습니다. 옮기면 `event → api` 는
+   > `KisProductProtocol` 1건만 남습니다. 다만 새 공개 모듈 신설이라
+   > [#30](https://github.com/visualmoney/vm-stock-kis/issues/30) · [#34](https://github.com/visualmoney/vm-stock-kis/issues/34) 의 공개 API 정리와 함께 다뤄야 합니다.
+
+### 1.2 모든 서브패키지에 `__init__.py` 가 있습니다
+
+2026-08-29 이전에는 디렉터리 18개 중 **13개에 `__init__.py` 가 없었습니다**
+(업스트림에서 물려받은 상태 — git 이력상 삭제된 적이 없습니다). 암묵적
+네임스페이스 패키지였고, 정적 분석 도구가 이들을 조용히 건너뜁니다.
+
+`lint-imports` 가 그 대가를 드러냈습니다 — 루트 하나만 주면 모듈 92개 중
+**20개만** 잡히고 `utils` · `client` · `responses` · `api` · `adapter` 가 통째로
+사라진 채 **계약이 초록으로 통과**했습니다.
+
+[#64](https://github.com/visualmoney/vm-stock-kis/issues/64) 에서 13개를 채웠습니다.
+**새 디렉터리를 만들면 `__init__.py` 를 함께 만드세요.**
+`tests/unit/test_import_contracts.py` 가 누락을 잡습니다.
+
+> **이 파일들은 비워 둡니다.** 재export 를 넣으면 하위 모듈이 상위를 끌어오는
+> 간선이 생기고 그것이 순환의 시작입니다. 공개 API 는 `vmkis/__init__.py` 와
+> `vmkis/public_types.py` 에서만 노출합니다. 각 파일의 주석이 같은 말을 합니다.
 
 ### 2. 프로토콜 기반 설계 (Protocol-Based Design)
 

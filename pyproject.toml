@@ -242,27 +242,15 @@ ignore = [
 # `event -> api` 는 아직 판정되지 않았습니다(이슈 #50 의 범위 밖).
 # 계약은 "해소된 것이 되살아나지 않는다"만 지킵니다.
 [tool.importlinter]
-# root_package(단수)로 "vmkis" 만 주면 **계약이 조용히 아무것도 검사하지 않습니다.**
-# src/vmkis 의 디렉터리 18개 중 13개에 __init__.py 가 없어 암묵적 네임스페이스
-# 패키지이고, grimp 은 상위 패키지를 스캔할 때 이들을 건너뜁니다. 실측으로
-# "vmkis" 하나만 주면 모듈 20개만 잡히고 utils/client/responses/api/adapter 가
-# 통째로 사라집니다(전부 주면 92개 = .py 79개 + 네임스페이스 패키지 13개).
+# 이슈 #64 이전에는 여기에 root_packages 목록이 손으로 나열돼 있었습니다.
+# src/vmkis 의 디렉터리 13개에 __init__.py 가 없어(암묵적 네임스페이스 패키지)
+# grimp 이 상위 패키지 스캔에서 이들을 건너뛰었고, "vmkis" 하나만 주면 모듈
+# 92개 중 20개만 잡혔기 때문입니다. **그 상태에서도 계약은 초록이었습니다.**
 #
-# 계약의 source_modules 가 그래프에 없으면 import-linter 가
-# "Module 'vmkis.utils' does not exist." 로 죽으므로 이 함정 자체는 소리를 냅니다.
-# 다만 **새 서브패키지가 목록에서 빠지는 것은 소리를 내지 않습니다.**
-# tests/unit/test_import_contracts.py 가 그 누락을 잡습니다.
-root_packages = [
-    "vmkis",
-    "vmkis.adapter",
-    "vmkis.api",
-    "vmkis.client",
-    "vmkis.responses",
-    "vmkis.utils",
-]
-# 불변식 2번이 막는 것은 **모듈 레벨** 역방향 간선입니다. 불변식 1번은 반대로
-# `if TYPE_CHECKING:` 안의 상위 import 를 명시적으로 허용합니다(`vmkis.kis` 가
-# 그렇게만 import 됩니다). 이 옵션이 없으면 계약이 불변식 1번을 위반으로 잡습니다.
+# #64 에서 __init__.py 13개를 추가해 원인을 없앴습니다. 이제 루트 하나로 92개가
+# 전부 잡힙니다. tests/unit/test_import_contracts.py 가 그것을 확인하므로,
+# 앞으로 __init__.py 없는 디렉터리가 다시 생기면 CI 가 알려 줍니다.
+root_package = "vmkis"
 exclude_type_checking_imports = true
 
 [[tool.importlinter.contracts]]
