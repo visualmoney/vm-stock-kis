@@ -21,6 +21,13 @@ def test__domestic_orderable_amount_calls_fetch_and_uses_quote(monkeypatch):
             self.virtual = False
             self.last_fetch = None
 
+        # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
+        # 스펙 해석(TR ID·도메인)까지 함께 검증한다.
+        def call(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.call(self, *args, **kwargs)
+
         def fetch(self, *args, **kwargs):
             self.last_fetch = {"args": args, "kwargs": kwargs}
             return kwargs.get("response_type")
@@ -65,6 +72,13 @@ def test_foreign_orderable_amount_unit_price_and_order_condition(monkeypatch):
         def __init__(self):
             self.virtual = False
             self.last = None
+
+        # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
+        # 스펙 해석(TR ID·도메인)까지 함께 검증한다.
+        def call(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.call(self, *args, **kwargs)
 
         def fetch(self, *args, **kwargs):
             self.last = kwargs

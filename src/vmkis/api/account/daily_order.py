@@ -27,6 +27,7 @@ from vmkis.api.stock.market import (
     get_market_timezone,
 )
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.page import KisPage
 from vmkis.responses.dynamic import KisDynamic, KisList, KisTransform
 from vmkis.responses.response import KisPaginationAPIResponse
@@ -42,6 +43,14 @@ __all__ = [
     "KisDailyOrders",
     "daily_orders",
 ]
+
+
+_FOREIGN_DAILY_ORDERS = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/inquire-ccnl",
+    tr_real="TTTS3035R",
+    tr_virtual="VTTS3035R",
+    page_size=200,
+)
 
 
 @runtime_checkable
@@ -628,7 +637,7 @@ def _domestic_daily_orders(
     if end.month + (now.year - end.year) * 12 - now.month > 3 and is_recent:
         raise ValueError("조회 기간은 최근 3개월 이내거나 3개월 이상이어야 합니다.")
 
-    page = (page or KisPage.first()).to(100)
+    page = page or KisPage.first()
     first = None
 
     while True:
@@ -647,11 +656,8 @@ def _domestic_daily_orders(
                 "INQR_DVSN_3": "00",
                 "INQR_DVSN_1": "",
             },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
+            form=[account],
+            page=page,
             response_type=KisDomesticDailyOrders(
                 account_number=account,
             ),
@@ -745,13 +751,12 @@ def _internal_foreign_daily_orders(
     if start > end:
         start, end = end, start
 
-    page = (page or KisPage.first()).to(200)
+    page = page or KisPage.first()
     first = None
 
     while True:
-        result = self.fetch(
-            "/uapi/overseas-stock/v1/trading/inquire-ccnl",
-            api="VTTS3035R" if self.virtual else "TTTS3035R",
+        result = self.call(
+            _FOREIGN_DAILY_ORDERS,
             params={
                 "PDNO": "" if self.virtual else "%",
                 "ORD_STRT_DT": start.strftime("%Y%m%d"),
@@ -764,11 +769,8 @@ def _internal_foreign_daily_orders(
                 "ORD_GNO_BRNO": "",
                 "ODNO": "",
             },
-            form=[
-                account,
-                page,
-            ],
-            continuous=not page.is_first,
+            form=[account],
+            page=page,
             response_type=KisForeignDailyOrders(
                 account_number=account,
             ),

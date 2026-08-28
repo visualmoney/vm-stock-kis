@@ -35,6 +35,7 @@ from vmkis.api.stock.market import (
 )
 from vmkis.api.stock.quote import quote
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.event.filters.order import KisOrderNumberEventFilter
 from vmkis.event.handler import KisEventFilter
 from vmkis.event.subscription import KisSubscriptionEventArgs
@@ -891,12 +892,13 @@ class KisForeignDaytimeOrder(KisAPIResponse, KisOrderBase):
         self.time = self.time_kst.astimezone(self.timezone)
 
 
-DOMESTIC_ORDER_API_CODES: dict[tuple[bool, ORDER_TYPE], str] = {
-    # (실전투자여부, 주문종류): API코드
-    (True, "buy"): "TTTC0802U",
-    (True, "sell"): "TTTC0801U",
-    (False, "buy"): "VTTC0802U",
-    (False, "sell"): "VTTC0801U",
+_DOMESTIC_ORDER_PATH = "/uapi/domestic-stock/v1/trading/order-cash"
+
+#: 국내주식 주문 엔드포인트. 실전/모의 TR ID 는 각 스펙이 들고 있으므로
+#: 호출부에서 `if self.virtual` 분기를 하지 않습니다.
+DOMESTIC_ORDER_ENDPOINTS: dict[ORDER_TYPE, KisEndpoint] = {
+    "buy": KisEndpoint(_DOMESTIC_ORDER_PATH, tr_real="TTTC0802U", tr_virtual="VTTC0802U", method="POST"),
+    "sell": KisEndpoint(_DOMESTIC_ORDER_PATH, tr_real="TTTC0801U", tr_virtual="VTTC0801U", method="POST"),
 }
 
 
@@ -1101,9 +1103,8 @@ def domestic_order(
             include_foreign=include_foreign,
         )
 
-    return self.fetch(
-        "/uapi/domestic-stock/v1/trading/order-cash",
-        api=DOMESTIC_ORDER_API_CODES[(not self.virtual, order)],
+    return self.call(
+        DOMESTIC_ORDER_ENDPOINTS[order],
         body={
             "PDNO": symbol,
             "ORD_DVSN": condition_code,
@@ -1116,48 +1117,68 @@ def domestic_order(
             symbol=symbol,
             market="KRX",
         ),
-        method="POST",
     )
 
 
-FOREIGN_ORDER_API_CODES: dict[tuple[bool, MARKET_TYPE, ORDER_TYPE], str] = {
-    # (실전투자여부, 시장, 주문종류): API코드
-    (True, "NASDAQ", "buy"): "TTTT1002U",  # 미국 매수 주문
-    (True, "NYSE", "buy"): "TTTT1002U",  # 미국 매수 주문
-    (True, "AMEX", "buy"): "TTTT1002U",  # 미국 매수 주문
-    (True, "NASDAQ", "sell"): "TTTT1006U",  # 미국 매도 주문
-    (True, "NYSE", "sell"): "TTTT1006U",  # 미국 매도 주문
-    (True, "AMEX", "sell"): "TTTT1006U",  # 미국 매도 주문
-    (True, "TYO", "buy"): "TTTS0308U",  # 일본 매수 주문
-    (True, "TYO", "sell"): "TTTS0307U",  # 일본 매도 주문
-    (True, "SSE", "buy"): "TTTS0202U",  # 상하이 매수 주문
-    (True, "SSE", "sell"): "TTTS1005U",  # 상하이 매도 주문
-    (True, "HKEX", "buy"): "TTTS1002U",  # 홍콩 매수 주문
-    (True, "HKEX", "sell"): "TTTS1001U",  # 홍콩 매도 주문
-    (True, "SZSE", "buy"): "TTTS0305U",  # 심천 매수 주문
-    (True, "SZSE", "sell"): "TTTS0304U",  # 심천 매도 주문
-    (True, "HNX", "buy"): "TTTS0311U",  # 베트남 매수 주문
-    (True, "HSX", "buy"): "TTTS0311U",  # 베트남 매수 주문
-    (True, "HNX", "sell"): "TTTS0310U",  # 베트남 매도 주문
-    (True, "HSX", "sell"): "TTTS0310U",  # 베트남 매도 주문
-    (False, "NASDAQ", "buy"): "VTTT1002U",  # 미국 매수 주문
-    (False, "NYSE", "buy"): "VTTT1002U",  # 미국 매수 주문
-    (False, "AMEX", "buy"): "VTTT1002U",  # 미국 매수 주문
-    (False, "NASDAQ", "sell"): "VTTT1001U",  # 미국 매도 주문
-    (False, "NYSE", "sell"): "VTTT1001U",  # 미국 매도 주문
-    (False, "AMEX", "sell"): "VTTT1001U",  # 미국 매도 주문
-    (False, "TYO", "buy"): "VTTS0308U",  # 일본 매수 주문
-    (False, "TYO", "sell"): "VTTS0307U",  # 일본 매도 주문
-    (False, "SSE", "buy"): "VTTS0202U",  # 상하이 매수 주문
-    (False, "SSE", "sell"): "VTTS1005U",  # 상하이 매도 주문
-    (False, "HKEX", "buy"): "VTTS1002U",  # 홍콩 매수 주문
-    (False, "HKEX", "sell"): "VTTS1001U",  # 홍콩 매도 주문
-    (False, "SZSE", "buy"): "VTTS0305U",  # 심천 매수 주문
-    (False, "SZSE", "sell"): "VTTS0304U",  # 심천 매도 주문
-    (False, "HNX", "buy"): "VTTS0311U",  # 베트남 매수 주문
-    (False, "HSX", "buy"): "VTTS0311U",  # 베트남 매수 주문
-    (False, "HNX", "sell"): "VTTS0310U",  # 베트남 매도 주문
-    (False, "HSX", "sell"): "VTTS0310U",  # 베트남 매도 주문
+_FOREIGN_ORDER_PATH = "/uapi/overseas-stock/v1/trading/order"
+
+#: 해외주식 주문 엔드포인트. 키는 (시장, 주문종류) 이고, 실전/모의 차원은
+#: `KisEndpoint` 안으로 들어갔습니다.
+FOREIGN_ORDER_ENDPOINTS: dict[tuple[MARKET_TYPE, ORDER_TYPE], KisEndpoint] = {
+    ("NASDAQ", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTT1002U", tr_virtual="VTTT1002U", method="POST"
+    ),  # 미국 매수 주문
+    ("NYSE", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTT1002U", tr_virtual="VTTT1002U", method="POST"
+    ),  # 미국 매수 주문
+    ("AMEX", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTT1002U", tr_virtual="VTTT1002U", method="POST"
+    ),  # 미국 매수 주문
+    ("NASDAQ", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTT1006U", tr_virtual="VTTT1001U", method="POST"
+    ),  # 미국 매도 주문
+    ("NYSE", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTT1006U", tr_virtual="VTTT1001U", method="POST"
+    ),  # 미국 매도 주문
+    ("AMEX", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTT1006U", tr_virtual="VTTT1001U", method="POST"
+    ),  # 미국 매도 주문
+    ("TYO", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0308U", tr_virtual="VTTS0308U", method="POST"
+    ),  # 일본 매수 주문
+    ("TYO", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0307U", tr_virtual="VTTS0307U", method="POST"
+    ),  # 일본 매도 주문
+    ("SSE", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0202U", tr_virtual="VTTS0202U", method="POST"
+    ),  # 상하이 매수 주문
+    ("SSE", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS1005U", tr_virtual="VTTS1005U", method="POST"
+    ),  # 상하이 매도 주문
+    ("HKEX", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS1002U", tr_virtual="VTTS1002U", method="POST"
+    ),  # 홍콩 매수 주문
+    ("HKEX", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS1001U", tr_virtual="VTTS1001U", method="POST"
+    ),  # 홍콩 매도 주문
+    ("SZSE", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0305U", tr_virtual="VTTS0305U", method="POST"
+    ),  # 심천 매수 주문
+    ("SZSE", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0304U", tr_virtual="VTTS0304U", method="POST"
+    ),  # 심천 매도 주문
+    ("HNX", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0311U", tr_virtual="VTTS0311U", method="POST"
+    ),  # 베트남 매수 주문
+    ("HSX", "buy"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0311U", tr_virtual="VTTS0311U", method="POST"
+    ),  # 베트남 매수 주문
+    ("HNX", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0310U", tr_virtual="VTTS0310U", method="POST"
+    ),  # 베트남 매도 주문
+    ("HSX", "sell"): KisEndpoint(
+        _FOREIGN_ORDER_PATH, tr_real="TTTS0310U", tr_virtual="VTTS0310U", method="POST"
+    ),  # 베트남 매도 주문
 }
 
 
@@ -1273,9 +1294,8 @@ def foreign_order(
             include_foreign=include_foreign,
         )
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/order",
-        api=FOREIGN_ORDER_API_CODES[(not self.virtual, market, order)],
+    return self.call(
+        FOREIGN_ORDER_ENDPOINTS[(market, order)],
         body={
             "OVRS_EXCG_CD": get_market_code(market),
             "PDNO": symbol,
@@ -1291,7 +1311,6 @@ def foreign_order(
             symbol=symbol,
             market=market,
         ),
-        method="POST",
     )
 
 

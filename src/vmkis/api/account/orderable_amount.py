@@ -18,6 +18,7 @@ from vmkis.api.base.account_product import (
 from vmkis.api.stock.market import MARKET_TYPE, get_market_code
 from vmkis.api.stock.quote import quote
 from vmkis.client.account import KisAccountNumber
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.responses.response import (
     KisAPIResponse,
     KisResponseProtocol,
@@ -35,6 +36,19 @@ __all__ = [
     "KisOrderableAmountResponse",
     "orderable_amount",
 ]
+
+
+_DOMESTIC_ORDERABLE_AMOUNT = KisEndpoint(
+    path="/uapi/domestic-stock/v1/trading/inquire-psbl-order",
+    tr_real="TTTC8908R",
+    tr_virtual="VTTC8908R",
+)
+
+_FOREIGN_ORDERABLE_AMOUNT = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/inquire-psamount",
+    tr_real="TTTS3007R",
+    tr_virtual="VTTS3007R",
+)
 
 
 @runtime_checkable
@@ -392,9 +406,8 @@ def _domestic_orderable_amount(
         execution=execution,
     )
 
-    return self.fetch(
-        "/uapi/domestic-stock/v1/trading/inquire-psbl-order",
-        api="VTTC8908R" if self.virtual else "TTTC8908R",
+    return self.call(
+        _DOMESTIC_ORDERABLE_AMOUNT,
         form=[account],
         params={
             "PDNO": symbol,
@@ -554,9 +567,8 @@ def foreign_orderable_amount(
         execution=execution,
     )
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/inquire-psamount",
-        api="VTTS3007R" if self.virtual else "TTTS3007R",
+    return self.call(
+        _FOREIGN_ORDERABLE_AMOUNT,
         form=[account],
         params={
             "OVRS_EXCG_CD": get_market_code(market),

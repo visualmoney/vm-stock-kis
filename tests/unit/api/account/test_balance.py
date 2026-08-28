@@ -275,25 +275,32 @@ def test_foreign_present_balance_init_and_post_init():
 
 def test_domestic_balance_fetch_pagination(monkeypatch):
     # Test domestic_balance handles pagination correctly
+    from vmkis.kis import VmKis
+
     class FakeKis:
         def __init__(self):
             self.virtual = False
             self.call_count = 0
+
+        # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
+        # 스펙 해석(TR ID·도메인·커서 길이)까지 함께 검증한다.
+        def call(self, *args, **kwargs):
+            return VmKis.call(self, *args, **kwargs)
 
         def fetch(self, *args, **kwargs):
             self.call_count += 1
             result = SimpleNamespace()
             result.stocks = [SimpleNamespace(symbol=f"S{self.call_count}")]
             result.is_last = self.call_count >= 2
-            result.next_page = SimpleNamespace(is_first=False)
+            result.next_page = SimpleNamespace(is_first=False, to=lambda size: result.next_page)
             return result
 
     kis = FakeKis()
 
-    # Mock KisPage
-    monkeypatch.setattr(
-        bal, "KisPage", SimpleNamespace(first=lambda: SimpleNamespace(to=lambda x: SimpleNamespace(is_first=True)))
-    )
+    # Mock KisPage — `call()` 이 page.to(size) 를 호출하므로 to 를 제공한다.
+    fake_page = SimpleNamespace(is_first=True)
+    fake_page.to = lambda size: fake_page
+    monkeypatch.setattr(bal, "KisPage", SimpleNamespace(first=lambda: fake_page))
 
     result = bal.domestic_balance(kis, "12345678-01", continuous=True)
 
