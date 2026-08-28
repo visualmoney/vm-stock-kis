@@ -7,6 +7,7 @@ from vmkis.api.stock.chart import KisChart, KisChartBar, KisChartBarRepr, KisCha
 from vmkis.api.stock.market import MARKET_SHORT_TYPE_MAP, MARKET_TYPE
 from vmkis.api.stock.quote import STOCK_SIGN_TYPE, STOCK_SIGN_TYPE_KOR_MAP
 from vmkis.api.stock.trading_hours import KisTradingHours, KisTradingHoursBase
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.responses.dynamic import KisDynamic, KisList, KisObject, KisTransform
 from vmkis.responses.response import KisAPIResponse, KisResponse, raise_not_found
 from vmkis.responses.types import KisDecimal, KisInt, KisTime
@@ -21,6 +22,18 @@ if TYPE_CHECKING:
 __all__ = [
     "day_chart",
 ]
+
+
+# 차트 TR 은 모의도메인에 없습니다. `tr_virtual` 생략으로 실전 라우팅됩니다.
+DOMESTIC_DAY_CHART = KisEndpoint(
+    path="/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice",
+    tr_real="FHKST03010200",
+)
+
+FOREIGN_DAY_CHART = KisEndpoint(
+    path="/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice",
+    tr_real="HHDFS76950200",
+)
 
 
 class KisDayChartBarBase(KisChartBarRepr):
@@ -331,9 +344,8 @@ def domestic_day_chart(
     chart = None
 
     while True:
-        result = self.fetch(
-            "/uapi/domestic-stock/v1/quotations/inquire-time-itemchartprice",
-            api="FHKST03010200",
+        result = self.call(
+            DOMESTIC_DAY_CHART,
             params={
                 "FID_ETC_CLS_CODE": "",
                 "FID_COND_MRKT_DIV_CODE": "J",
@@ -344,7 +356,6 @@ def domestic_day_chart(
             response_type=KisDomesticDayChart(
                 symbol=symbol,
             ),
-            domain="real",
         )
 
         if not chart:
@@ -441,9 +452,8 @@ def foreign_day_chart(
     prev_price = quote(self, symbol, market).prev_price
 
     for i in range(FOREIGN_MAX_PERIODS):
-        result = self.fetch(
-            "/uapi/overseas-price/v1/quotations/inquire-time-itemchartprice",
-            api="HHDFS76950200",
+        result = self.call(
+            FOREIGN_DAY_CHART,
             params={
                 "AUTH": "",
                 "EXCD": MARKET_SHORT_TYPE_MAP[market],
@@ -460,7 +470,6 @@ def foreign_day_chart(
                 market=market,
                 prev_price=prev_price,
             ),
-            domain="real",
         )
 
         if not chart:

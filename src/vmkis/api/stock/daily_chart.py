@@ -15,6 +15,7 @@ from vmkis.api.stock.quote import (
     STOCK_SIGN_TYPE_KOR_MAP,
     STOCK_SIGN_TYPE_MAP,
 )
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.responses.dynamic import KisDynamic, KisList
 from vmkis.responses.response import KisResponse, raise_not_found
 from vmkis.responses.types import KisAny, KisDatetime, KisDecimal, KisInt
@@ -28,6 +29,18 @@ if TYPE_CHECKING:
 __all__ = [
     "daily_chart",
 ]
+
+
+# 차트 TR 은 모의도메인에 없습니다. `tr_virtual` 생략으로 실전 라우팅됩니다.
+DOMESTIC_DAILY_CHART = KisEndpoint(
+    path="/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
+    tr_real="FHKST03010100",
+)
+
+FOREIGN_DAILY_CHART = KisEndpoint(
+    path="/uapi/overseas-price/v1/quotations/dailyprice",
+    tr_real="HHDFS76240000",
+)
 
 
 class KisDomesticDailyChartBar(KisChartBarRepr, KisDynamic):
@@ -271,9 +284,8 @@ def domestic_daily_chart(
     period_delta = timedelta(days=1 if period == "day" else 7 if period == "week" else 30 if period == "month" else 365)
 
     while True:
-        result = self.fetch(
-            "/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
-            api="FHKST03010100",
+        result = self.call(
+            DOMESTIC_DAILY_CHART,
             params={
                 "FID_COND_MRKT_DIV_CODE": "J",
                 "FID_INPUT_ISCD": symbol,
@@ -285,7 +297,6 @@ def domestic_daily_chart(
                 "FID_ORG_ADJ_PRC": "0" if adjust else "1",
             },
             response_type=KisDomesticDailyChart(symbol=symbol),
-            domain="real",
         )
 
         if not chart:
@@ -362,9 +373,8 @@ def foreign_daily_chart(
     period_delta = timedelta(days=1 if period == "day" else 7 if period == "week" else 30)
 
     while True:
-        result = self.fetch(
-            "/uapi/overseas-price/v1/quotations/dailyprice",
-            api="HHDFS76240000",
+        result = self.call(
+            FOREIGN_DAILY_CHART,
             params={
                 "AUTH": "",
                 "EXCD": MARKET_SHORT_TYPE_MAP[market],
@@ -377,7 +387,6 @@ def foreign_daily_chart(
                 symbol=symbol,
                 market=market,
             ),
-            domain="real",
         )
 
         if not chart:

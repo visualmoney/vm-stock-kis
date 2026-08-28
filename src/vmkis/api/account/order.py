@@ -1181,6 +1181,17 @@ FOREIGN_ORDER_ENDPOINTS: dict[tuple[MARKET_TYPE, ORDER_TYPE], KisEndpoint] = {
     ),  # 베트남 매도 주문
 }
 
+# 주간거래는 모의투자를 지원하지 않습니다. `tr_virtual` 을 생략하면
+# 모의 계좌에서도 실전 도메인으로 나갑니다.
+FOREIGN_DAYTIME_ORDER_ENDPOINTS: dict[ORDER_TYPE, KisEndpoint] = {
+    "buy": KisEndpoint(
+        "/uapi/overseas-stock/v1/trading/daytime-order", tr_real="TTTS6036U", method="POST"
+    ),  # 해외 주간거래 매수 주문
+    "sell": KisEndpoint(
+        "/uapi/overseas-stock/v1/trading/daytime-order", tr_real="TTTS6037U", method="POST"
+    ),  # 해외 주간거래 매도 주문
+}
+
 
 def foreign_order(
     self: "VmKis",
@@ -1375,9 +1386,8 @@ def foreign_daytime_order(
         quote_data = quote(self, symbol=symbol, market=market, extended=True)
         price = quote_data.high_limit if order == "buy" else quote_data.low_limit
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/daytime-order",
-        api="TTTS6036U" if order == "buy" else "TTTS6037U",
+    return self.call(
+        FOREIGN_DAYTIME_ORDER_ENDPOINTS[order],
         body={
             "OVRS_EXCG_CD": get_market_code(market),
             "PDNO": symbol,
@@ -1392,8 +1402,6 @@ def foreign_daytime_order(
             symbol=symbol,
             market=market,
         ),
-        method="POST",
-        domain="real",
     )
 
 
