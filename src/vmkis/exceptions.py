@@ -5,15 +5,15 @@ from vmkis.client.exceptions import (
     KisConnectionError,
     KisException,
     KisHTTPError,
+    KisHTTPNotFoundError,
     KisInternalError,
-    KisNotFoundError,
     KisRateLimitError,
     KisRetryableError,
     KisServerError,
     KisTimeoutError,
     KisValidationError,
 )
-from vmkis.responses.exceptions import KisMarketNotOpenedError
+from vmkis.responses.exceptions import KisMarketNotOpenedError, KisNotFoundError
 
 __all__ = [
     "KisException",
@@ -24,6 +24,7 @@ __all__ = [
     "KisAuthorizationError",
     "KisRateLimitError",
     "KisNotFoundError",
+    "KisHTTPNotFoundError",
     "KisValidationError",
     "KisServerError",
     "KisTimeoutError",
