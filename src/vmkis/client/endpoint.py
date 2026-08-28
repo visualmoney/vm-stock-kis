@@ -17,10 +17,12 @@ KIS 는 같은 기능이라도 실전/모의의 TR ID 가 다르고(잔고: `TTT
 
     kis.call(DOMESTIC_BALANCE, form=[account], page=page, response_type=...)
 
-이 방식은 저장소에 이미 절반쯤 있었습니다 — `api/account/order.py` 의
-`DOMESTIC_ORDER_API_CODES` 가 (실전여부, 주문종류) 표입니다. 그 표에서
-**실전/모의 차원만 떼어내 `KisEndpoint` 로 옮기면** 나머지 차원은 그대로
-`dict[key, KisEndpoint]` 로 남습니다.
+이 방식은 저장소에 이미 절반쯤 있었습니다 — `api/account/order.py` 가
+`(실전여부, 주문종류) -> TR ID` 표를 들고 있었습니다. 그 표에서 **실전/모의
+차원만 떼어내 `KisEndpoint` 로 옮기면** 나머지 차원은 그대로
+`dict[key, KisEndpoint]` 로 남습니다. 지금은 표가 전부 이 형태이며
+(`DOMESTIC_ORDER_ENDPOINTS`, `FOREIGN_ORDER_MODIFY_ENDPOINTS` 등),
+문자열 표는 남아 있지 않습니다.
 
 이슈 #43 참고.
 """
