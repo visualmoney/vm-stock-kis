@@ -791,7 +791,12 @@ class VmKis:
 
     def close(self) -> None:
         """API 세션을 종료합니다."""
-        for session in self._sessions.values():
+        # `getattr` 로 방어하는 이유: 생성자가 중간에 실패하면(잘못된 인증 정보로
+        # `ValueError`) `_sessions` 가 설정되기 전에 객체가 소멸합니다. 그때
+        # `__del__` -> `close()` 가 없는 속성을 참조해 AttributeError 를 냅니다.
+        # 파이썬이 `__del__` 의 예외를 삼키므로 치명적이지는 않지만, 실행할 때마다
+        # PytestUnraisableExceptionWarning 노이즈가 쌓입니다.
+        for session in getattr(self, "_sessions", {}).values():
             session.close()
 
     def __del__(self) -> None:

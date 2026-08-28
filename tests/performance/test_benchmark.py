@@ -1,6 +1,14 @@
-"""
-성능 벤치마크 테스트
-KisObject.transform_()의 성능을 측정합니다
+"""성능 벤치마크 테스트
+
+`KisObject.transform_()` 의 성능을 측정합니다.
+
+경과 시간에는 반드시 **`time.perf_counter()`** 를 씁니다. `time.time()` 은
+벽시계라 Windows 에서 눈금이 약 15.6ms 이고, 측정 구간이 그보다 빨리 끝나면
+경과가 정확히 `0.000s` 로 찍힙니다. 그러면 `ops_per_second` 가 뒤집혀
+**기계가 빠를수록 테스트가 실패**했습니다 (이슈 #23).
+
+`perf_counter` 는 단조 증가하며 해상도가 훨씬 높고, 시스템 시계 변경(NTP 동기화,
+서머타임)의 영향도 받지 않습니다. 경과 시간 측정에 벽시계를 쓸 이유가 없습니다.
 """
 
 import time
@@ -63,10 +71,19 @@ class BenchmarkResult:
 
     @property
     def ops_per_second(self) -> float:
-        """초당 연산 수"""
+        """초당 연산 수.
+
+        경과가 0이면 `inf` 를 반환한다. 예전에는 `0.0` 이었는데, 그것은
+        "측정 불가능하게 빨랐다"를 "처리량이 0이다"로 뒤집어 보고하는 것이었다.
+        그 결과 `assert ops_per_second > 10` 같은 하한 검사가 **기계가 빠를수록
+        실패**했다.
+
+        `time.perf_counter()` 로 바꾼 뒤로는 경과가 정확히 0이 나오기 어렵지만,
+        의미가 틀린 값을 남겨 둘 이유는 없다.
+        """
         if self.elapsed > 0:
             return self.count / self.elapsed
-        return 0.0
+        return float("inf")
 
     @property
     def avg_time_ms(self) -> float:
@@ -96,13 +113,13 @@ class TestTransformBenchmark:
         }
 
         count = 1000
-        start = time.time()
+        start = time.perf_counter()
 
         for _ in range(count):
             result = MockPrice.transform_(data, MockPrice)
             assert result.symbol == "005930"
 
-        elapsed = time.time() - start
+        elapsed = time.perf_counter() - start
         benchmark = BenchmarkResult("단순 변환", elapsed, count)
 
         print(f"\n{benchmark}")
@@ -132,13 +149,13 @@ class TestTransformBenchmark:
         }
 
         count = 100
-        start = time.time()
+        start = time.perf_counter()
 
         for _ in range(count):
             result = MockQuote.transform_(data, MockQuote)
             assert len(result.prices) == 10
 
-        elapsed = time.time() - start
+        elapsed = time.perf_counter() - start
         benchmark = BenchmarkResult("중첩 변환(10개 아이템)", elapsed, count)
 
         print(f"\n{benchmark}")
@@ -168,13 +185,13 @@ class TestTransformBenchmark:
         }
 
         count = 10
-        start = time.time()
+        start = time.perf_counter()
 
         for _ in range(count):
             result = MockQuote.transform_(data, MockQuote)
             assert len(result.prices) == 100
 
-        elapsed = time.time() - start
+        elapsed = time.perf_counter() - start
         benchmark = BenchmarkResult("대용량 리스트(100개)", elapsed, count)
 
         print(f"\n{benchmark}")
@@ -195,21 +212,21 @@ class TestTransformBenchmark:
             for i in range(100)
         ]
 
-        start = time.time()
+        start = time.perf_counter()
 
         results = [MockPrice.transform_(price, MockPrice) for price in prices]
 
-        elapsed = time.time() - start
+        elapsed = time.perf_counter() - start
         benchmark = BenchmarkResult("배치 변환(100개)", elapsed, len(prices))
 
         print(f"\n{benchmark}")
 
         assert len(results) == 100
-        # 기준: 100개 - 성능 기준 완화 (elapsed > 0이면 통과)
-        if elapsed > 0:
-            assert benchmark.ops_per_second > 0
-        else:
-            assert True  # 너무 빨라서 시간 측정 불가능
+        # 예전에는 `if elapsed > 0: ... else: assert True` 였다. time.time() 의
+        # 해상도 때문에 elapsed 가 0으로 찍히는 것을 우회하려던 것인데,
+        # `assert True` 는 아무것도 검사하지 않는다. perf_counter 로 바꾼 뒤로는
+        # 우회가 필요 없다.
+        assert benchmark.ops_per_second > 100
 
     def test_benchmark_deep_nesting(self):
         """깊은 중첩 벤치마크"""
@@ -255,13 +272,13 @@ class TestTransformBenchmark:
         data = {"id": "root", "data": {"count": 5, "items": [{"value": i, "name": f"item_{i}"} for i in range(5)]}}
 
         count = 100
-        start = time.time()
+        start = time.perf_counter()
 
         for _ in range(count):
             result = Level1.transform_(data, Level1)
             assert result.data.count == 5
 
-        elapsed = time.time() - start
+        elapsed = time.perf_counter() - start
         benchmark = BenchmarkResult("깊은 중첩 (3레벨, 5개)", elapsed, count)
 
         print(f"\n{benchmark}")
@@ -295,13 +312,13 @@ class TestTransformBenchmark:
         }
 
         count = 1000
-        start = time.time()
+        start = time.perf_counter()
 
         for _ in range(count):
             result = OptionalData.transform_(data, OptionalData)
             assert result.required == "test"
 
-        elapsed = time.time() - start
+        elapsed = time.perf_counter() - start
         benchmark = BenchmarkResult("선택 필드", elapsed, count)
 
         print(f"\n{benchmark}")
@@ -323,10 +340,10 @@ class TestTransformBenchmark:
         }
 
         count = 500
-        start = time.time()
+        start = time.perf_counter()
         for _ in range(count):
             MockPrice.transform_(simple_data, MockPrice)
-        scenarios.append(BenchmarkResult("단순 (5필드)", time.time() - start, count))
+        scenarios.append(BenchmarkResult("단순 (5필드)", time.perf_counter() - start, count))
 
         # 2. 중첩 (10개)
         nested_data = {
@@ -349,10 +366,10 @@ class TestTransformBenchmark:
         }
 
         count = 100
-        start = time.time()
+        start = time.perf_counter()
         for _ in range(count):
             MockQuote.transform_(nested_data, MockQuote)
-        scenarios.append(BenchmarkResult("중첩 (10개)", time.time() - start, count))
+        scenarios.append(BenchmarkResult("중첩 (10개)", time.perf_counter() - start, count))
 
         # 3. 대용량(100개)
         large_data = {
@@ -375,10 +392,10 @@ class TestTransformBenchmark:
         }
 
         count = 10
-        start = time.time()
+        start = time.perf_counter()
         for _ in range(count):
             MockQuote.transform_(large_data, MockQuote)
-        scenarios.append(BenchmarkResult("대용량(100개)", time.time() - start, count))
+        scenarios.append(BenchmarkResult("대용량(100개)", time.perf_counter() - start, count))
 
         # 결과 출력
         print("\n=== 벤치마크 비교 ===")
