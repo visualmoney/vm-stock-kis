@@ -54,6 +54,14 @@ __all__ = [
 ]
 
 
+# 미체결 주문 조회는 모의투자를 지원하지 않습니다(`tr_virtual` 생략).
+# 커서 길이 100 은 KIS 문서의 `CTX_AREA_FK100` 에서 옵니다.
+_DOMESTIC_PENDING_ORDERS = KisEndpoint(
+    path="/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl",
+    tr_real="TTTC8036R",
+    page_size=100,
+)
+
 _FOREIGN_PENDING_ORDERS = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-nccs",
     tr_real="TTTS3018R",
@@ -708,9 +716,8 @@ def domestic_pending_orders(
     first = None
 
     while True:
-        result = self.fetch(
-            "/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl",
-            api="TTTC8036R",
+        result = self.call(
+            _DOMESTIC_PENDING_ORDERS,
             params={
                 "INQR_DVSN_1": "1",
                 "INQR_DVSN_2": "0",

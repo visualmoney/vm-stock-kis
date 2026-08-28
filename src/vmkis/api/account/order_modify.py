@@ -228,36 +228,61 @@ def domestic_cancel_order(
     )
 
 
-FOREIGN_ORDER_MODIFY_API_CODES: dict[tuple[bool, MARKET_TYPE, Literal["modify", "cancel"]], str] = {
-    # (실전투자여부, 시장, 주문종류): API코드
-    (True, "NASDAQ", "modify"): "TTTT1004U",  # 미국 정정 주문
-    (True, "NYSE", "modify"): "TTTT1004U",  # 미국 정정 주문
-    (True, "AMEX", "modify"): "TTTT1004U",  # 미국 정정 주문
-    (True, "NASDAQ", "cancel"): "TTTT1004U",  # 미국 취소 주문
-    (True, "NYSE", "cancel"): "TTTT1004U",  # 미국 취소 주문
-    (True, "AMEX", "cancel"): "TTTT1004U",  # 미국 취소 주문
-    (True, "HKEX", "modify"): "TTTS1003U",  # 홍콩 정정 주문
-    (True, "HKEX", "cancel"): "TTTS1003U",  # 홍콩 취소 주문
-    (True, "TYO", "modify"): "TTTS0309U",  # 일본 정정 주문
-    (True, "TYO", "cancel"): "TTTS0309U",  # 일본 취소 주문
-    (True, "SSE", "cancel"): "TTTS0302U",  # 상하이 취소 주문
-    (True, "SZSE", "cancel"): "TTTS0302U",  # 상하이 취소 주문
-    (True, "HSX", "cancel"): "TTTS0312U",  # 베트남 취소 주문
-    (True, "HNX", "cancel"): "TTTS0312U",  # 베트남 취소 주문
-    (False, "NASDAQ", "modify"): "VTTT1004U",  # 미국 정정 주문
-    (False, "NYSE", "modify"): "VTTT1004U",  # 미국 정정 주문
-    (False, "AMEX", "modify"): "VTTT1004U",  # 미국 정정 주문
-    (False, "NASDAQ", "cancel"): "VTTT1004U",  # 미국 취소 주문
-    (False, "NYSE", "cancel"): "VTTT1004U",  # 미국 취소 주문
-    (False, "AMEX", "cancel"): "VTTT1004U",  # 미국 취소 주문
-    (False, "HKEX", "modify"): "VTTS1003U",  # 홍콩 정정 주문
-    (False, "HKEX", "cancel"): "VTTS1003U",  # 홍콩 취소 주문
-    (False, "TYO", "modify"): "VTTS0309U",  # 일본 정정 주문
-    (False, "TYO", "cancel"): "VTTS0309U",  # 일본 취소 주문
-    (False, "SSE", "cancel"): "VTTS0302U",  # 상하이 취소 주문
-    (False, "SZSE", "cancel"): "VTTS0302U",  # 상하이 취소 주문
-    (False, "HSX", "cancel"): "VTTS0312U",  # 베트남 취소 주문
-    (False, "HNX", "cancel"): "VTTS0312U",  # 베트남 취소 주문
+_FOREIGN_ORDER_MODIFY_PATH = "/uapi/overseas-stock/v1/trading/order-rvsecncl"
+
+# 주간거래 정정취소는 모의투자를 지원하지 않습니다(`tr_virtual` 생략).
+_FOREIGN_DAYTIME_ORDER_MODIFY = KisEndpoint(
+    path="/uapi/overseas-stock/v1/trading/daytime-order-rvsecncl",
+    tr_real="TTTS6038U",
+    method="POST",
+)
+
+# **희소 표입니다.** 상하이·베트남에는 정정 주문이 없어 `(시장, 종류)` 조합이
+# 빠져 있습니다. 조회는 `.get()` 으로 하고 없으면 예외를 냅니다 — 키가 없는
+# 것 자체가 "그 시장은 그 주문을 지원하지 않는다"는 뜻입니다.
+FOREIGN_ORDER_MODIFY_ENDPOINTS: dict[tuple[MARKET_TYPE, Literal["modify", "cancel"]], KisEndpoint] = {
+    ("NASDAQ", "modify"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+    ),  # 미국 정정 주문
+    ("NYSE", "modify"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+    ),  # 미국 정정 주문
+    ("AMEX", "modify"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+    ),  # 미국 정정 주문
+    ("NASDAQ", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+    ),  # 미국 취소 주문
+    ("NYSE", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+    ),  # 미국 취소 주문
+    ("AMEX", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+    ),  # 미국 취소 주문
+    ("HKEX", "modify"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS1003U", tr_virtual="VTTS1003U", method="POST"
+    ),  # 홍콩 정정 주문
+    ("HKEX", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS1003U", tr_virtual="VTTS1003U", method="POST"
+    ),  # 홍콩 취소 주문
+    ("TYO", "modify"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0309U", tr_virtual="VTTS0309U", method="POST"
+    ),  # 일본 정정 주문
+    ("TYO", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0309U", tr_virtual="VTTS0309U", method="POST"
+    ),  # 일본 취소 주문
+    ("SSE", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0302U", tr_virtual="VTTS0302U", method="POST"
+    ),  # 상하이 취소 주문
+    ("SZSE", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0302U", tr_virtual="VTTS0302U", method="POST"
+    ),  # 상하이 취소 주문
+    ("HSX", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0312U", tr_virtual="VTTS0312U", method="POST"
+    ),  # 베트남 취소 주문
+    ("HNX", "cancel"): KisEndpoint(
+        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0312U", tr_virtual="VTTS0312U", method="POST"
+    ),  # 베트남 취소 주문
 }
 
 
@@ -326,14 +351,13 @@ def foreign_modify_order(
     if qty is None:
         qty = order_info.qty
 
-    api = FOREIGN_ORDER_MODIFY_API_CODES.get((not self.virtual, order.market, "modify"))
+    endpoint = FOREIGN_ORDER_MODIFY_ENDPOINTS.get((order.market, "modify"))
 
-    if not api:
+    if endpoint is None:
         raise ValueError("해당 시장은 정정 주문을 지원하지 않습니다.")
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/order-rvsecncl",
-        api=api,
+    return self.call(
+        endpoint,
         body={
             "OVRS_EXCG_CD": get_market_code(order.market),
             "PDNO": order.symbol,
@@ -348,7 +372,6 @@ def foreign_modify_order(
             symbol=order.symbol,
             market=order.market,
         ),
-        method="POST",
     )
 
 
@@ -365,14 +388,13 @@ def foreign_cancel_order(
     Args:
         order (KisOrderNumber): 주문번호
     """
-    api = FOREIGN_ORDER_MODIFY_API_CODES.get((not self.virtual, order.market, "cancel"))
+    endpoint = FOREIGN_ORDER_MODIFY_ENDPOINTS.get((order.market, "cancel"))
 
-    if not api:
+    if endpoint is None:
         raise ValueError("해당 시장은 취소 주문을 지원하지 않습니다.")
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/order-rvsecncl",
-        api=api,
+    return self.call(
+        endpoint,
         body={
             "OVRS_EXCG_CD": get_market_code(order.market),
             "PDNO": order.symbol,
@@ -387,7 +409,6 @@ def foreign_cancel_order(
             symbol=order.symbol,
             market=order.market,
         ),
-        method="POST",
     )
 
 
@@ -445,9 +466,8 @@ def foreign_daytime_modify_order(
         quote_data = quote(self, symbol=order.symbol, market=order.market, extended=True)
         price = quote_data.high_limit if order == "buy" else quote_data.low_limit
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/daytime-order-rvsecncl",
-        api="TTTS6038U",
+    return self.call(
+        _FOREIGN_DAYTIME_ORDER_MODIFY,
         body={
             "OVRS_EXCG_CD": get_market_code(order.market),
             "PDNO": order.symbol,
@@ -465,7 +485,6 @@ def foreign_daytime_modify_order(
             symbol=order.symbol,
             market=order.market,
         ),
-        method="POST",
     )
 
 
@@ -499,9 +518,8 @@ def foreign_daytime_cancel_order(
     if not order_info:
         raise ValueError("주문정보를 찾을 수 없습니다. 이미 체결되었거나 취소된 주문일 수 있습니다.")
 
-    return self.fetch(
-        "/uapi/overseas-stock/v1/trading/daytime-order-rvsecncl",
-        api="TTTS6038U",
+    return self.call(
+        _FOREIGN_DAYTIME_ORDER_MODIFY,
         body={
             "OVRS_EXCG_CD": get_market_code(order.market),
             "PDNO": order.symbol,
@@ -519,7 +537,6 @@ def foreign_daytime_cancel_order(
             symbol=order.symbol,
             market=order.market,
         ),
-        method="POST",
     )
 
 
