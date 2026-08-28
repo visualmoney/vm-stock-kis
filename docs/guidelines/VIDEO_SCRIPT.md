@@ -215,7 +215,7 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 │  다음 단계:                             │
 │  1️⃣ FAQ 읽기                           │
 │  2️⃣ 예제 코드 실습                     │
-│  3️⃣ GitHub Discussions 참여            │
+│  3️⃣ GitHub Issues 로 질문              │
 │                                         │
 │  문서: docs/user/en/                    │
 │  GitHub: github.com/...                │
@@ -236,7 +236,7 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 >
 > 1. 공식 FAQ를 읽어보세요.
 > 2. 예제 코드들을 실습해보세요.
-> 3. GitHub Discussions에서 질문하세요.
+> 3. GitHub Issues 로 질문하세요.
 > [일시정지 1초]
 > 모든 문서는 깃허브에서 찾을 수 있습니다.
 > 감사합니다! 행운을 빕니다!"
@@ -248,7 +248,7 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 >
 > 1. Read the FAQ
 > 2. Try the example code
-> 3. Join GitHub Discussions
+> 3. Ask on GitHub Issues
 > Find all documentation on GitHub.
 > Thank you! Happy trading!"
 
@@ -315,8 +315,8 @@ Scene 5 - 아웃트로:      50초  (3:50 ~ 4:40)
 - 예제: examples/
 
 💬 커뮤니티:
-- GitHub Discussions: https://github.com/.../discussions
-- 질문이 있으신가요? Discussions에서 질문해주세요!
+- GitHub Issues: https://github.com/visualmoney/vm-stock-kis/issues
+- 질문이 있으신가요? 이슈를 열어 주세요!
 
 🔔 구독과 좋아요를 눌러주세요!
 
@@ -381,7 +381,6 @@ docs/
 - [ ] YouTube 제목 & 설명 작성
 - [ ] 자막 업로드 (SRT 파일)
 - [ ] GitHub README에 링크 추가
-- [ ] Discussions에 공지 작성
 - [ ] 언어별 버전 제작 (영어 자막 → 영어 더빙)
 
 ---

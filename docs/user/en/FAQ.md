@@ -547,7 +547,7 @@ pip install -e .
 ## Getting Help
 
 - 💬 **GitHub Issues**: Report bugs at [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
-- 💭 **Discussions**: Ask questions at [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
+- 💭 **Questions**: Ask at [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
 - 📧 **Email**: <support@vm-stock-kis.org>
 
 ---

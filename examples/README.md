@@ -285,7 +285,6 @@ python -u examples/01_basic/hello_world.py
 ### 커뮤니티
 
 - GitHub Issues: 버그 보고 및 질문
-- Discussions: 일반적인 논의
 
 ---
 

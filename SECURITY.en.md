@@ -82,7 +82,7 @@ Therefore:
 - **`str(token)`**: `KisAccessToken.__str__` returns the full `Bearer <token>`. Its
   `repr()` shows only the expiry. Do not log token objects directly.
 
-Redact these values before attaching logs to an issue or discussion.
+Redact these values before attaching logs to an issue.
 
 ---
 

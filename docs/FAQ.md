@@ -554,13 +554,12 @@ def get_quote(symbol):
 ## 추가 리소스
 
 - 📚 [공식 문서](https://github.com/visualmoney/vm-stock-kis)
-- 💬 [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
-- 🐛 [Bug Reports](https://github.com/visualmoney/vm-stock-kis/issues)
+- 💬 [질문·버그 신고](https://github.com/visualmoney/vm-stock-kis/issues)
 - 📖 [Tutorial](../QUICKSTART.md)
 - 🔗 [한국투자증권 API](https://www.truefriend.com)
 
 ---
 
 **마지막 업데이트**: 2025-12-20
-**문의**: [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions) 또는 [Issues](https://github.com/visualmoney/vm-stock-kis/issues)
+**문의**: [Issues](https://github.com/visualmoney/vm-stock-kis/issues)
 """

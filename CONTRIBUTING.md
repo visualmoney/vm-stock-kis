@@ -661,4 +661,4 @@ VM-Stock-KIS에 기여해 주신 모든 분들께 감사드립니다! 🙏
 
 ---
 
-질문이 있으시면 [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions) 또는 Issue를 통해 문의하세요.
+질문이 있으시면 [Issue](https://github.com/visualmoney/vm-stock-kis/issues)를 열어 주세요. 질문용 템플릿이 있습니다.

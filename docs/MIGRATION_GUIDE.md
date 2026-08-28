@@ -273,7 +273,6 @@ python -W error::DeprecationWarning your_script.py
 ## 추가 도움
 
 - [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
-- [GitHub Discussions](https://github.com/visualmoney/vm-stock-kis/discussions)
 - [문서 홈](./INDEX.md)
 - [CHANGELOG](../CHANGELOG.md)
 

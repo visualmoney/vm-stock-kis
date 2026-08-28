@@ -432,7 +432,6 @@ https://github.com/visualmoney/vm-stock-kis
 
 1. GitHub Issues에 등록
 2. Pull Request로 개선 제안
-3. Discussions에서 토론
 
 ---
 
