@@ -162,6 +162,11 @@ uv lock --check             통과
 
 ## 남은 것
 
-- **`event → api` 판정** — #50 범위 밖. 판정되면 계약에 세 번째로 들어갑니다.
-- **`__init__.py` 없는 디렉터리 13개** — `root_packages` 를 손으로 유지해야 하는
-  원인입니다. 가드 테스트가 누락을 잡지만 원인 자체는 남아 있습니다.
+둘 다 `needs-decision` 이슈로 냈습니다. **"다음에 정하자"를 일지에만 적으면
+아무도 다시 찾지 않습니다.**
+
+- [#63](https://github.com/visualmoney/vm-stock-kis/issues/63)
+  `event → api` 간선 판정 — 계약 확장을 막는 유일한 미결입니다.
+- [#64](https://github.com/visualmoney/vm-stock-kis/issues/64)
+  `__init__.py` 없는 디렉터리 13개 — `root_packages` 를 손으로 유지해야 하는
+  **원인**입니다. 가드 테스트는 증상만 막습니다.
