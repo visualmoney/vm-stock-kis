@@ -9,6 +9,7 @@ from vmkis.api.stock.market import (
     MARKET_SHORT_TYPE_MAP,
     MARKET_TYPE,
 )
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.responses.dynamic import KisDynamic, KisObject, KisTransform
 from vmkis.responses.response import (
     KisAPIResponse,
@@ -38,6 +39,20 @@ __all__ = [
     "KisQuoteResponse",
     "quote",
 ]
+
+
+# 시세 TR 은 모의도메인에 없습니다. `tr_virtual` 을 생략하면 `resolve()` 가
+# 모의 계좌에서도 실전 도메인을 돌려주므로 도메인을 손으로 지정할 필요가
+# 없습니다. 예전에는 이 인자를 빠뜨리면 모의 계정에서만 터졌습니다.
+DOMESTIC_QUOTE = KisEndpoint(
+    path="/uapi/domestic-stock/v1/quotations/inquire-price",
+    tr_real="FHKST01010100",
+)
+
+FOREIGN_QUOTE = KisEndpoint(
+    path="/uapi/overseas-price/v1/quotations/price-detail",
+    tr_real="HHDFS76200200",
+)
 
 STOCK_SIGN_TYPE = Literal["upper", "rise", "steady", "decline", "lower"]
 STOCK_SIGN_TYPE_MAP = {
@@ -640,15 +655,13 @@ def domestic_quote(
 
     result = KisDomesticQuote(symbol, "KRX")
 
-    return self.fetch(
-        "/uapi/domestic-stock/v1/quotations/inquire-price",
-        api="FHKST01010100",
+    return self.call(
+        DOMESTIC_QUOTE,
         params={
             "FID_COND_MRKT_DIV_CODE": "J",
             "FID_INPUT_ISCD": symbol,
         },
         response_type=result,
-        domain="real",
     )
 
 
@@ -685,9 +698,8 @@ def foreign_quote(
     else:
         market_code = MARKET_SHORT_TYPE_MAP[market]
 
-    return self.fetch(
-        "/uapi/overseas-price/v1/quotations/price-detail",
-        api="HHDFS76200200",
+    return self.call(
+        FOREIGN_QUOTE,
         params={
             "AUTH": "",
             "EXCD": market_code,
@@ -698,7 +710,6 @@ def foreign_quote(
             market=market,
             extended=extended,
         ),
-        domain="real",
     )
 
 

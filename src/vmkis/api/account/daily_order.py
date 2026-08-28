@@ -606,12 +606,21 @@ class KisIntegrationDailyOrders(KisDailyOrdersBase):
         self.orders.sort(key=lambda x: x.time_kst, reverse=True)
 
 
-DOMESTIC_DAILY_ORDERS_API_CODES: dict[tuple[bool, bool], str] = {
-    # (실전투자여부, 최근3개월이내여부) -> API코드
-    (True, True): "TTTC8001R",
-    (True, False): "CTSC9115R",
-    (False, True): "VTTC8001R",
-    (False, False): "VTSC9115R",
+# 키는 **최근 3개월 이내 여부**입니다. 실전/모의 차원은 스펙 안으로
+# 들어갔습니다. 커서 길이 100 은 KIS 문서의 `CTX_AREA_FK100` 에서 옵니다.
+DOMESTIC_DAILY_ORDERS_ENDPOINTS: dict[bool, KisEndpoint] = {
+    True: KisEndpoint(
+        path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
+        tr_real="TTTC8001R",
+        tr_virtual="VTTC8001R",
+        page_size=100,
+    ),  # 최근 3개월 이내
+    False: KisEndpoint(
+        path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
+        tr_real="CTSC9115R",
+        tr_virtual="VTSC9115R",
+        page_size=100,
+    ),  # 3개월 이전
 }
 
 
@@ -641,9 +650,8 @@ def _domestic_daily_orders(
     first = None
 
     while True:
-        result = self.fetch(
-            "/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
-            api=DOMESTIC_DAILY_ORDERS_API_CODES[(not self.virtual, is_recent)],
+        result = self.call(
+            DOMESTIC_DAILY_ORDERS_ENDPOINTS[is_recent],
             params={
                 "INQR_STRT_DT": start.strftime("%Y%m%d"),
                 "INQR_END_DT": end.strftime("%Y%m%d"),

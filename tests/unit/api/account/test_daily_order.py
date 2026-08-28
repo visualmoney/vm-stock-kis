@@ -42,6 +42,13 @@ def test__domestic_daily_orders_calls_fetch_and_returns_result():
         def __init__(self):
             self.virtual = False
 
+        # 이슈 #43 이후 `_domestic_daily_orders` 는 `call()` 을 거친다.
+        # 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)까지 검증한다.
+        def call(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.call(self, *args, **kwargs)
+
         def fetch(self, *args, **kwargs):
             calls.append((args, kwargs))
             # Return an object that mimics the API response used by the function
@@ -63,6 +70,13 @@ def test_domestic_daily_orders_swapped_dates_and_page_to():
     class FakeSelf:
         def __init__(self):
             self.virtual = False
+
+        # 이슈 #43 이후 `_domestic_daily_orders` 는 `call()` 을 거친다.
+        # 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)까지 검증한다.
+        def call(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.call(self, *args, **kwargs)
 
         def fetch(self, *args, **kwargs):
             return SimpleNamespace(is_last=True, orders=[], next_page=None)
@@ -389,23 +403,24 @@ def test_kis_foreign_daily_orders_kis_post_init(monkeypatch):
     assert len(spread_called) == 1
 
 
-def test_domestic_daily_orders_api_codes():
-    """Test DOMESTIC_DAILY_ORDERS_API_CODES mappings."""
-    # Real mode, recent (within 3 months)
-    assert (True, True) in dord.DOMESTIC_DAILY_ORDERS_API_CODES
-    assert dord.DOMESTIC_DAILY_ORDERS_API_CODES[(True, True)] == "TTTC8001R"
+def test_domestic_daily_orders_endpoints():
+    """국내 일별 체결내역 스펙.
 
-    # Real mode, old (more than 3 months)
-    assert (True, False) in dord.DOMESTIC_DAILY_ORDERS_API_CODES
-    assert dord.DOMESTIC_DAILY_ORDERS_API_CODES[(True, False)] == "CTSC9115R"
+    키는 **최근 3개월 이내 여부**다. 실전/모의 차원은 스펙 안으로 들어갔으므로
+    `resolve()` 로 확인한다 — 네트워크가 필요 없다.
+    """
+    recent = dord.DOMESTIC_DAILY_ORDERS_ENDPOINTS[True]
+    assert recent.resolve(virtual=False) == ("TTTC8001R", "real")
+    assert recent.resolve(virtual=True) == ("VTTC8001R", "virtual")
 
-    # Virtual mode, recent
-    assert (False, True) in dord.DOMESTIC_DAILY_ORDERS_API_CODES
-    assert dord.DOMESTIC_DAILY_ORDERS_API_CODES[(False, True)] == "VTTC8001R"
+    old = dord.DOMESTIC_DAILY_ORDERS_ENDPOINTS[False]
+    assert old.resolve(virtual=False) == ("CTSC9115R", "real")
+    assert old.resolve(virtual=True) == ("VTSC9115R", "virtual")
 
-    # Virtual mode, old
-    assert (False, False) in dord.DOMESTIC_DAILY_ORDERS_API_CODES
-    assert dord.DOMESTIC_DAILY_ORDERS_API_CODES[(False, False)] == "VTSC9115R"
+    # 커서 길이는 KIS 문서의 `CTX_AREA_FK100` 에서 온다. 틀리면 연속조회가
+    # 엉뚱한 필드명(`ctx_area_fk200`)을 찾는다.
+    assert recent.page_size == 100
+    assert old.page_size == 100
 
 
 def test_foreign_country_market_map():

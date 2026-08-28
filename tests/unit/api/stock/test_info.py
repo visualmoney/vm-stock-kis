@@ -54,6 +54,27 @@ from vmkis.api.stock.info import (
 from vmkis.client.exceptions import KisAPIError
 from vmkis.responses.exceptions import KisNotFoundError
 
+
+def _fake_kis():
+    """`self.call()` 을 태울 수 있는 `VmKis` 목을 만든다.
+
+    이슈 #43 이후 `api/stock/*` 은 `fetch` 대신 `call` 을 쓴다. 목을 그대로
+    두면 `fake_kis.call(...)` 이 **새 Mock 을 조용히 돌려주고** `fetch` 에
+    걸어 둔 `return_value`/`side_effect` 가 발동하지 않는다. 실제
+    `VmKis.call` 을 바인딩하면 `fetch(api=...)` 단언이 그대로 살고 스펙
+    해석(TR ID·도메인)까지 함께 검증된다.
+
+    `virtual` 을 명시적으로 `False` 로 둔다. 목의 기본값은 Mock 이라
+    **truthy** 이므로 두면 모의 계좌로 해석된다.
+    """
+    from vmkis.kis import VmKis
+
+    kis = Mock()
+    kis.virtual = False
+    kis.call = lambda *args, **kwargs: VmKis.call(kis, *args, **kwargs)
+    return kis
+
+
 # ===== Tests for _KisStockInfo class =====
 
 
@@ -162,14 +183,14 @@ class TestQuotableMarket:
 
     def test_validates_empty_symbol(self):
         """Test empty symbol raises ValueError."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
 
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             quotable_market(fake_kis, "")
 
     def test_uses_cache_when_available(self):
         """Test uses cached market when available."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = "KRX"
 
         result = quotable_market(fake_kis, "005930", market="KR", use_cache=True)
@@ -180,7 +201,7 @@ class TestQuotableMarket:
 
     def test_domestic_market_with_valid_price(self):
         """Test domestic market returns KRX when price is valid."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_response = Mock()
@@ -196,7 +217,7 @@ class TestQuotableMarket:
         """Test domestic market with zero price tries next market."""
         from unittest.mock import Mock
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # First call returns zero price (should continue)
@@ -218,7 +239,7 @@ class TestQuotableMarket:
 
     def test_foreign_market_with_valid_price(self):
         """Test foreign market returns correct market type."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_response = Mock()
@@ -233,7 +254,7 @@ class TestQuotableMarket:
         """Test foreign market with empty price tries next market."""
         from unittest.mock import Mock
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # First call returns empty/zero price (should continue)
@@ -257,7 +278,7 @@ class TestQuotableMarket:
         """Test AttributeError in response is caught and continues."""
         from unittest.mock import Mock
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # First call raises AttributeError (missing output attribute)
@@ -283,7 +304,7 @@ class TestQuotableMarket:
 
         from requests import Response
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # All calls return zero/empty price
@@ -331,14 +352,14 @@ class TestInfo:
 
     def test_validates_empty_symbol(self):
         """Test empty symbol raises ValueError."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
 
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             info(fake_kis, "")
 
     def test_uses_cache_when_available(self):
         """Test uses cached info when available."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         mock_cached_info = Mock()
         fake_kis.cache.get.return_value = mock_cached_info
 
@@ -350,7 +371,7 @@ class TestInfo:
 
     def test_calls_quotable_market_when_quotable_true(self):
         """Test calls quotable_market when quotable=True."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -368,7 +389,7 @@ class TestInfo:
 
     def test_skips_quotable_market_when_quotable_false(self):
         """Test skips quotable_market when quotable=False."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -381,7 +402,7 @@ class TestInfo:
 
     def test_successful_fetch_returns_info(self):
         """Test successful fetch returns stock info."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -394,7 +415,7 @@ class TestInfo:
 
     def test_sets_cache_after_successful_fetch(self):
         """Test sets cache after successful fetch when use_cache=True."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -406,7 +427,7 @@ class TestInfo:
 
     def test_does_not_cache_when_use_cache_false(self):
         """Test does not cache when use_cache=False."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -443,7 +464,7 @@ class TestInfo:
 
         from requests import Response
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # First call raises KisAPIError with rt_cd=7 (no data)
@@ -484,7 +505,7 @@ class TestInfo:
 
         from requests import Response
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # Create KisAPIError with rt_cd != 7 (should raise immediately)
@@ -535,7 +556,7 @@ class TestInfo:
 
         from requests import Response
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # All calls raise KisAPIError with rt_cd=7
@@ -568,7 +589,7 @@ class TestInfo:
 
     def test_fetch_params_correct(self):
         """Test fetch is called with correct parameters."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -608,7 +629,7 @@ class TestInfo:
 
         from requests import Response
 
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         # First two calls fail with rt_cd=7, third succeeds
@@ -651,7 +672,7 @@ class TestResolveMarket:
 
     def test_returns_market_from_info(self):
         """Test resolve_market returns market property from info."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -665,7 +686,7 @@ class TestResolveMarket:
 
     def test_forwards_all_parameters(self):
         """Test resolve_market forwards all parameters to info."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
         fake_kis.cache.get.return_value = None
 
         mock_info = Mock()
@@ -685,7 +706,7 @@ class TestResolveMarket:
 
     def test_validates_empty_symbol(self):
         """Test empty symbol raises ValueError (via info)."""
-        fake_kis = Mock()
+        fake_kis = _fake_kis()
 
         with pytest.raises(ValueError, match="종목 코드를 입력해주세요"):
             resolve_market(fake_kis, "")

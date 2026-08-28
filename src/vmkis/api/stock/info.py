@@ -2,6 +2,8 @@ from datetime import timedelta
 from typing import TYPE_CHECKING, Literal, Protocol, runtime_checkable
 
 from vmkis.api.stock.market import MARKET_SHORT_TYPE_MAP, MARKET_TYPE
+from vmkis.api.stock.quote import DOMESTIC_QUOTE
+from vmkis.client.endpoint import KisEndpoint
 from vmkis.client.exceptions import KisAPIError
 from vmkis.responses.response import (
     KisAPIResponse,
@@ -23,6 +25,19 @@ __all__ = [
     "info",
     "resolve_market",
 ]
+
+
+# 국내 시세 확인은 `quote.py` 와 **같은 TR** 이라 스펙을 공유합니다
+# (`DOMESTIC_QUOTE` = `FHKST01010100`).
+FOREIGN_PRICE = KisEndpoint(
+    path="/uapi/overseas-price/v1/quotations/price",
+    tr_real="HHDFS00000300",
+)
+
+PRODUCT_INFO = KisEndpoint(
+    path="/uapi/domestic-stock/v1/quotations/search-info",
+    tr_real="CTPF1604R",
+)
 
 MARKET_TYPE_MAP: dict[str | None, list[str]] = {
     "KR": ["300"],  # "301", "302"
@@ -298,22 +313,18 @@ def quotable_market(
             if market_code in MARKET_TYPE_MAP["KR"]:
                 if not int(
                     (
-                        last_response := self.fetch(
-                            "/uapi/domestic-stock/v1/quotations/inquire-price",
-                            api="FHKST01010100",
+                        last_response := self.call(
+                            DOMESTIC_QUOTE,
                             params={"FID_COND_MRKT_DIV_CODE": "J", "FID_INPUT_ISCD": symbol},
-                            domain="real",
                         )
                     ).output.stck_prpr
                 ):
                     continue
             elif not (
                 (
-                    last_response := self.fetch(
-                        "/uapi/overseas-price/v1/quotations/price",
-                        api="HHDFS00000300",
+                    last_response := self.call(
+                        FOREIGN_PRICE,
                         params={"AUTH": "", "EXCD": MARKET_SHORT_TYPE_MAP[market_type], "SYMB": symbol},
-                        domain="real",
                     )
                 ).output.last
             ):
@@ -376,14 +387,12 @@ def info(
 
     for market_ in MARKET_TYPE_MAP[market]:
         try:
-            result = self.fetch(
-                "/uapi/domestic-stock/v1/quotations/search-info",
-                api="CTPF1604R",
+            result = self.call(
+                PRODUCT_INFO,
                 params={
                     "PDNO": symbol,
                     "PRDT_TYPE_CD": market_,
                 },
-                domain="real",
                 response_type=_KisStockInfo,
             )
 
