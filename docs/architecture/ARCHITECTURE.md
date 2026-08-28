@@ -18,7 +18,7 @@
 
 - **프로젝트명**: VM-Stock-KIS (Korea Investment Securities API Wrapper)
 - **목적**: 한국투자증권의 OpenAPI를 파이썬 환경에서 쉽게 사용할 수 있도록 제공
-- **버전**: 2.1.7
+- **버전**: 0.0.1 (이 배포명의 첫 릴리스. `CHANGELOG.md` 참고)
 - **라이선스**: MIT
 - **최소 Python 버전**: 3.10+
 
@@ -33,13 +33,13 @@
 
 ---
 
-## 2. 공개 타입 분리 정책 (v2.2.0+)
+## 2. 공개 타입 분리 정책
 
 ### 2.1 문제 정의 및 해결
 
-**Phase 1 완료 (2025-12-19)**:
+포크 이후 정리한 내용입니다. 전부 `0.0.1` 에 함께 실렸습니다.
 
-- 154개 → 20개로 공개 API 축소 완료
+- 루트 `__all__` 을 12개로 축소
 - `public_types.py` 분리 완료
 - Deprecation 메커니즘 구현 완료
 
@@ -97,29 +97,70 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 
 ## 핵심 설계 원칙
 
-### 1. 계층화 아키텍처 (Layered Architecture)
+### 1. 허브-스포크 구조 (Hub-and-Spoke)
+
+`VmKis` 를 허브로 두고, 나머지 그룹이 그 주위에 붙는 형태입니다.
 
 ```text
-┌─────────────────────────────────────────┐
-│   User Application Layer               │
-│   (사용자 애플리케이션)                   │
-├─────────────────────────────────────────┤
-│   API Layer (Scope + Adapter)           │
-│   (주식, 계좌, 실시간 이벤트)             │
-├─────────────────────────────────────────┤
-│   Client Layer                          │
-│   (HTTP 통신, 웹소켓, 인증)              │
-├─────────────────────────────────────────┤
-│   Response Transform Layer              │
-│   (동적 타입 변환, 객체 생성)             │
-├─────────────────────────────────────────┤
-│   Utility Layer                         │
-│   (Rate Limit, 예외, 유틸리티)           │
-├─────────────────────────────────────────┤
-│   External APIs                         │
-│   (KIS REST API, WebSocket)             │
-└─────────────────────────────────────────┘
+                         ┌──────────────────────────┐
+                         │   VmKis (kis.py) — 허브   │
+                         │  scope/adapter 를 클래스  │
+                         │  본문 import 로 조립      │
+                         └───────┬──────────────────┘
+              조립(compose)      │        역참조: self: "VmKis"
+        ┌───────────────┬────────┴────────┐   (TYPE_CHECKING 전용)
+        ▼               ▼                 ▼
+   ┌─────────┐    ┌──────────┐      ┌──────────┐
+   │  scope/ │───▶│ adapter/ │◀────▶│   api/   │ ◀─ api ↔ adapter 순환은
+   └─────────┘    └──────────┘ 의도적└─┬───┬────┘    의도적 (rich object)
+                        순환           │   │ ▲
+                                       │   │ └── client 가 응답맵을 참조
+                                       ▼   ▼      [정리 대상: 자기등록으로 역전]
+                                 ┌──────────┐   ┌────────────┐
+                                 │responses/│──▶│  client/   │◀── event/
+                                 └──────────┘   └─────┬──────┘   (구독·필터)
+                                  의도적:              │ utils/retry 가 참조
+                                  응답은 client 위에   ▼ [정리 대상]
+                                                 ┌──────────┐
+                                                 │  utils/  │
+                                                 └──────────┘
+
+   느슨한 상하 순서: scope → adapter/api → event → responses → client → utils
 ```
+
+> **이 그림은 "계층"이 아닙니다.** 예전 문서는 `API → Client → Response Transform
+> → Utility` 하향 단방향 계층으로 서술했으나 **코드와 일치하지 않습니다.**
+> AST 전수 분석 결과 런타임 모듈레벨 역방향 import 가 **12건(간선 종류로는 7종)**
+> 존재합니다. `import vmkis` 가 정상 동작하는 것은 순환이 없어서가 아니라,
+> 아래 불변식이 로드 순서를 지켜 주기 때문입니다.
+
+### 1.1 반드시 지켜야 할 불변식
+
+아래는 **암묵적으로만 지켜지던 규칙**입니다. 어기면 패키지가 import 단계에서
+깨지거나, 이벤트가 조용히 사라집니다.
+
+1. **`vmkis.kis` 를 모듈 레벨에서 import 하지 않습니다.**
+   `if TYPE_CHECKING:` 블록 안에서만 허용합니다. 전체 패키지가 정상 로드되는
+   **유일한 이유**입니다.
+
+2. **새로운 모듈-레벨 역방향 간선을 만들지 않습니다.**
+   하위 그룹이 상위 지식을 필요로 하면 **등록을 역전**하거나 **주입**받습니다.
+   기존 역방향은 아래 세 가지로 동결합니다.
+
+   | 간선 | 위치 | 판정 |
+   |---|---|---|
+   | `responses → client` | `responses/response.py`, `responses/exceptions.py` | 의도적 — 응답은 client 타입 위에 성립 |
+   | `api ↔ adapter` | 주문/잔고 계열 | 의도적 — 응답 객체가 Mixin 을 상속 (rich object) |
+   | `client → api` | `client/websocket.py` | **정리 대상** — 자기등록으로 역전 |
+   | `utils → client` | `utils/retry.py` | **정리 대상** — 예외를 파라미터로 주입 |
+
+3. **순환 우회용 지연 import 에는 사유 주석을 답니다.**
+   함수 안의 import 를 "정리"하려고 파일 상단으로 올리면 패키지가 로드 불능이
+   될 수 있습니다. 왜 거기 있는지 적혀 있지 않으면 다음 사람이 반드시 옮깁니다.
+
+4. **`event/` 는 이 그림에 포함됩니다.**
+   예전 다이어그램에는 `event/` 가 아예 없어서 `client → event`, `event → api`
+   간선을 위반인지 아닌지 판정할 수 없었습니다.
 
 ### 2. 프로토콜 기반 설계 (Protocol-Based Design)
 
@@ -214,7 +255,8 @@ src/vmkis/
 ├── __env__.py            # 환경 설정 및 상수
 ├── kis.py                # VmKis 메인 클래스
 ├── logging.py            # 로깅 유틸리티
-├── types.py              # 공개 타입 정의
+├── types.py              # 고급 사용자용 타입 (약 100개 export)
+├── public_types.py       # 공개 타입 별칭 (9개) ← 일반 사용자는 여기
 │
 ├── api/                  # API 계층 (REST, WebSocket)
 │   ├── auth/             # 인증 관련 API
@@ -572,8 +614,11 @@ Event System
 ### 목적
 
 - 한국투자증권 API 호출 제한 준수
-- 실전: 초당 19개 요청
-- 모의: 초당 1개 요청
+- 실전: 초당 19개 요청 (`REAL_API_REQUEST_PER_SECOND`)
+- 모의: 초당 2개 요청 (`VIRTUAL_API_REQUEST_PER_SECOND`)
+
+> 값의 유일한 출처는 `src/vmkis/__env__.py` 입니다. 이 문서와 어긋나면
+> `__env__.py` 가 맞습니다.
 
 ### 구현
 
@@ -631,44 +676,46 @@ Exception
 
 ## 확장성 고려사항
 
-### 새로운 API 추가
+> **먼저 읽으세요**: 대부분의 경우 라이브러리를 고칠 필요가 없습니다.
+> `VmKis.fetch()` 로 임의 TR 을 호출할 수 있습니다 —
+> [미지원 API 호출 가이드](../user/EXTENDING_API.md) 참고.
+> 아래는 **라이브러리에 1급 시민으로 통합**할 때의 절차입니다.
 
-1. **API 함수 작성** (`api/` 디렉토리)
+### 새로운 REST API 추가 — 6단계, 250~800 LOC
 
-   ```python
-   def get_something(...) -> KisSomething:
-       # API 호출
-   ```
+| 단계 | 파일 | 작업 | LOC |
+|---|---|---|---|
+| 1 | `api/{stock,account}/<feature>.py` | Protocol → `@kis_repr` 클래스 → Base → 국내/해외 impl → `domestic_*`/`foreign_*`/`*` 함수 3층 → scope 바인딩 wrapper | 150~800 |
+| 2 | `adapter/{product,account,account_product}/<feature>.py` | Protocol(docstring 복제) + Mixin | 50~240 |
+| 3 | `scope/{stock,account}.py` | Protocol 합성 클래스와 구현 클래스 MRO 양쪽에 추가 | 2~3 |
+| 4 | `public_types.py` + `__init__.py` | `Foo: TypeAlias = _KisFooResponse` + `__all__` 2곳 | 4~6 |
+| 5 | `tests/unit/...` | hermetic 단위 테스트 + `requires_api` 통합 테스트 | 50~150 |
+| 6 | docstring + `scripts/generate_api_reference.py` 재생성 + `CHANGELOG.md` | — | — |
 
-2. **Response 타입 정의** (`responses/` 디렉토리)
+**실측**: 단일 시장 신규 TR 1개 → 250~400 LOC. 국내+해외 통합 → 500~800 LOC.
+**절반 이상이 Protocol / overload / docstring 중복입니다.**
 
-   ```python
-   @dataclass
-   class KisSomething(KisResponse):
-       # 필드 정의
-   ```
+페이지네이션 API 라면 `KisPaginationAPIResponse` 를 상속하고 `form=[account, page]`,
+`continuous=not page.is_first`, `result.is_last` / `next_page` 루프를 씁니다.
+`api/account/balance.py` 가 정본입니다.
 
-3. **Adapter Mixin 작성** (필요시)
+### 새로운 WebSocket 이벤트 추가 — 5단계
 
-   ```python
-   class KisSomethingMixin:
-       def method(self):
-           pass
-   ```
+1. **응답 클래스 정의** (`api/websocket/<feature>.py`)
+   `__fields__` 를 `^` 분리 **순서 그대로** 나열하고 미사용 필드는 `None` 으로 둡니다.
 
-4. **Scope에 추가**
+2. **⚠️ `WEBSOCKET_RESPONSES_MAP` 에 등록** (`api/websocket/__init__.py`)
 
-   ```python
-   class KisStock(KisStockScope, KisSomethingMixin):
-       pass
-   ```
+   > **이 한 줄이 없으면 구독 메시지는 전송되지만 수신 이벤트가 조용히
+   > 버려집니다.** `client/websocket.py` 의 dispatch 가 이 맵을 조회해
+   > 없으면 경고 로그만 남기고 드롭합니다. **가장 빠뜨리기 쉬운 단계입니다.**
 
-### 새로운 WebSocket 이벤트 추가
+3. **`on_xxx` / `on_product_xxx` 구독 함수 작성** — 이벤트 필터 + `client.on(...)`
 
-1. **WebSocket Response 타입 정의**
-2. **구독 함수 작성** (`api/websocket/` 디렉토리)
-3. **Adapter Mixin 작성**
-4. **Scope에 추가**
+4. **adapter 확장** — `adapter/websocket/*.py` 의 `on()` 문자열 분기에 추가하고
+   Protocol / Mixin 양쪽에 `@overload` 를 답니다. 보일러플레이트가 가장 많은 지점입니다.
+
+5. **암호화 TR 인 경우** — `client/websocket.py` 의 암호화 TR ID 목록도 함께 수정합니다.
 
 ---
 

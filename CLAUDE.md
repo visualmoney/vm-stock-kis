@@ -10,12 +10,17 @@
 
 VM-Stock-KIS 프로젝트는 다음과 같은 문서 구조를 따릅니다:
 
+> 아래는 **실제 존재하는 파일**만 적습니다. 없는 문서를 참조하면 그것을 믿고
+> 찾다가 시간을 버립니다. 새 문서를 만들면 여기에도 추가하세요.
+
 ```text
 docs/
 ├── guidelines/          # 규칙 및 가이드라인
-│   ├── CODING_STANDARDS.md
-│   ├── GIT_WORKFLOW.md
-│   └── DOCUMENTATION_RULES.md
+│   ├── API_STABILITY_POLICY.md    # 버전·호환성 정책
+│   ├── PYPI_RELEASE.md            # 배포 절차
+│   ├── DEVELOPER_SETUP.md         # 개발 환경
+│   ├── GUIDELINES_001_TEST_WRITING.md
+│   └── ... (docs/guidelines/ 실제 목록 참고)
 │
 ├── dev_logs/            # 개발 일지 (날짜별)
 │   ├── 2025-12-18_phase1_week1_complete.md

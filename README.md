@@ -14,6 +14,11 @@
 - [SECURITY.md](./SECURITY.md) ([English](./SECURITY.en.md)) — 자격증명 취급 방식과 취약점 신고
 - 예제 모음: [examples/01_basic](./examples/01_basic) (hello_world, 시세/잔고, 주문, 실시간 체결가)
 
+> **찾는 기능이 없나요?** 이 라이브러리는 KIS OpenAPI 중 **주식 현물만** 구현합니다.
+> 선물옵션·채권·ELW·순위분석 등은 전용 메서드가 없습니다. 그래도
+> [`fetch()` 로 직접 호출](./docs/user/EXTENDING_API.md)할 수 있습니다 —
+> 토큰 갱신·도메인 라우팅·Rate Limiting·재시도가 그대로 적용됩니다.
+
 ### 1.1. 라이브러리 특징
 
 <details>
