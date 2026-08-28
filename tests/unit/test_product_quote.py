@@ -22,17 +22,17 @@ class ProductQuoteTests(TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        """클래스 레벨에서 한 번만 실행 - 토큰 발급 횟수 제한 방지"""
-        import os
+        """클래스 레벨에서 한 번만 실행 - 토큰 발급 횟수 제한 방지
 
-        # Control whether to run real integration tests via environment variable.
-        # Set VMKIS_RUN_REAL=1 (or true/yes) to exercise real network calls; otherwise use the mock fixture.
-        run_real = os.environ.get("VMKIS_RUN_REAL", "").lower() in ("1", "true", "yes")
-        if run_real:
-            cls.vmkis = load_vmkis("real", use_websocket=False)
-        else:
-            # load a mocked/local vmkis instance to make tests hermetic and not depend on network/credentials
-            cls.vmkis = load_vmkis("mock", use_websocket=False)
+        예전에는 `VMKIS_RUN_REAL` 이 없으면 `load_vmkis("mock")` 을 불러
+        "hermetic 하다"고 주석이 달려 있었다. **그런 도메인은 없다.**
+        `load_vmkis` 의 `else` 분기(모의도메인)로 떨어져 결국 자격증명을
+        요구했고, 없으면 `ValueError` 로 터졌다. 주석이 사실이 아니었다.
+
+        이 클래스는 `requires_api` 로 표시돼 있고 실제 네트워크를 쓴다.
+        자격증명이 없으면 `load_vmkis` 가 skip 으로 빠진다.
+        """
+        cls.vmkis = load_vmkis("real", use_websocket=False)
 
     def test_quotable(self):
         try:
