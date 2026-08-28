@@ -70,6 +70,17 @@ class KisException(Exception):
     response: Response
     """응답 객체"""
 
+    retryable: bool = False
+    """재시도해도 될 예외인지.
+
+    `vmkis.utils.retry` 가 이 표식만 보고 판단합니다. 예외 **종류 목록**을
+    유틸 쪽에 두면 `utils` 가 `client` 를 import 해야 하는데, 그것은
+    아키텍처 불변식(`utils` 는 최하층)을 깨뜨립니다. 판단 근거를 예외 자신이
+    들고 있으면 유틸이 아무것도 import 하지 않아도 됩니다.
+
+    새 예외를 만들 때 재시도 대상이면 `retryable = True` 를 선언하세요.
+    """
+
     def __init__(self, message: str, response: Response):
         super().__init__(message)
         self.status_code = response.status_code
@@ -176,9 +187,11 @@ class KisConnectionError(KisHTTPError):
     """연결 실패 (4xx/5xx 제외)
 
     네트워크 연결 문제, 타임아웃, DNS 실패 등으로 인한 예외
+    재시도 가능 (Retryable)
     """
 
-    pass
+    # KisTimeoutError 가 이 클래스를 상속하므로 함께 재시도 대상이 됩니다.
+    retryable = True
 
 
 class KisAuthenticationError(KisHTTPError):
@@ -224,7 +237,7 @@ class KisRateLimitError(KisHTTPError):
     재시도 가능 (Retryable)
     """
 
-    pass
+    retryable = True
 
 
 class KisServerError(KisHTTPError):
@@ -234,7 +247,7 @@ class KisServerError(KisHTTPError):
     재시도 가능 (Retryable)
     """
 
-    pass
+    retryable = True
 
 
 class KisTimeoutError(KisConnectionError):
@@ -260,7 +273,17 @@ class KisRetryableError(Exception):
     """재시도 가능 여부를 나타내는 인터페이스
 
     이 예외가 발생한 경우, exponential backoff를 사용하여 재시도할 수 있습니다.
+
+    주의: 이 클래스는 오랫동안 **선언만 되어 있고 아무도 상속하지 않았습니다.**
+    `KisException` 계열과 별개 트리라 실제 재시도 판단에 쓰이지도 않았습니다.
+    이제 `retryable = True` 를 달아, 이것을 상속한 사용자 정의 예외도
+    `vmkis.utils.retry` 가 재시도하도록 했습니다.
+
+    라이브러리 내부 예외는 `KisException.retryable` 을 쓰므로 이 클래스가
+    필요하지 않습니다.
     """
+
+    retryable: bool = True
 
     max_retries: int = 3
     initial_delay: float = 1.0  # 초

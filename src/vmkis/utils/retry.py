@@ -1,6 +1,13 @@
 """Exponential backoff retry 메커니즘
 
 VmKis API 호출 시 일시적 오류(429, 5xx)에 대한 자동 재시도 기능을 제공합니다.
+
+이 모듈은 **아무것도 import 하지 않습니다**(표준 라이브러리 제외).
+`utils` 는 최하층이고, 상위 계층을 참조하면 아키텍처 불변식을 깨뜨립니다
+(`docs/architecture/ARCHITECTURE.md` 의 "지켜야 할 불변식" 참고).
+
+예전에는 `vmkis.client.exceptions` 에서 재시도 대상 예외 4종을 import 했습니다.
+지금은 **예외 자신이 `retryable` 표식을 들고 있고**, 이 모듈은 그 표식만 봅니다.
 """
 
 import asyncio
@@ -11,17 +18,11 @@ from collections.abc import Awaitable, Callable
 from functools import wraps
 from typing import Any, TypeVar
 
-from vmkis.client.exceptions import (
-    KisConnectionError,
-    KisRateLimitError,
-    KisServerError,
-    KisTimeoutError,
-)
-
 __all__ = [
     "with_retry",
     "with_async_retry",
     "retry_config",
+    "is_retryable",
 ]
 
 _logger = logging.getLogger(__name__)
@@ -86,13 +87,41 @@ retry_config = RetryConfig(
     jitter=True,
 )
 
-# 재시도 가능한 예외
-RETRYABLE_EXCEPTIONS = (
-    KisRateLimitError,  # 429
-    KisServerError,  # 5xx
-    KisTimeoutError,  # 타임아웃
-    KisConnectionError,  # 연결 오류 (일부)
-)
+
+def _resolve_config(max_retries: int | None, initial_delay: float | None) -> RetryConfig:
+    """전역 기본값 위에 인자를 얹은 **새 설정**을 만듭니다.
+
+    예전에는 이렇게 되어 있었습니다.
+
+        config = retry_config              # 사본이 아니라 전역 객체 그 자체
+        if max_retries is not None:
+            config.max_retries = max_retries
+
+    `@with_retry(max_retries=7)` 를 한 번 쓰면 전역이 7로 바뀌고, 그 뒤로는
+    인자 없는 `@with_retry()` 까지 7회 재시도했습니다. 호출 순서에 따라 동작이
+    달라져 재현도 어려웠습니다.
+
+    전역은 **읽기만** 합니다.
+    """
+    return RetryConfig(
+        max_retries=retry_config.max_retries if max_retries is None else max_retries,
+        initial_delay=retry_config.initial_delay if initial_delay is None else initial_delay,
+        max_delay=retry_config.max_delay,
+        exponential_base=retry_config.exponential_base,
+        jitter=retry_config.jitter,
+    )
+
+
+def is_retryable(exc: BaseException) -> bool:
+    """예외가 재시도 대상인지 판단합니다.
+
+    예외 **종류 목록**을 여기 두면 이 모듈이 `vmkis.client.exceptions` 를
+    import 해야 합니다. 대신 예외가 스스로 `retryable = True` 를 선언하게 하고
+    여기서는 그 표식만 봅니다.
+
+    표식이 없는 임의의 예외(표준 라이브러리 등)는 재시도하지 않습니다.
+    """
+    return getattr(exc, "retryable", False) is True
 
 
 def with_retry(
@@ -119,20 +148,18 @@ def with_retry(
         ```
     """
 
+    config = _resolve_config(max_retries, initial_delay)
+
     def decorator(func: Callable[..., T]) -> Callable[..., T]:
         @wraps(func)
         def wrapper(*args: Any, **kwargs: Any) -> T:
-            config = retry_config
-            if max_retries is not None:
-                config.max_retries = max_retries
-            if initial_delay is not None:
-                config.initial_delay = initial_delay
-
             last_exception = None
             for attempt in range(config.max_retries + 1):
                 try:
                     return func(*args, **kwargs)
-                except RETRYABLE_EXCEPTIONS as e:
+                except Exception as e:
+                    if not is_retryable(e):
+                        raise
                     last_exception = e
                     if attempt < config.max_retries:
                         delay = config.calculate_delay(attempt)
@@ -175,20 +202,18 @@ def with_async_retry(
         ```
     """
 
+    config = _resolve_config(max_retries, initial_delay)
+
     def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
         @wraps(func)
         async def wrapper(*args: Any, **kwargs: Any) -> T:
-            config = retry_config
-            if max_retries is not None:
-                config.max_retries = max_retries
-            if initial_delay is not None:
-                config.initial_delay = initial_delay
-
             last_exception = None
             for attempt in range(config.max_retries + 1):
                 try:
                     return await func(*args, **kwargs)
-                except RETRYABLE_EXCEPTIONS as e:
+                except Exception as e:
+                    if not is_retryable(e):
+                        raise
                     last_exception = e
                     if attempt < config.max_retries:
                         delay = config.calculate_delay(attempt)

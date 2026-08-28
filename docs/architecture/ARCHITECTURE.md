@@ -151,8 +151,14 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    |---|---|---|
    | `responses → client` | `responses/response.py`, `responses/exceptions.py` | 의도적 — 응답은 client 타입 위에 성립 |
    | `api ↔ adapter` | 주문/잔고 계열 | 의도적 — 응답 객체가 Mixin 을 상속 (rich object) |
-   | `client → api` | `client/websocket.py` | **정리 대상** — 자기등록으로 역전 |
-   | `utils → client` | `utils/retry.py` | **정리 대상** — 예외를 파라미터로 주입 |
+   | `client → api` | `client/websocket.py` | **정리 대상** — 자기등록으로 역전 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17)) |
+   | ~~`utils → client`~~ | ~~`utils/retry.py`~~ | ✅ **해소됨** ([#18](https://github.com/visualmoney/vm-stock-kis/issues/18)) |
+
+   `utils → client` 를 없앤 방법이 이 표의 나머지에도 참고가 됩니다.
+   `utils/retry.py` 는 재시도 대상 예외 **목록**을 들고 있느라 `client` 를
+   참조했습니다. 목록을 옮기는 대신 **판단 근거를 예외 자신에게 넘겼습니다** —
+   `KisException.retryable` 표식을 보고 `getattr` 로 확인하므로 유틸은 아무것도
+   import 하지 않습니다. 하위 계층이 상위 지식을 필요로 할 때의 일반적인 해법입니다.
 
 3. **순환 우회용 지연 import 에는 사유 주석을 답니다.**
    함수 안의 import 를 "정리"하려고 파일 상단으로 올리면 패키지가 로드 불능이
