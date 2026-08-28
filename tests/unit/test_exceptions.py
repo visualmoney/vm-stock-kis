@@ -7,12 +7,27 @@ import pytest
 
 from vmkis.client.exceptions import (
     KisAuthenticationError,
+    KisConnectionError,
+    KisNotFoundError,
     KisRateLimitError,
     KisServerError,
     KisTimeoutError,
     KisValidationError,
 )
 from vmkis.utils.retry import RetryConfig, with_async_retry, with_retry
+
+
+def _make_response(status_code: int) -> MagicMock:
+    """예외 생성에 필요한 최소한의 Response 목."""
+    resp = MagicMock()
+    resp.status_code = status_code
+    resp.reason = "Test"
+    resp.text = "body"
+    resp.request.headers = {}
+    resp.request.method = "GET"
+    resp.request.url = "https://api.example.com/test"
+    resp.request.body = None
+    return resp
 
 
 class TestExceptionHierarchy:
@@ -336,3 +351,123 @@ class TestWithAsyncRetryDecorator:
         # 2 retries with delays: 0.1s (jitter 포함)
         # 최소 0.2초 이상 소요
         assert elapsed_time >= 0.15
+
+
+# ---------------------------------------------------------------------------
+# 이슈 #18 — 전역 retry_config 변형 버그와 계층 위반
+#
+# `with_retry` 가 전역 싱글턴을 제자리에서 변형해, 한 번 인자를 준 뒤로는
+# 인자 없는 `@with_retry()` 까지 그 값을 물려받았다. 호출 순서에 따라 동작이
+# 달라져 재현이 어려웠고, 커버리지 95%인데도 잡히지 않았다 —
+# 어떤 테스트도 `with_retry()` 를 인자 없이 부른 적이 없었기 때문이다.
+# ---------------------------------------------------------------------------
+
+
+class TestRetryConfigIsolation:
+    """데코레이터는 전역 설정을 읽기만 해야 한다"""
+
+    def test_with_retry_does_not_mutate_global_config(self):
+        from vmkis.utils.retry import retry_config
+
+        before = (retry_config.max_retries, retry_config.initial_delay)
+
+        @with_retry(max_retries=7, initial_delay=9.0)
+        def f():
+            return "ok"
+
+        f()
+
+        assert (retry_config.max_retries, retry_config.initial_delay) == before
+
+    def test_with_async_retry_does_not_mutate_global_config(self):
+        from vmkis.utils.retry import retry_config
+
+        before = (retry_config.max_retries, retry_config.initial_delay)
+
+        @with_async_retry(max_retries=11, initial_delay=3.0)
+        async def f():
+            return "ok"
+
+        assert (retry_config.max_retries, retry_config.initial_delay) == before
+
+    def test_default_decorator_is_not_polluted_by_another(self):
+        """이 버그의 실제 피해 지점.
+
+        인자를 준 데코레이터가 전역을 바꾸면, **기본값을 의도한** 다른
+        데코레이터가 그 값을 물려받는다. 시세 조회 하나가 9초씩 기다리게 된다.
+        """
+        from vmkis.utils.retry import retry_config
+
+        @with_retry(max_retries=7, initial_delay=9.0)
+        def polluter():
+            return "ok"
+
+        polluter()
+
+        attempts = []
+
+        @with_retry(initial_delay=0.001)  # max_retries 는 기본값을 의도
+        def default_user():
+            attempts.append(1)
+            raise KisServerError(_make_response(500))
+
+        with pytest.raises(KisServerError):
+            default_user()
+
+        # 기본값 3회 재시도 + 최초 1회 = 4. 오염됐다면 8이 된다.
+        assert len(attempts) == retry_config.max_retries + 1
+
+
+class TestRetryableMarker:
+    """재시도 판단은 예외가 들고 있는 `retryable` 표식으로 한다.
+
+    예외 **종류 목록**을 utils 에 두면 `utils -> client` 역방향 의존이 생긴다.
+    """
+
+    def test_retry_module_imports_nothing_from_vmkis(self):
+        """`utils/retry.py` 는 상위 계층을 import 하지 않아야 한다."""
+        import ast
+        import pathlib
+
+        source = pathlib.Path("src/vmkis/utils/retry.py").read_text(encoding="utf-8")
+        imported = {
+            node.module for node in ast.walk(ast.parse(source)) if isinstance(node, ast.ImportFrom) and node.module
+        }
+
+        assert not [m for m in imported if m.startswith("vmkis")], (
+            f"utils/retry.py 가 상위 계층을 import 합니다: {imported}"
+        )
+
+    @pytest.mark.parametrize(
+        "exc_type, expected",
+        [
+            (KisRateLimitError, True),
+            (KisServerError, True),
+            (KisTimeoutError, True),
+            (KisConnectionError, True),
+            (KisNotFoundError, False),
+            (KisAuthenticationError, False),
+        ],
+    )
+    def test_retryable_marker(self, exc_type, expected):
+        from vmkis.utils.retry import is_retryable
+
+        assert is_retryable(exc_type(_make_response(500))) is expected
+
+    def test_unknown_exception_is_not_retryable(self):
+        from vmkis.utils.retry import is_retryable
+
+        assert is_retryable(ValueError("표식 없음")) is False
+
+    def test_non_retryable_exception_is_reraised_immediately(self):
+        attempts = []
+
+        @with_retry(max_retries=3, initial_delay=0.001)
+        def f():
+            attempts.append(1)
+            raise ValueError("재시도 대상 아님")
+
+        with pytest.raises(ValueError):
+            f()
+
+        assert len(attempts) == 1
