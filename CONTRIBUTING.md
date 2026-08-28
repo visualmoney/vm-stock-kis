@@ -319,22 +319,39 @@ test(unit): add tests for load_config with profiles
 
 ### 1. 테스트 구조
 
+> 아래는 **실제로 존재하는 것**만 적습니다. 고칠 때는 `ls tests/` 를 해 보세요.
+> 예전 트리는 `tests/fixtures/`, `test_stock_quote.py`, `test_websocket.py`,
+> `test_load_config.py` 를 가리키고 있었는데 **넷 다 없는 경로**였습니다.
+
 ```text
 tests/
-├── unit/                    # 단위 테스트 (API 호출 없이)
+├── env.py                   # load_vmkis(). `pythonpath = ["."]` 에 의존합니다
+├── main.py
+│
+├── unit/                    # 단위 테스트 — 네트워크 없이, 빠르게
+│   ├── adapter/ api/ client/ event/ responses/ scope/ utils/
+│   ├── test_kis.py
 │   ├── test_public_api_imports.py
-│   ├── test_simple_helpers.py
-│   └── test_load_config.py
+│   └── ...
 │
-├── integration/             # 통합 테스트 (실제 API 호출)
-│   ├── test_stock_quote.py
-│   ├── test_account_balance.py
-│   └── test_websocket.py
+├── integration/             # 통합 테스트 — 실제 API 호출 또는 여러 계층 결합
+│   ├── conftest.py          # 이 아래 전부에 `integration` 마커를 붙입니다
+│   ├── test_account_balance.py   # requires_api
+│   ├── test_product_quote.py     # requires_api
+│   └── ...
 │
-└── fixtures/                # 테스트 데이터
-    ├── config_sample.yaml
-    └── mock_responses.json
+└── performance/             # 성능 테스트 — 머지를 막지 않습니다
+    ├── conftest.py          # 이 아래 전부에 `performance` 마커를 붙입니다
+    └── ...
 ```
+
+**네트워크가 필요한 테스트를 `tests/unit/` 에 두지 마세요.** 2026-08-29 이전에는
+`requires_api` 17개가 전부 거기 있었습니다(이슈 [#41](https://github.com/visualmoney/vm-stock-kis/issues/41)).
+디렉터리와 마커가 서로 다른 말을 하면 `tests/unit/` 을 돌린다는 것의 의미가 깨집니다.
+
+**마커는 손으로 붙이지 않습니다.** `integration/` 과 `performance/` 의 `conftest.py`
+가 디렉터리 단위로 붙입니다. 손으로 붙이다가 두 번 어긋났습니다 — performance 는
+30개 중 8개만, integration 은 29개 중 9개만 갖고 있었습니다.
 
 ### 2. 단위 테스트 예시
 
