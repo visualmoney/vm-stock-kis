@@ -145,12 +145,27 @@ version_scheme = "no-guess-dev"
 # 필수: 프로젝트명 vm-stock-kis는 vm_stock_kis로 정규화되어 모듈명 vmkis와 다르므로
 # hatchling의 자동 탐지가 실패합니다.
 packages = ["src/vmkis"]
-# hatchling 1.32.0이 기본 core metadata를 2.5(PEP 794)로 올렸으나 PyPI 수용 여부가
-# 확인되지 않았습니다. 2.4는 PEP 639 License-Expression을 지원하는 최소 버전입니다.
-# TestPyPI에서 2.5가 통과하는 것을 확인하면 이 두 줄을 삭제하세요.
+# core metadata 버전을 고정합니다. 목적은 **빌드 백엔드의 기본값이 우리 모르게
+# 바뀌는 것을 막는 것**입니다. 지우지 마세요. (이슈 #27에서 검토했습니다.)
+#
+# 왜 올리지 않는가:
+#   * 2.5가 추가한 필드는 PEP 794의 Import-Name / Import-Namespace 둘뿐이고
+#     hatchling은 이 둘을 쓰지 않습니다. 우리에게 2.4와 2.5는 내용이 같고
+#     버전 숫자만 다릅니다. 올려서 얻는 것이 없습니다.
+#   * 2.4는 PEP 639 License-Expression을 지원하는 최소 버전이라 하한으로 정확합니다.
+#
+# 왜 고정이 필요한가:
+#   hatchling 1.32.0이 기본값을 2.4 → 2.5로 이미 한 번 올렸습니다. core metadata
+#   2.6은 2026-05에 승인됐지만 PyPI는 아직 받지 않습니다. warehouse의 업로드 검증:
+#
+#       SUPPORTED_METADATA_VERSIONS = {"1.0","1.1","1.2","2.1","2.2","2.3","2.4","2.5"}
+#
+#   백엔드가 기본값을 2.6으로 올리는 순간, 고정이 없으면 배포가 거부됩니다.
+#   publish.yml의 "Wheel contents" 스텝이 이 값을 게시 전에 검사합니다.
 core-metadata-version = "2.4"
 
 [tool.hatch.build.targets.sdist]
+# 위와 같은 이유. 두 타깃 모두에 필요합니다.
 core-metadata-version = "2.4"
 # hatchling 기본값은 gitignore되지 않은 모든 것을 담아 docs/ 전체가 포함됩니다.
 include = [
