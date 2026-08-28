@@ -69,6 +69,19 @@ def test_domestic_order_profits_calls_fetch_and_returns(monkeypatch):
             self._calls = []
             self.virtual = False
 
+        # 이슈 #43·#44 이후 `domestic_order_profits` 는 `fetch_pages()` 를
+        # 거친다. 실제 구현을 붙이면 `fetch(api=...)` 단언이 그대로 살고
+        # 스펙 해석과 페이징 루프까지 함께 검증된다.
+        def call(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.call(self, *args, **kwargs)
+
+        def fetch_pages(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.fetch_pages(self, *args, **kwargs)
+
         def fetch(self, *args, **kwargs):
             self._calls.append((args, kwargs))
             # return a response-like object that the caller will accept

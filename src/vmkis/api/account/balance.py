@@ -950,39 +950,25 @@ def domestic_balance(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = page or KisPage.first()
-    first = None
-
-    while True:
-        result = self.call(
-            _DOMESTIC_BALANCE,
-            params={
-                "AFHR_FLPR_YN": "N",
-                "OFL_YN": "",
-                "INQR_DVSN": "02",
-                "UNPR_DVSN": "01",
-                "FUND_STTL_ICLD_YN": "Y",
-                "FNCG_AMT_AUTO_RDPT_YN": "N",
-                "PRCS_DVSN": "00",
-            },
-            form=[account],
-            page=page,
-            response_type=KisDomesticBalance(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.stocks.extend(result.stocks)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _DOMESTIC_BALANCE,
+        params={
+            "AFHR_FLPR_YN": "N",
+            "OFL_YN": "",
+            "INQR_DVSN": "02",
+            "UNPR_DVSN": "01",
+            "FUND_STTL_ICLD_YN": "Y",
+            "FNCG_AMT_AUTO_RDPT_YN": "N",
+            "PRCS_DVSN": "00",
+        },
+        form=[account],
+        response_type=lambda: KisDomesticBalance(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.stocks.extend(more.stocks),
+    )
 
 
 def _internal_foreign_balance(
@@ -1011,34 +997,20 @@ def _internal_foreign_balance(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    page = page or KisPage.first()
-    first = None
-
-    while True:
-        result = self.call(
-            _FOREIGN_BALANCE,
-            params={
-                "OVRS_EXCG_CD": get_market_code(market) if market else "",
-                "TR_CRCY_CD": "",
-            },
-            form=[account],
-            page=page,
-            response_type=KisForeignBalance(
-                account_number=account,
-            ),
-        )
-
-        if first is None:
-            first = result
-        else:
-            first.stocks.extend(result.stocks)
-
-        if not continuous or result.is_last:
-            break
-
-        page = result.next_page
-
-    return first
+    return self.fetch_pages(
+        _FOREIGN_BALANCE,
+        params={
+            "OVRS_EXCG_CD": get_market_code(market) if market else "",
+            "TR_CRCY_CD": "",
+        },
+        form=[account],
+        response_type=lambda: KisForeignBalance(
+            account_number=account,
+        ),
+        page=page,
+        continuous=continuous,
+        merge=lambda first, more: first.stocks.extend(more.stocks),
+    )
 
 
 FOREIGN_COUNTRY_MARKET_MAP: dict[tuple[bool | None, COUNTRY_TYPE | None], list[MARKET_TYPE | None]] = {

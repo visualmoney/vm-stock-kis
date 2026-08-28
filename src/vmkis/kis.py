@@ -4,7 +4,7 @@ from datetime import timedelta
 from os import PathLike
 from pathlib import Path
 from time import sleep
-from typing import Literal, overload
+from typing import Literal, TypeVar, overload
 from urllib.parse import urljoin
 
 import requests
@@ -33,7 +33,8 @@ from vmkis.client.form import KisForm
 from vmkis.client.object import KisObjectBase, kis_object_init
 from vmkis.client.page import KisPage
 from vmkis.client.websocket import KisWebsocketClient
-from vmkis.responses.dynamic import KisObject, TDynamic
+from vmkis.responses.dynamic import KisDynamic, KisObject, TDynamic
+from vmkis.responses.response import KisPaginationAPIResponseProtocol
 from vmkis.responses.types import KisDynamicDict
 from vmkis.utils.rate_limit import RateLimiter
 from vmkis.utils.retry import RetryConfig
@@ -50,6 +51,16 @@ _REQUEST_RETRY_POLICY = RetryConfig(
     exponential_base=2.0,
     jitter=True,
 )
+
+
+TPagination = TypeVar("TPagination", bound=KisPaginationAPIResponseProtocol)
+
+MAX_PAGES = 100
+"""연속조회 상한.
+
+서버가 `is_last` 를 끝내 주지 않거나 커서가 진행하지 않으면 루프가 끝나지
+않습니다. 조용히 도는 것보다 명시적으로 실패하는 편이 낫습니다.
+"""
 
 
 class VmKis:
@@ -766,6 +777,83 @@ class VmKis:
             continuous=continuous,
             response_type=response_type,
             **kwargs,
+        )
+
+    def fetch_pages(
+        self,
+        endpoint: KisEndpoint,
+        *,
+        response_type: Callable[[], TPagination],
+        merge: Callable[[TPagination, TPagination], None],
+        page: KisPage | None = None,
+        continuous: bool = True,
+        max_pages: int = MAX_PAGES,
+        params: dict[str, str] | None = None,
+        body: dict[str, str] | None = None,
+        form: Iterable[KisForm | None] | None = None,
+        **kwargs,
+    ) -> TPagination:
+        """연속조회를 끝까지 따라가며 결과를 하나로 합칩니다.
+
+        예전에는 이 루프를 엔드포인트마다 각자 복사했습니다(이슈 #44 착수 시점
+        8곳). 골격이 전부 같고 **다른 것은 "어느 필드에 누적하는가" 한 줄뿐**
+        이었습니다. `continuous` / `is_last` / `next_page` 를 잘못 다루면
+        **무한 루프이거나 첫 페이지만 반환**하는데, 둘 다 조용히 틀립니다.
+
+        Args:
+            response_type: 응답 객체를 만드는 **팩토리**. 인스턴스가 아닙니다
+                (아래 참고).
+            merge: `merge(첫_페이지, 다음_페이지)` — 첫 페이지에 누적합니다.
+                예: `lambda first, more: first.stocks.extend(more.stocks)`
+            continuous: `False` 면 첫 페이지만 가져옵니다.
+            max_pages: 상한. 서버가 `is_last` 를 끝내 주지 않아도 여기서 멈춥니다.
+
+        Raises:
+            TypeError: `response_type` 에 팩토리가 아니라 인스턴스를 준 경우
+            RuntimeError: `max_pages` 를 넘긴 경우
+
+        **왜 팩토리인가.** `KisObject.transform_` 은 인스턴스를 받으면 **그
+        인스턴스에 그대로 파싱**합니다. 하나를 돌려 쓰면 모든 페이지가 같은
+        객체가 되고, `merge(first, result)` 가 자기 자신을 이어붙여 결과가
+        불어납니다. 예전 루프들이 매 반복마다 응답 객체를 새로 만든 이유가
+        이것입니다.
+        """
+        if isinstance(response_type, KisDynamic):
+            raise TypeError(
+                "response_type 에는 인스턴스가 아니라 팩토리를 주세요. "
+                "인스턴스를 주면 모든 페이지가 같은 객체에 파싱되어 결과가 불어납니다. "
+                "예: response_type=lambda: KisDomesticBalance(account_number=account)"
+            )
+
+        page = page or KisPage.first()
+        first: TPagination | None = None
+
+        for _ in range(max_pages):
+            result = self.call(
+                endpoint,
+                params=params,
+                body=body,
+                form=form,
+                page=page,
+                response_type=response_type,
+                **kwargs,
+            )
+
+            if first is None:
+                first = result
+            else:
+                merge(first, result)
+
+            if not continuous or result.is_last:
+                return first
+
+            page = result.next_page
+
+        # `KisInternalError` 를 쓰지 않는 이유: 그 예외의 베이스가 `Response` 를
+        # 요구하는데 여기에는 건넬 응답이 없습니다.
+        raise RuntimeError(
+            f"연속조회가 {max_pages}페이지를 넘겼습니다. 서버가 마지막 페이지를 알리지 않았거나 "
+            f"커서가 진행하지 않고 있습니다. ({endpoint.path})"
         )
 
     @property

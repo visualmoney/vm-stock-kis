@@ -42,12 +42,18 @@ def test__domestic_daily_orders_calls_fetch_and_returns_result():
         def __init__(self):
             self.virtual = False
 
-        # 이슈 #43 이후 `_domestic_daily_orders` 는 `call()` 을 거친다.
-        # 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)까지 검증한다.
+        # 이슈 #43·#44 이후 `_domestic_daily_orders` 는 `fetch_pages()` 를
+        # 거친다. 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)과
+        # 페이징 루프까지 함께 검증한다.
         def call(self, *args, **kwargs):
             from vmkis.kis import VmKis
 
             return VmKis.call(self, *args, **kwargs)
+
+        def fetch_pages(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.fetch_pages(self, *args, **kwargs)
 
         def fetch(self, *args, **kwargs):
             calls.append((args, kwargs))
@@ -71,12 +77,18 @@ def test_domestic_daily_orders_swapped_dates_and_page_to():
         def __init__(self):
             self.virtual = False
 
-        # 이슈 #43 이후 `_domestic_daily_orders` 는 `call()` 을 거친다.
-        # 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)까지 검증한다.
+        # 이슈 #43·#44 이후 `_domestic_daily_orders` 는 `fetch_pages()` 를
+        # 거친다. 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)과
+        # 페이징 루프까지 함께 검증한다.
         def call(self, *args, **kwargs):
             from vmkis.kis import VmKis
 
             return VmKis.call(self, *args, **kwargs)
+
+        def fetch_pages(self, *args, **kwargs):
+            from vmkis.kis import VmKis
+
+            return VmKis.fetch_pages(self, *args, **kwargs)
 
         def fetch(self, *args, **kwargs):
             return SimpleNamespace(is_last=True, orders=[], next_page=None)
