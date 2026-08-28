@@ -251,6 +251,11 @@ ignore = [
 # 전부 잡힙니다. tests/unit/test_import_contracts.py 가 그것을 확인하므로,
 # 앞으로 __init__.py 없는 디렉터리가 다시 생기면 CI 가 알려 줍니다.
 root_package = "vmkis"
+#
+# 설정을 바꾼 뒤 "Analyzed N files, M dependencies" 수치가 CI 와 다르면
+# `lint-imports --no-cache` 로 확인하세요. grimp 의 .grimp_cache 는 **파일 단위로만**
+# 무효화되고 여기 세션 설정 변경은 무효화하지 않습니다. 판정은 오염되지 않지만
+# (소스 변경은 정상 무효화) 수치가 어긋나 헷갈립니다.
 exclude_type_checking_imports = true
 
 [[tool.importlinter.contracts]]
