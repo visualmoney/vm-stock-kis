@@ -8,7 +8,7 @@ import pytest
 from vmkis.client.exceptions import (
     KisAuthenticationError,
     KisConnectionError,
-    KisNotFoundError,
+    KisHTTPNotFoundError,
     KisRateLimitError,
     KisServerError,
     KisTimeoutError,
@@ -445,7 +445,7 @@ class TestRetryableMarker:
             (KisServerError, True),
             (KisTimeoutError, True),
             (KisConnectionError, True),
-            (KisNotFoundError, False),
+            (KisHTTPNotFoundError, False),
             (KisAuthenticationError, False),
         ],
     )

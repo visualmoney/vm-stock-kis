@@ -5,7 +5,51 @@
 
 버전은 git 태그에서 만들어집니다. [VERSIONING.md](./docs/developer/VERSIONING.md) 참고.
 
-## [미출시] — 0.0.1
+## [미출시]
+
+### 수정
+
+- **`vmkis.exceptions.KisNotFoundError` 가 한 번도 발생하지 않는 클래스를
+  가리키고 있었습니다.** 같은 이름의 서로 다른 클래스가 두 곳에 있었는데,
+  공개 모듈이 HTTP 404용(라이브러리가 발생시키지 않음)을 내보내고 있어
+  **공개 API 대로 잡은 사용자의 핸들러가 절대 실행되지 않았습니다.**
+
+  ```python
+  from vmkis.exceptions import KisNotFoundError
+  try:
+      kis.stock("005930").quote()
+  except KisNotFoundError:   # 이전: 절대 잡히지 않음 → 이제 정상 동작
+      ...
+  ```
+
+  HTTP 404 쪽을 `KisHTTPNotFoundError` 로 개명했습니다.
+  `vmkis.client.exceptions.KisNotFoundError` 는 `DeprecationWarning` 과 함께
+  동작하며 1.0.0에서 제거됩니다.
+
+- `with_retry` / `with_async_retry` 가 **전역 `retry_config` 를 제자리에서
+  변형**했습니다. 인자를 준 데코레이터를 한 번 쓰면 이후 인자 없는
+  `@with_retry()` 까지 그 값을 물려받았습니다.
+
+- `utils/retry.py` 가 `client.exceptions` 를 참조하던 계층 위반을 해소했습니다.
+  재시도 판단이 예외의 `retryable` 표식으로 바뀌었습니다.
+  사용자 정의 예외에 `retryable = True` 를 선언하면 재시도 대상이 됩니다.
+
+- 벤치마크 테스트가 시계 해상도 때문에 **기계가 빠를수록 실패**했습니다.
+  `time.time()` → `time.perf_counter()`.
+
+- 자격증명 없이 `pytest` 를 돌리면 17개가 **error** 로 떴습니다. **skip** 으로
+  바꾸고 누락된 환경변수를 사유에 적습니다.
+
+- `VmKis` 생성자가 중간에 실패하면 소멸자가 `AttributeError` 를 냈습니다.
+
+### 추가
+
+- [`docs/user/EXTENDING_API.md`](./docs/user/EXTENDING_API.md) — 미지원 TR 을
+  `fetch()` 로 호출하는 방법 (Level 0~3 + 함정 체크리스트)
+
+---
+
+## [0.0.1] — 2026-08-28
 
 ### 버전 번호 재시작
 
