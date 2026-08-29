@@ -13,6 +13,7 @@
 from datetime import date
 
 from vmkis.client.endpoint import KisEndpoint
+from vmkis.client.page import NO_SUFFIX
 from vmkis.responses.dynamic import KisDynamic, KisList
 from vmkis.responses.response import KisAPIResponse
 from vmkis.responses.types import KisBool, KisDate, KisString
@@ -20,6 +21,7 @@ from vmkis.responses.types import KisBool, KisDate, KisString
 CHK_HOLIDAY = KisEndpoint(
     path="/uapi/domestic-stock/v1/quotations/chk-holiday",
     tr_live="CTCA0903R",
+    page_size=NO_SUFFIX,  # 접미사 없는 CTX_AREA_FK
 )
 
 

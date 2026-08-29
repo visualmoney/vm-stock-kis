@@ -274,21 +274,41 @@ def _split_args(func: ast.FunctionDef) -> tuple[list[str], list[str]]:
     )
 
 
-#: `ctx_area_fk200` 같은 연속조회 커서. 숫자가 커서 폭입니다.
-_CURSOR = re.compile(r"ctx_area_[fn]k(\d+)")
+#: 연속조회 커서. **폭 숫자가 없는 변형이 있습니다** — `CTX_AREA_FK` 처럼.
+#: 처음에 `(\d+)` 로 적었다가 국내휴장일조회(`CTCA0903R`)를 통째로 놓쳤습니다.
+#: #21 이 파일럿 항목으로 지목한 바로 그 엔드포인트입니다.
+_CURSOR = re.compile(r"(?i)ctx_area_[fn]k(\d*)\b")
+
+#: 접미사 없는 커서. `vmkis.client.page.NO_SUFFIX` 와 같은 값이어야 합니다
+#: (#16 이 `KisPage` 에 도입했습니다). 여기서 다시 import 하지 않는 이유는
+#: 이 스크립트가 패키지 없이도 돌아야 하기 때문입니다.
+NO_SUFFIX = 0
 
 
 def _collect_page_size(source: str) -> int | None:
-    """연속조회 커서 폭을 읽습니다.
+    r"""연속조회 커서 폭을 읽습니다.
 
-    `KisEndpoint.page_size` 가 받는 값입니다. 실측 분포는 200(167) · 100(62) ·
-    50(2) · 30(1) 입니다. 커서가 없으면 페이징이 없는 엔드포인트입니다.
+    `KisEndpoint.page_size` 가 받는 값입니다. KIS 의 커서에는 **네 가지
+    변형**이 있습니다 (#16 이 `KisPage` 에서 정리한 것과 같은 목록).
+
+        ctx_area_fk200  ctx_area_fk100  ctx_area_fk50  ctx_area_fk
+
+    마지막이 함정입니다. 폭 숫자가 없어서 `\d+` 로 찾으면 **조용히 빠집니다.**
+    그 API 는 `KisPaginationAPIResponse` 를 상속하는 순간 파싱에서 죽습니다.
+
+    폭을 모르는 평문 커서는 `NO_SUFFIX`(0) 로 둡니다 — 라이브러리가 쓰는
+    바로 그 표현입니다. `None`(페이징 없음)과 구분되어야 합니다.
     """
-    widths = {int(m) for m in _CURSOR.findall(source)}
-    if not widths:
+    found = _CURSOR.findall(source)
+    if not found:
         return None
-    # 한 엔드포인트가 폭을 섞어 쓰지는 않습니다. 섞였다면 큰 쪽이 실제 커서입니다.
-    return max(widths)
+
+    widths = {int(m) for m in found if m}
+    if widths:
+        # 한 엔드포인트가 폭을 섞어 쓰지는 않습니다. 섞였다면 큰 쪽이 실제 커서입니다.
+        return max(widths)
+
+    return NO_SUFFIX
 
 
 def _body_attr(node: ast.AST) -> str | None:

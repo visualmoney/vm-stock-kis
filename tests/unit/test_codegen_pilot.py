@@ -290,3 +290,30 @@ def test_single_branch_endpoint_stays_a_plain_constant() -> None:
 
     assert "VOLUME_RANK" in vars(module), "단일 TR 은 상수 하나여야 합니다"
     assert not any(k.endswith("_ENDPOINTS") for k in vars(module))
+
+
+def test_plain_cursor_endpoint_keeps_no_suffix_page_size() -> None:
+    """접미사 없는 `CTX_AREA_FK` 는 `page_size=NO_SUFFIX`(0) 여야 합니다.
+
+    두 번 미끄러진 자리입니다.
+
+    1. 추출기의 정규식이 `ctx_area_[fn]k(\\d+)` 였습니다. 폭 숫자를 **요구**해서
+       평문 커서를 통째로 놓쳤습니다 — 국내휴장일조회(`CTCA0903R`)가 그것이고,
+       [#21](https://github.com/visualmoney/vm-stock-kis/issues/21) 이 파일럿
+       항목으로 **지목한 바로 그 엔드포인트**입니다.
+    2. 고친 뒤에도 생성기가 `if spec.get("page_size"):` 였습니다. **`0` 은
+       falsy 인데 유효한 값**이라(`NO_SUFFIX`, [#16](https://github.com/visualmoney/vm-stock-kis/issues/16))
+       페이징 없는 엔드포인트로 생성됐습니다.
+
+    `None`(페이징 없음)과 `0`(폭 모르는 평문 커서)은 다릅니다.
+    """
+    from vmkis.client.page import NO_SUFFIX
+
+    endpoints = _endpoints(_load(_pilot("chk_holiday")))
+
+    assert endpoints, "엔드포인트가 없습니다"
+    assert all(e.page_size == NO_SUFFIX for e in endpoints), (
+        f"평문 커서를 못 읽었습니다: {[e.page_size for e in endpoints]}"
+    )
+    # `0 == False` 이므로 값이 실제로 들어갔는지 따로 봅니다.
+    assert all(e.page_size is not None for e in endpoints)
