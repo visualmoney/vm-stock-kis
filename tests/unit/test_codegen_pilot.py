@@ -29,6 +29,25 @@ def _pilot_files() -> list[pathlib.Path]:
     return sorted(PILOT.glob("*.py"))
 
 
+def _endpoints(module) -> list:
+    """모듈이 노출하는 `KisEndpoint` 를 전부 모읍니다.
+
+    최상위 상수뿐 아니라 **dict 안**도 봅니다. TR ID 가 업무 축으로 갈리는
+    엔드포인트는 `NAME_ENDPOINTS: dict[str, KisEndpoint]` 형태이기 때문입니다
+    (`client/endpoint.py` 가 정한 방식). dict 를 안 보면 그런 엔드포인트가
+    **0개로 보여 검사가 조용히 통과합니다.**
+    """
+    from vmkis.client.endpoint import KisEndpoint
+
+    found = []
+    for value in vars(module).values():
+        if isinstance(value, KisEndpoint):
+            found.append(value)
+        elif isinstance(value, dict):
+            found.extend(v for v in value.values() if isinstance(v, KisEndpoint))
+    return found
+
+
 def _load(path: pathlib.Path):
     spec = importlib.util.spec_from_file_location(f"_pilot_{path.stem}", path)
     assert spec and spec.loader
@@ -50,10 +69,8 @@ def test_pilot_is_not_empty() -> None:
 @pytest.mark.parametrize("path", _pilot_files(), ids=lambda p: p.stem)
 def test_generated_module_imports(path: pathlib.Path) -> None:
     """생성물이 import 되고 `KisEndpoint` 를 하나 이상 노출해야 합니다."""
-    from vmkis.client.endpoint import KisEndpoint
-
     module = _load(path)
-    endpoints = [v for v in vars(module).values() if isinstance(v, KisEndpoint)]
+    endpoints = _endpoints(module)
 
     assert endpoints, f"{path.name} 에 KisEndpoint 상수가 없습니다"
     for ep in endpoints:
@@ -159,18 +176,14 @@ def test_tr_ids_look_like_kis_tr_ids() -> None:
     스펙 314개를 실측하니 **길이가 9자와 13자 두 종류뿐**이었습니다
     (9자 128개 · 13자 186개, 전부 영대문자+숫자).
     """
-    from vmkis.client.endpoint import KisEndpoint
-
     pattern = re.compile(r"^[A-Z0-9]{9}$|^[A-Z0-9]{13}$")
     seen = 0
     for path in _pilot_files():
-        module = _load(path)
-        for value in vars(module).values():
-            if isinstance(value, KisEndpoint):
-                assert pattern.match(value.tr_live), f"{path.name}: {value.tr_live!r}"
-                if value.tr_paper:
-                    assert pattern.match(value.tr_paper), f"{path.name}: {value.tr_paper!r}"
-                seen += 1
+        for ep in _endpoints(_load(path)):
+            assert pattern.match(ep.tr_live), f"{path.name}: {ep.tr_live!r}"
+            if ep.tr_paper:
+                assert pattern.match(ep.tr_paper), f"{path.name}: {ep.tr_paper!r}"
+            seen += 1
     assert seen >= 8
 
 
@@ -210,22 +223,17 @@ def test_pagination_cursor_becomes_page_size() -> None:
 
     `KisEndpoint.page_size` 가 받는 값이고, 없으면 연속조회를 못 합니다.
     """
-    from vmkis.client.endpoint import KisEndpoint
+    endpoints = _endpoints(_load(_pilot("inquire_daily_ccld")))
 
-    module = _load(_pilot("inquire_daily_ccld"))
-    endpoints = [v for v in vars(module).values() if isinstance(v, KisEndpoint)]
-
-    assert endpoints[0].page_size == 100, "커서 폭을 못 읽었습니다"
+    assert endpoints, "엔드포인트가 없습니다"
+    assert all(e.page_size == 100 for e in endpoints), "커서 폭을 못 읽었습니다"
 
 
 def test_endpoint_without_cursor_has_no_page_size() -> None:
     """커서가 없으면 `page_size` 도 없어야 합니다 — 아무 값이나 넣으면 안 됩니다."""
-    from vmkis.client.endpoint import KisEndpoint
+    endpoints = _endpoints(_load(_pilot("volume_rank")))
 
-    module = _load(_pilot("volume_rank"))
-    endpoints = [v for v in vars(module).values() if isinstance(v, KisEndpoint)]
-
-    assert endpoints[0].page_size is None
+    assert endpoints and all(e.page_size is None for e in endpoints)
 
 
 def test_undecided_blocks_are_marked_not_guessed() -> None:
@@ -244,3 +252,41 @@ def test_undecided_blocks_are_marked_not_guessed() -> None:
     assert marked >= 1, (
         "판정 못 한 블록을 표시하는 생성물이 하나도 없습니다. 생성기가 추측으로 채우고 있지 않은지 확인하세요."
     )
+
+
+# ── TR ID 분기 (2026-08-30 확장) ────────────────────────────────────────────
+
+
+def test_tr_id_branches_become_an_endpoint_table() -> None:
+    """`inquire_daily_ccld` 는 4-way 분기입니다 — #21 이 최난도로 지목한 것.
+
+        env_dv == "real" × pd_dv == "before" -> CTSC9215R
+        env_dv == "real" × pd_dv == "inner"  -> TTTC0081R
+        env_dv == "demo" × pd_dv == "before" -> VTSC9215R
+        env_dv == "demo" × pd_dv == "inner"  -> VTTC0081R
+
+    실전/모의 축은 `KisEndpoint` 가 흡수하고 **업무 축만 dict 로** 남는 것이
+    `client/endpoint.py` 가 정한 방식입니다. 첫 판은 조건을 통째로 버리고
+    첫 TR 만 쓴 뒤 나머지를 주석으로 흘렸습니다.
+    """
+    module = _load(_pilot("inquire_daily_ccld"))
+    table = vars(module).get("INQUIRE_DAILY_CCLD_ENDPOINTS")
+
+    assert isinstance(table, dict), "업무 축이 있으면 dict 여야 합니다"
+    assert set(table) == {"before", "inner"}, f"업무 축 키가 다릅니다: {sorted(table)}"
+
+    assert table["before"].tr_live == "CTSC9215R"
+    assert table["before"].tr_paper == "VTSC9215R"
+    assert table["inner"].tr_live == "TTTC0081R"
+    assert table["inner"].tr_paper == "VTTC0081R"
+
+
+def test_single_branch_endpoint_stays_a_plain_constant() -> None:
+    """축이 없으면 dict 로 만들지 않습니다.
+
+    이 검사가 없으면 "무조건 dict 로 감싸는" 구현도 위 테스트를 통과합니다.
+    """
+    module = _load(_pilot("volume_rank"))
+
+    assert "VOLUME_RANK" in vars(module), "단일 TR 은 상수 하나여야 합니다"
+    assert not any(k.endswith("_ENDPOINTS") for k in vars(module))

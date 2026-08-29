@@ -44,7 +44,7 @@ import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 
-from extract_kis_specs import guess_type  # noqa: E402
+from extract_kis_specs import DOMAIN_AXIS, DOMAIN_VALUES, guess_type  # noqa: E402
 
 #: 생성 헤더. 손으로 고치면 다음 생성 때 날아간다는 것을 파일 자신이 말해야 합니다.
 HEADER = '''"""{title}
@@ -85,6 +85,73 @@ PY_TYPE = {
 }
 
 
+def _endpoint_args(spec: dict, tr_live: str, tr_paper: str | None, indent: str) -> list[str]:
+    lines = [f'{indent}path="{spec["path"]}",', f'{indent}tr_live="{tr_live}",']
+    if tr_paper:
+        lines.append(f'{indent}tr_paper="{tr_paper}",')
+    if spec["method"] == "POST":
+        lines.append(f'{indent}method="POST",')
+    if spec.get("page_size"):
+        lines.append(f"{indent}page_size={spec['page_size']},")
+    return lines
+
+
+def _render_endpoints(spec: dict, const: str) -> list[str]:
+    """TR ID 분기를 `KisEndpoint` 하나 또는 `dict[key, KisEndpoint]` 로.
+
+    KIS 는 같은 기능이라도 **실전/모의**와 **업무 구분**(주문 종류, 거래소,
+    기간 등) 두 축으로 TR ID 를 가릅니다. `client/endpoint.py` 가 정한 방식이
+    이것입니다 — 실전/모의 축은 `KisEndpoint` 가 `tr_live`/`tr_paper` 로
+    흡수하고, **나머지 축만 dict 로 남깁니다.**
+
+    실측: TR ID 가 2개 이상인 23개 중 11개는 실전/모의 축만이라 상수 하나로
+    끝나고, 12개는 업무 축이 있어 dict 가 필요합니다.
+    """
+    branches = spec.get("tr_branches") or [{"tr_id": t, "conditions": {}} for t in spec["tr_ids"]]
+    if not branches:
+        return []
+
+    # 업무 축 키로 묶습니다. 실전/모의 축은 KisEndpoint 안으로 들어갑니다.
+    groups: dict[tuple, dict[str, str]] = {}
+    for b in branches:
+        conditions = dict(b["conditions"])
+        domain = conditions.pop(DOMAIN_AXIS, None)
+        key = tuple(sorted((k, v) for k, v in conditions.items()))
+        slot = DOMAIN_VALUES.get(domain or "", "live")
+        groups.setdefault(key, {}).setdefault(slot, b["tr_id"])
+
+    out: list[str] = []
+
+    if len(groups) == 1:
+        ((key, trs),) = groups.items()
+        live = trs.get("live") or next(iter(trs.values()))
+        out.append(f"{const} = KisEndpoint(")
+        out.extend(_endpoint_args(spec, live, trs.get("paper"), "    "))
+        out.append(")")
+        out.append("")
+        if key:
+            out.append(f"# 조건 {dict(key)} 에서만 유효합니다 — 원본이 그 분기에서만 이 TR 을 씁니다.")
+            out.append("")
+        return out
+
+    axes = sorted({k for key in groups for k, _ in key})
+    out.append(f"#: {' × '.join(axes)} -> 엔드포인트.")
+    out.append("#: 실전/모의 축은 KisEndpoint 가 tr_live/tr_paper 로 흡수합니다.")
+    out.append(f"{const}_ENDPOINTS: dict[str, KisEndpoint] = {{")
+    for key, trs in sorted(groups.items(), key=lambda kv: str(kv[0])):
+        values = [v for _, v in key]
+        label = repr(values[0]) if len(values) == 1 else repr(tuple(values))
+        if any(v is None for v in values):
+            out.append("    # ⚠️ 키에 None 이 있습니다 — 원본의 else 가지라 조건을 특정할 수 없습니다.")
+        live = trs.get("live") or next(iter(trs.values()))
+        out.append(f"    {label}: KisEndpoint(")
+        out.extend(_endpoint_args(spec, live, trs.get("paper"), "        "))
+        out.append("    ),")
+    out.append("}")
+    out.append("")
+    return out
+
+
 def render(spec: dict, as_list: bool | None = None) -> str:
     """스펙 하나를 vmkis 스타일 모듈로 렌더링합니다.
 
@@ -121,25 +188,7 @@ def render(spec: dict, as_list: bool | None = None) -> str:
     out.append("")
 
     # ── 엔드포인트 상수 ──────────────────────────────────────────────────────
-    tr_ids = spec["tr_ids"]
-    out.append(f"{const} = KisEndpoint(")
-    out.append(f'    path="{spec["path"]}",')
-    out.append(f'    tr_live="{tr_ids[0]}",')
-    if len(tr_ids) > 1:
-        # 모의 TR ID 는 실전 TR ID 의 첫 글자를 V 로 바꾼 것이 관례입니다.
-        paper = [t for t in tr_ids[1:] if t.startswith("V")]
-        if paper:
-            out.append(f'    tr_paper="{paper[0]}",')
-        rest = [t for t in tr_ids[1:] if t not in paper]
-        if rest:
-            out.append(f"    # 분기 TR ID 가 더 있습니다: {', '.join(rest)}")
-            out.append("    # 어떤 조건에서 갈리는지는 사람이 정해야 합니다.")
-    if spec["method"] == "POST":
-        out.append('    method="POST",')
-    if spec.get("page_size"):
-        out.append(f"    page_size={spec['page_size']},  # ctx_area_[fn]k{spec['page_size']}")
-    out.append(")")
-    out.append("")
+    out.extend(_render_endpoints(spec, const))
     if spec["method"] == "POST":
         out.append("# ⚠️ 주문 계열입니다. 오생성 시 금전 사고로 이어지므로 수동 리뷰 없이")
         out.append("#    패키지에 넣지 마세요. (#21 의 '주의' 항목)")
