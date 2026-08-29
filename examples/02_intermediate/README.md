@@ -6,14 +6,14 @@
 
 ## 프로파일 사용
 
-예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `VMKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
+설정 파일에 계좌가 둘 이상이면 환경변수 `VMKIS_ACCOUNT` 를 설정하거나 각 스크립트에 `--account <이름>` 을 주세요. 생략하면 설정의 `default_account` 를 씁니다. 이름은 `configs/account_profiles.yaml` 의 `accounts:` 아래 키입니다.
 
 예:
 
 ```bash
-VMKIS_PROFILE=real python examples/02_intermediate/01_multiple_symbols.py
+VMKIS_ACCOUNT=acc_live1 python examples/02_intermediate/01_multiple_symbols.py
 # 또는
-python examples/02_intermediate/01_multiple_symbols.py --profile virtual
+python examples/02_intermediate/01_multiple_symbols.py --account acc_paper1
 ```
 
 ### 01_multiple_symbols.py - 여러 종목 동시 조회 및 분석
@@ -91,7 +91,7 @@ MAX_DURATION = 300          # 최대 모니터링 시간 (초)
 ⚠️ **주의**:
 
 - 실계좌에서 실행하지 마세요 (실제 주문 발생!)
-- 반드시 모의투자 모드(`virtual=true`)에서 먼저 테스트하세요
+- 반드시 모의투자 계좌(앱의 `mode: "paper"`)로 먼저 테스트하세요
 
 ---
 
@@ -258,7 +258,7 @@ except Exception as e:
 
 ### 1. 실계좌 주문 안전
 
-- 모의투자(`virtual=true`)에서 먼저 테스트하세요
+- 모의투자 계좌(앱의 `mode: "paper"`)로 먼저 테스트하세요
 - 실계좌에서는 `ALLOW_LIVE_TRADES=1` 필수
 - 소액으로 테스트 후 본격 사용
 

@@ -26,7 +26,7 @@ from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
 
-def monitor_and_trade(config_path: str | None = None, profile: str | None = None) -> None:
+def monitor_and_trade(config_path: str | None = None, account: str | None = None) -> None:
     """목표가 도달 시 자동 거래를 수행합니다."""
 
     # 설정
@@ -35,7 +35,7 @@ def monitor_and_trade(config_path: str | None = None, profile: str | None = None
         print(f"❌ {config_path}를 찾을 수 없습니다.")
         return
 
-    kis = create_client(config_path, profile=profile)
+    kis = create_client(config_path, account=account)
     simple = SimpleKIS(kis)
 
     # 거래 설정
@@ -144,11 +144,11 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (paper|live)")
+    parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
     try:
-        monitor_and_trade(config_path=args.config, profile=args.profile)
+        monitor_and_trade(config_path=args.config, account=args.account)
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback

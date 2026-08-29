@@ -222,7 +222,7 @@ class ResilientTradingClient:
             time.sleep(check_interval)
 
 
-def main(config_path: str | None = None, profile: str | None = None) -> None:
+def main(config_path: str | None = None, account: str | None = None) -> None:
     """메인 함수"""
 
     config_path = config_path or os.path.join(os.getcwd(), "config.yaml")
@@ -230,7 +230,7 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
         logger.error(f"{config_path}를 찾을 수 없습니다.")
         return
 
-    kis = create_client(config_path, profile=profile)
+    kis = create_client(config_path, account=account)
     simple = SimpleKIS(kis)
 
     client = ResilientTradingClient(simple)
@@ -297,10 +297,10 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (paper|live)")
+    parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
     try:
-        main(config_path=args.config, profile=args.profile)
+        main(config_path=args.config, account=args.account)
     except Exception as e:
         logger.exception(f"❌ 치명적 오류: {e}")

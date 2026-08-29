@@ -6,14 +6,14 @@
 
 ## 프로파일 사용
 
-예제는 멀티프로파일 `config.yaml`을 지원합니다. 멀티프로파일을 사용할 경우 환경변수 `VMKIS_PROFILE`을 설정하거나 각 스크립트에 `--profile <name>` 인자를 전달할 수 있습니다.
+설정 파일에 계좌가 둘 이상이면 환경변수 `VMKIS_ACCOUNT` 를 설정하거나 각 스크립트에 `--account <이름>` 을 주세요. 생략하면 설정의 `default_account` 를 씁니다. 이름은 `configs/account_profiles.yaml` 의 `accounts:` 아래 키입니다.
 
 예:
 
 ```bash
-VMKIS_PROFILE=real python examples/03_advanced/01_scope_api_trading.py
+VMKIS_ACCOUNT=acc_live1 python examples/03_advanced/01_scope_api_trading.py
 # 또는
-python examples/03_advanced/01_scope_api_trading.py --profile virtual
+python examples/03_advanced/01_scope_api_trading.py --account acc_paper1
 ```
 
 ### 01_scope_api_trading.py - Scope API를 사용한 심화 거래
