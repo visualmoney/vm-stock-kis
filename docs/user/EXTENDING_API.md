@@ -31,7 +31,7 @@ res = kis.fetch(
     "/uapi/overseas-price/v1/quotations/price",
     api="HHDFS00000300",                              # TR ID → headers["tr_id"]
     params={"AUTH": "", "EXCD": "NAS", "SYMB": "AAPL"},
-    domain="real",                                    # 시세 TR은 모의 서버에 없음
+    domain="live",                                    # 시세 TR은 모의 서버에 없음
 )
 
 print(res.rt_cd, res.msg1)   # ⚠️ 자동 예외 없음 — 직접 확인해야 합니다
@@ -100,7 +100,7 @@ def foreign_price(kis: VmKis, exchange: str, symbol: str) -> ForeignPrice:
         api="HHDFS00000300",
         params={"AUTH": "", "EXCD": exchange, "SYMB": symbol},
         response_type=ForeignPrice,
-        domain="real",
+        domain="live",
     )
 
 
@@ -241,8 +241,8 @@ KisStock.my_feature = my_feature
 
 | # | 함정 | 대응 |
 |---|---|---|
-| 1 | **도메인 라우팅 기본값** | `domain=None` 이면 `kis.virtual` 을 따라갑니다. **시세 TR은 모의 서버에 없으므로** `domain="real"` 을 명시하세요. 빠뜨리면 모의 계정에서만 터집니다 |
-| 2 | **모의 미지원 TR** | 기간손익 등 일부는 모의 변형이 없습니다. 반대로 잔고·주문류는 `"VT..." if virtual else "TT..."` 분기가 필요합니다 |
+| 1 | **도메인 라우팅 기본값** | `domain=None` 이면 `kis.paper` 를 따라갑니다. **시세 TR은 모의 서버에 없으므로** `domain="live"` 를 명시하세요. 빠뜨리면 모의 계정에서만 터집니다 |
+| 2 | **모의 미지원 TR** | 기간손익 등 일부는 모의 변형이 없습니다. 반대로 잔고·주문류는 `"VT..." if paper else "TT..."` 분기가 필요합니다 |
 | 3 | **빈 값** | KIS는 값이 없으면 `""` 를 보냅니다. `KisInt`/`KisDecimal`/`KisDate` 는 이때 예외를 냅니다. 어노테이션을 `\| None` 로 두면 `None` 이 됩니다 |
 | 4 | **필드 자체 누락** | `KeyError`. `KisString["field", None]` 또는 `__ignore_missing__ = True` 로 대응합니다. 실제로 일부 종목에서 종목명 필드가 빠져 옵니다 |
 | 5 | **`KisDynamicDict` 는 `rt_cd` 를 검사하지 않음** | Level 0에서 업무 오류가 조용히 통과합니다 |

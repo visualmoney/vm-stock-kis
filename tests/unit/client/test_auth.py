@@ -12,13 +12,13 @@ def make_key(length: int) -> str:
     return "K" * length
 
 
-def make_auth(account: str = "00000000-01", virtual: bool = False) -> KisAuth:
+def make_auth(account: str = "00000000-01", paper: bool = False) -> KisAuth:
     return KisAuth(
         id="me",
         appkey=make_key(APPKEY_LENGTH),
         secretkey=make_key(SECRETKEY_LENGTH),
         account=account,
-        virtual=virtual,
+        paper=paper,
     )
 
 
@@ -36,7 +36,7 @@ def test_key_and_account_number_properties_return_expected_types():
 
 
 def test_save_writes_json_and_load_returns_equal_object(tmp_path):
-    auth = make_auth(virtual=True)
+    auth = make_auth(paper=True)
     p = tmp_path / "auth.json"
 
     auth.save(p)
@@ -49,7 +49,7 @@ def test_save_writes_json_and_load_returns_equal_object(tmp_path):
     assert d["appkey"] == auth.appkey
     assert d["secretkey"] == auth.secretkey
     assert d["account"] == auth.account
-    assert d["virtual"] == auth.virtual
+    assert d["paper"] == auth.paper
 
     loaded = KisAuth.load(p)
     assert loaded == auth
@@ -79,8 +79,8 @@ def test_load_with_incorrect_structure_raises_value_error(tmp_path):
 
 
 def test_repr_includes_account_and_virtual():
-    auth = make_auth(account="99999999-99", virtual=True)
+    auth = make_auth(account="99999999-99", paper=True)
     r = repr(auth)
     assert "KisAuth" in r
     assert "99999999-99" in r
-    assert "virtual=True" in r
+    assert "paper=True" in r

@@ -44,4 +44,4 @@ def test_resolve_domestic_order_condition_defaults():
 def test_order_condition_invalid_raises():
     # pass an invalid condition to trigger the ValueError path
     with pytest.raises(ValueError):
-        order_mod.order_condition(virtual=False, market="KRX", order="buy", price=None, condition="__invalid__")
+        order_mod.order_condition(paper=False, market="KRX", order="buy", price=None, condition="__invalid__")

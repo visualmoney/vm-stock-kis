@@ -72,7 +72,7 @@ class TestCreateClient:
 
         (args, _) = dummy_vmkis[0]
         assert args[0] is None
-        assert args[1].virtual is True
+        assert args[1].paper is True
         assert args[1].account == "00000000-01"
 
     def test_live_account_passed_as_positional_auth(self, tmp_path, dummy_vmkis):
@@ -82,7 +82,7 @@ class TestCreateClient:
         helpers.create_client(path)
 
         (args, _) = dummy_vmkis[0]
-        assert args[0].virtual is False
+        assert args[0].paper is False
 
     def test_account_argument_selects(self, tmp_path, dummy_vmkis):
         path = write_config(
@@ -122,7 +122,7 @@ class TestCreateClient:
         assert kwargs["user_agent"] == "Mozilla/5.0"
 
     def test_endpoints_are_translated_to_domain_vocabulary(self, tmp_path, dummy_vmkis):
-        """설정은 live/paper, `VmKis` 는 real/virtual 로 말합니다.
+        """설정은 live/paper, `VmKis` 는 live/paper 로 말합니다.
 
         #70 이 코드 쪽을 개명하면 이 번역은 사라집니다. 그때 이 테스트도 함께
         지워야 하므로 이유를 남겨 둡니다.
@@ -132,8 +132,8 @@ class TestCreateClient:
         helpers.create_client(path)
 
         (_, kwargs) = dummy_vmkis[0]
-        assert set(kwargs["endpoints"]) == {"virtual"}
-        assert kwargs["endpoints"]["virtual"].ws_url == "ws://x:1"
+        assert set(kwargs["endpoints"]) == {"paper"}
+        assert kwargs["endpoints"]["paper"].ws_url == "ws://x:1"
 
     def test_invalid_config_fails_before_client_is_made(self, tmp_path, dummy_vmkis):
         """검증 실패면 클라이언트가 만들어지면 안 됩니다."""

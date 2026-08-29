@@ -40,14 +40,14 @@ __all__ = [
 
 _DOMESTIC_ORDERABLE_AMOUNT = KisEndpoint(
     path="/uapi/domestic-stock/v1/trading/inquire-psbl-order",
-    tr_real="TTTC8908R",
-    tr_virtual="VTTC8908R",
+    tr_live="TTTC8908R",
+    tr_paper="VTTC8908R",
 )
 
 _FOREIGN_ORDERABLE_AMOUNT = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-psamount",
-    tr_real="TTTS3007R",
-    tr_virtual="VTTS3007R",
+    tr_live="TTTS3007R",
+    tr_paper="VTTS3007R",
 )
 
 
@@ -325,7 +325,7 @@ class KisForeignOrderableAmount(KisAPIResponse, KisOrderableAmountBase):
     def condition_kor(self) -> str:
         """주문조건 (한글)"""
         return order_condition(
-            virtual=self.kis.virtual,
+            paper=self.kis.paper,
             market=self.market,
             order="buy",
             price=self.price,
@@ -383,7 +383,7 @@ def _domestic_orderable_amount(
     price = None if price is None else ensure_price(price, 0)
 
     condition_code, price_setting, _ = order_condition(
-        virtual=self.virtual,
+        paper=self.paper,
         market="KRX",
         order="buy",
         price=price,
@@ -535,7 +535,7 @@ def foreign_orderable_amount(
     # 주문조건보장
     if condition != "extended":
         order_condition(
-            virtual=self.virtual,
+            paper=self.paper,
             market=market,
             order="buy",
             price=price,

@@ -21,7 +21,7 @@ def mock_auth():
         account="50000000-01",
         appkey="P" + "A" * 35,
         secretkey="S" * 180,
-        virtual=True,
+        paper=True,
     )
 
 
@@ -33,7 +33,7 @@ def mock_real_auth():
         account="50000000-01",
         appkey="P" + "A" * 35,
         secretkey="S" * 180,
-        virtual=False,
+        paper=False,
     )
 
 

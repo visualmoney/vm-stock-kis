@@ -17,13 +17,13 @@ def _fake_kis():
     `VmKis.call` 을 바인딩하면 `fetch(api=...)` 단언이 그대로 살고 스펙
     해석(TR ID·도메인)까지 함께 검증된다.
 
-    `virtual` 을 명시적으로 `False` 로 둔다. 목의 기본값은 Mock 이라
+    `paper` 을 명시적으로 `False` 로 둔다. 목의 기본값은 Mock 이라
     **truthy** 이므로 두면 모의 계좌로 해석된다.
     """
     from vmkis.kis import VmKis
 
     kis = Mock()
-    kis.virtual = False
+    kis.paper = False
     kis.call = lambda *args, **kwargs: VmKis.call(kis, *args, **kwargs)
     return kis
 
@@ -713,7 +713,7 @@ class TestDomesticDayChartLoopTermination:
 
         assert result is not None
 
-    # other runtime behaviors require a real `fetch` method on the client; skip here
+    # other runtime behaviors require a live `fetch` method on the client; skip here
 
 
 # ===== 추가 테스트: daily_chart.py 커버리지 향상 (80% 이상 목표) =====

@@ -182,21 +182,26 @@ kis = VmKis(
 ```python
 from vmkis import VmKis
 
-# 실전 + 모의투자
+# 실전 인증과 모의 인증을 함께 넘기면 **모의 클라이언트**가 됩니다.
 kis = VmKis(
-    "real_secret.json",      # 실전 계정
-    "virtual_secret.json",   # 모의 계정
-    keep_token=True
+    "live_secret.json",     # 실전 계정 (첫 번째 위치 인자)
+    "paper_secret.json",    # 모의 계정 (두 번째 위치 인자)
+    keep_token=True,
 )
 
-# 실전 거래
-real_account = kis.account()
-real_balance = real_account.balance()
+assert kis.paper is True    # 읽기 전용 프로퍼티입니다
 
-# 모의투자 실행
-kis.virtual = True  # 또는 kis.virtual_account()
-virtual_account = kis.account()
-virtual_balance = virtual_account.balance()
+account = kis.account()
+balance = account.balance()
+```
+
+`kis.paper` 는 **대입할 수 없습니다.** 하나의 클라이언트를 실전과 모의 사이에서
+전환하는 방법은 없습니다 — 실전으로 호출하려면 실전 인증만 넘긴 별도의
+클라이언트를 만드세요.
+
+```python
+live_kis = VmKis("live_secret.json", keep_token=True)
+assert live_kis.paper is False
 ```
 
 ### 4. 토큰 관리

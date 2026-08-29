@@ -517,13 +517,13 @@ def on_execution(
         where (KisEventFilter[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]] | None, optional): 이벤트 필터. Defaults to None.
         once (bool, optional): 한번만 실행 여부. Defaults to False.
     """
-    appkey = self.kis.virtual_appkey if self.kis.virtual else self.kis.appkey
+    appkey = self.kis.paper_appkey if self.kis.paper else self.kis.appkey
 
     if appkey is None:
         raise ValueError("모의도메인 appkey가 없습니다.")
 
     domestic = self.on(
-        id="H0STCNI9" if self.kis.virtual else "H0STCNI0",
+        id="H0STCNI9" if self.kis.paper else "H0STCNI0",
         key=appkey.id,
         callback=callback,
         where=where,
@@ -532,7 +532,7 @@ def on_execution(
     )
 
     foreign = self.on(
-        id="H0GSCNI9" if self.kis.virtual else "H0GSCNI0",
+        id="H0GSCNI9" if self.kis.paper else "H0GSCNI0",
         key=appkey.id,
         callback=callback,
         where=where,

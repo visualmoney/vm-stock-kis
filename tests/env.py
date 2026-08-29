@@ -22,25 +22,25 @@ dotenv.load_dotenv()
 #: 도메인별로 반드시 있어야 하는 환경변수.
 #: 저장소 루트에 `.env` 를 두면 python-dotenv 가 자동으로 읽습니다.
 REQUIRED_ENV: dict[str, tuple[str, ...]] = {
-    "real": (
+    "live": (
         "VMKIS_HTS_ID",
         "VMKIS_ACCOUNT_NUMBER",
         "VMKIS_APPKEY",
         "VMKIS_SECRETKEY",
     ),
-    "virtual": (
+    "paper": (
         "VMKIS_HTS_ID",
         "VMKIS_APPKEY",
         "VMKIS_SECRETKEY",
-        "VMKIS_VIRTUAL_ACCOUNT_NUMBER",
-        "VMKIS_VIRTUAL_HTS_ID",
-        "VMKIS_VIRTUAL_APPKEY",
-        "VMKIS_VIRTUAL_SECRETKEY",
+        "VMKIS_PAPER_ACCOUNT_NUMBER",
+        "VMKIS_PAPER_HTS_ID",
+        "VMKIS_PAPER_APPKEY",
+        "VMKIS_PAPER_SECRETKEY",
     ),
 }
 
 
-def require_credentials(domain: Literal["real", "virtual"] = "real") -> None:
+def require_credentials(domain: Literal["live", "paper"] = "live") -> None:
     """자격증명이 없으면 테스트를 **건너뜁니다**.
 
     이 함수가 없으면 자격증명 없는 환경에서 `VmKis` 생성자가 `ValueError` 를
@@ -64,7 +64,7 @@ def require_credentials(domain: Literal["real", "virtual"] = "real") -> None:
 
 
 def load_vmkis(
-    domain: Literal["real", "virtual"] = "real",
+    domain: Literal["live", "paper"] = "live",
     use_websocket: bool = True,
 ) -> VmKis:
     # 자격증명이 없으면 여기서 skip 으로 빠집니다. 호출자마다 검사할 필요가 없습니다.
@@ -72,7 +72,7 @@ def load_vmkis(
 
     vmkis.logging.setLevel("DEBUG")
 
-    if domain == "real":
+    if domain == "live":
         kis = VmKis(
             id=os.getenv("VMKIS_HTS_ID"),
             account=os.getenv("VMKIS_ACCOUNT_NUMBER"),
@@ -84,12 +84,12 @@ def load_vmkis(
     else:
         kis = VmKis(
             id=os.getenv("VMKIS_HTS_ID"),
-            account=os.getenv("VMKIS_VIRTUAL_ACCOUNT_NUMBER"),
+            account=os.getenv("VMKIS_PAPER_ACCOUNT_NUMBER"),
             appkey=os.getenv("VMKIS_APPKEY"),
             secretkey=os.getenv("VMKIS_SECRETKEY"),
-            virtual_id=os.getenv("VMKIS_VIRTUAL_HTS_ID"),
-            virtual_appkey=os.getenv("VMKIS_VIRTUAL_APPKEY"),
-            virtual_secretkey=os.getenv("VMKIS_VIRTUAL_SECRETKEY"),
+            paper_id=os.getenv("VMKIS_PAPER_HTS_ID"),
+            paper_appkey=os.getenv("VMKIS_PAPER_APPKEY"),
+            paper_secretkey=os.getenv("VMKIS_PAPER_SECRETKEY"),
             use_websocket=use_websocket,
             keep_token=os.getenv("VMKIS_KEEP_TOKEN", "false").lower() == "true",
         )

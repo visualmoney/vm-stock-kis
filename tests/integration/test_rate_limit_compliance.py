@@ -11,7 +11,7 @@ import pytest
 import requests_mock
 
 from vmkis import KisAuth, VmKis
-from vmkis.__env__ import VIRTUAL_API_REQUEST_PER_SECOND
+from vmkis.__env__ import PAPER_API_REQUEST_PER_SECOND
 from vmkis.utils.rate_limit import RateLimiter
 from vmkis.utils.timezone import TIMEZONE
 
@@ -24,7 +24,7 @@ def mock_auth():
         account="50000000-01",
         appkey="P" + "A" * 35,
         secretkey="S" * 180,
-        virtual=False,
+        paper=False,
     )
 
 
@@ -36,7 +36,7 @@ def mock_virtual_auth():
         account="50000000-01",
         appkey="P" + "A" * 35,
         secretkey="S" * 180,
-        virtual=True,
+        paper=True,
     )
 
 
@@ -76,10 +76,10 @@ class TestRateLimitCompliance:
         """전체 테스트를 실제로 돌리지 않고 기본 구조만 확인."""
         # 실제로 호출하지 않으므로 기본적인 VmKis 초기화만 테스트
         with requests_mock.Mocker() as m:
-            # 토큰 발급 - real 도메인
+            # 토큰 발급 - live 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
 
-            # 토큰 발급 - virtual 도메인
+            # 토큰 발급 - paper 도메인
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
             # API 응답
@@ -89,32 +89,32 @@ class TestRateLimitCompliance:
 
             # Rate limiter가 설정되어 있는지 확인
             assert kis._rate_limiters is not None
-            assert "virtual" in kis._rate_limiters
-            assert kis._rate_limiters["virtual"].rate == 2  # 모의투자: 초당 2개
+            assert "paper" in kis._rate_limiters
+            assert kis._rate_limiters["paper"].rate == 2  # 모의투자: 초당 2개
 
     def test_rate_limit_real_vs_virtual(self):
         """실전과 모의투자 Rate Limit 차이."""
         # 실전: 초당 19개 (rate=19, period=1.0)
-        real_limiter = RateLimiter(rate=19, period=1.0)
+        live_limiter = RateLimiter(rate=19, period=1.0)
 
         # 모의: 초당 1개 (rate=1, period=1.0)
-        virtual_limiter = RateLimiter(rate=1, period=1.0)
+        paper_limiter = RateLimiter(rate=1, period=1.0)
 
         # 실전은 빠름
         start = time.time()
         for _ in range(19):
-            real_limiter.acquire()
-        real_elapsed = time.time() - start
+            live_limiter.acquire()
+        live_elapsed = time.time() - start
 
-        assert real_elapsed < 1.0
+        assert live_elapsed < 1.0
 
         # 모의는 느림
         start = time.time()
         for _ in range(5):
-            virtual_limiter.acquire()
-        virtual_elapsed = time.time() - start
+            paper_limiter.acquire()
+        paper_elapsed = time.time() - start
 
-        assert virtual_elapsed >= 4.0
+        assert paper_elapsed >= 4.0
 
     def test_concurrent_requests_respect_limit(self, mock_auth, mock_virtual_auth, mock_token_response):
         """동시 요청도 Rate Limit 준수."""
@@ -136,7 +136,7 @@ class TestRateLimitCompliance:
                     kis.request(
                         f"/test/api/{index}",
                         method="GET",
-                        domain="virtual",
+                        domain="paper",
                     )
                 except Exception as error:  # noqa: BLE001 - 스레드 밖으로 전달해 단언한다
                     errors.append(error)
@@ -166,7 +166,7 @@ class TestRateLimitCompliance:
 
             # RateLimiter(rate, period=1)는 rate회까지 즉시 통과시키고 그 다음 획득마다
             # 한 주기를 대기한다. 즉 N회 획득 시 대기 횟수는 (N - 1) // rate 이다.
-            expected_waits = (acquisitions - 1) // VIRTUAL_API_REQUEST_PER_SECOND
+            expected_waits = (acquisitions - 1) // PAPER_API_REQUEST_PER_SECOND
             minimum_elapsed = expected_waits * 1.0
 
             # 하한만 엄격하게 본다. 유량 제한이 없으면 이 구간은 사실상 0초로 끝나므로

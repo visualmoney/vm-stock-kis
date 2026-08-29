@@ -32,10 +32,10 @@ auth = KisAuth(
     appkey="YOUR_APPKEY",
     secretkey="YOUR_SECRET",
     account="00000000-01",
-    virtual=True  # 모의투자 모드
+    paper=True  # 모의투자 모드
 )
 
-# VmKis 생성 (virtual_auth 사용)
+# VmKis 생성 (paper_auth 사용)
 kis = VmKis(None, auth)
 simple = SimpleKIS(kis)
 ```
@@ -186,7 +186,7 @@ python your_script.py
 from vmkis.helpers import create_client
 from vmkis.simple import SimpleKIS
 
-# 자동으로 VmKis 생성 (virtual 설정 포함)
+# 자동으로 VmKis 생성 (paper 설정 포함)
 kis = create_client("config.yaml", keep_token=True)
 simple = SimpleKIS(kis)
 ```
@@ -302,14 +302,14 @@ else:
 ### 6.1 실계좌 주문
 
 ```python
-# virtual=True (모의투자)
-auth = KisAuth(..., virtual=True)
+# paper=True (모의투자)
+auth = KisAuth(..., paper=True)
 kis = VmKis(None, auth)
 simple = SimpleKIS(kis)
 order = simple.place_order(...)  # 모의투자에서만 실행
 
-# virtual=False (실계좌) - 실제 주문!
-auth = KisAuth(..., virtual=False)
+# paper=False (실계좌) - 실제 주문!
+auth = KisAuth(..., paper=False)
 kis = VmKis(auth)
 simple = SimpleKIS(kis)
 order = simple.place_order(...)  # 💰 실제 주문 발생!
@@ -317,7 +317,7 @@ order = simple.place_order(...)  # 💰 실제 주문 발생!
 
 **테스트 프로세스:**
 
-1. `virtual=True`로 모의투자에서 전부 검증
+1. `paper=True`로 모의투자에서 전부 검증
 2. `ALLOW_LIVE_TRADES=1` 환경변수 설정 필수
 3. 실계좌에서 소액으로 테스트
 4. 정상 작동 확인 후 본격 사용

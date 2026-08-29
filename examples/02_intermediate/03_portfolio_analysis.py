@@ -143,7 +143,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (virtual|real)")
+    parser.add_argument("--profile", help="config profile name (paper|live)")
     args = parser.parse_args()
 
     try:

@@ -71,7 +71,7 @@ def test_websocket_request_build_includes_header_and_body(monkeypatch):
             return {"x": 1}
 
     kis = DummyKis()
-    req = KisWebsocketRequest(kis=kis, type="T1", body=SimpleBody(), domain="real")
+    req = KisWebsocketRequest(kis=kis, type="T1", body=SimpleBody(), domain="live")
     built = req.build()
 
     assert "header" in built

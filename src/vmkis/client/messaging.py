@@ -32,7 +32,7 @@ class KisWebsocketRequest(KisForm, KisObjectBase):
     """요청 타입"""
     body: KisWebsocketForm | None
     """요청 본문"""
-    domain: Literal["real", "virtual"] | None = None
+    domain: Literal["live", "paper"] | None = None
     """요청 도메인"""
 
     def __init__(
@@ -40,7 +40,7 @@ class KisWebsocketRequest(KisForm, KisObjectBase):
         kis: "VmKis",
         type: str,
         body: KisWebsocketForm | None = None,
-        domain: Literal["real", "virtual"] | None = None,
+        domain: Literal["live", "paper"] | None = None,
     ):
         super().__init__()
         self.kis = kis

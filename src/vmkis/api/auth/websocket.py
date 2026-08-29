@@ -19,14 +19,14 @@ class KisWebsocketApprovalKey(KisDynamic):
     """접속 키"""
 
 
-def websocket_approval_key(self: "VmKis", domain: Literal["real", "virtual"] | None = None) -> KisWebsocketApprovalKey:
+def websocket_approval_key(self: "VmKis", domain: Literal["live", "paper"] | None = None) -> KisWebsocketApprovalKey:
     """
     웹소켓 접속 키를 발급합니다.
 
     OAuth인증 -> 실시간 (웹소켓) 접속키 발급[실시간-000]
     (업데이트 날짜: 2024/04/04)
     """
-    appkey = self.appkey if domain == "real" else self.virtual_appkey
+    appkey = self.appkey if domain == "live" else self.paper_appkey
 
     if appkey is None:
         raise ValueError("모의도메인 appkey가 없습니다.")

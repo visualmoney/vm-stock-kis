@@ -18,7 +18,7 @@ def test__domestic_orderable_amount_calls_fetch_and_uses_quote(monkeypatch):
     # fake kis with fetch that returns the provided response_type
     class FakeKis:
         def __init__(self):
-            self.virtual = False
+            self.paper = False
             self.last_fetch = None
 
         # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
@@ -41,7 +41,7 @@ def test__domestic_orderable_amount_calls_fetch_and_uses_quote(monkeypatch):
     # fetch should have been called and returned a KisDomesticOrderableAmount
     assert isinstance(res, oa.KisDomesticOrderableAmount)
     assert kis.last_fetch is not None
-    # api should be TTTC8908R when not virtual
+    # api should be TTTC8908R when not paper
     assert kis.last_fetch["kwargs"]["api"] == "TTTC8908R"
 
 
@@ -70,7 +70,7 @@ def test_foreign_orderable_amount_unit_price_and_order_condition(monkeypatch):
 
     class FakeKis:
         def __init__(self):
-            self.virtual = False
+            self.paper = False
             self.last = None
 
         # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
@@ -90,8 +90,8 @@ def test_foreign_orderable_amount_unit_price_and_order_condition(monkeypatch):
         kis, account="12345678", market="NASDAQ", symbol="XYZ", price=None, condition=None, execution=None
     )
     assert isinstance(res, oa.KisForeignOrderableAmount)
-    assert called.get("virtual") is False
-    # API for non-virtual should be TTTS3007R
+    assert called.get("paper") is False
+    # API for non-paper should be TTTS3007R
     assert kis.last["api"] == "TTTS3007R"
 
 

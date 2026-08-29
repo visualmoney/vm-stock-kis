@@ -15,8 +15,8 @@ from vmkis.client.websocket import (
 
 
 class DummyKis:
-    def __init__(self, virtual=False):
-        self.virtual = virtual
+    def __init__(self, paper=False):
+        self.paper = paper
 
     def ws_url(self, domain):
         """#75 부터 웹소켓 주소를 `VmKis` 가 해석합니다.
@@ -39,9 +39,9 @@ class DummyWS:
         self.closed = True
 
 
-def make_client(monkeypatch, virtual=False):
-    kis = DummyKis(virtual=virtual)
-    c = KisWebsocketClient(kis=kis, virtual=False)
+def make_client(monkeypatch, paper=False):
+    kis = DummyKis(paper=paper)
+    c = KisWebsocketClient(kis=kis, paper=False)
     # prevent threads from being started by connect
     c.thread = None
     # provide a fake websocket approval key function so KisWebsocketRequest.build() works
@@ -151,8 +151,8 @@ def test_handle_event_early_returns(monkeypatch):
 
 
 def test_ensure_primary_client_creates_and_returns_primary(monkeypatch):
-    kis = DummyKis(virtual=True)
-    c = KisWebsocketClient(kis=kis, virtual=False)
+    kis = DummyKis(paper=True)
+    c = KisWebsocketClient(kis=kis, paper=False)
     primary = c._ensure_primary_client()
     assert primary is not c
     assert c._primary_client is primary
@@ -456,9 +456,9 @@ def test_disconnect_handles_no_websocket(monkeypatch):
 
 def test_subscribe_delegates_to_primary_when_requested(monkeypatch):
     """Test subscribe delegates to primary client when primary=True"""
-    c = make_client(monkeypatch, virtual=False)
-    # make kis virtual to trigger primary client creation
-    c.kis.virtual = True
+    c = make_client(monkeypatch, paper=False)
+    # make kis paper to trigger primary client creation
+    c.kis.paper = True
 
     called = []
 
@@ -466,7 +466,7 @@ def test_subscribe_delegates_to_primary_when_requested(monkeypatch):
         called.append((id, key, primary))
 
     # mock _ensure_primary_client to return different client
-    primary = make_client(monkeypatch, virtual=True)
+    primary = make_client(monkeypatch, paper=True)
     monkeypatch.setattr(primary, "subscribe", fake_subscribe)
     monkeypatch.setattr(c, "_ensure_primary_client", lambda: primary)
 
@@ -609,8 +609,8 @@ def test_on_method_with_primary_flag(monkeypatch):
     c._connected_event.set()
 
     # setup primary client
-    c.kis.virtual = True
-    primary = make_client(monkeypatch, virtual=True)
+    c.kis.paper = True
+    primary = make_client(monkeypatch, paper=True)
     primary.websocket = DummyWS()
     primary._connected_event.set()
     monkeypatch.setattr(c, "_ensure_primary_client", lambda: primary)
@@ -801,9 +801,9 @@ def test_handle_event_with_decryption_error(monkeypatch):
 
 
 def test_ensure_primary_client_returns_self_when_not_virtual(monkeypatch):
-    """Test _ensure_primary_client returns self when kis is not virtual"""
+    """Test _ensure_primary_client returns self when kis is not paper"""
     c = make_client(monkeypatch)
-    c.kis.virtual = False
+    c.kis.paper = False
 
     result = c._ensure_primary_client()
     assert result is c
@@ -811,9 +811,9 @@ def test_ensure_primary_client_returns_self_when_not_virtual(monkeypatch):
 
 
 def test_ensure_primary_client_returns_self_when_already_virtual(monkeypatch):
-    """Test _ensure_primary_client returns self when client already virtual"""
-    c = make_client(monkeypatch, virtual=True)
-    c.kis.virtual = False  # kis not virtual, so primary client not needed
+    """Test _ensure_primary_client returns self when client already paper"""
+    c = make_client(monkeypatch, paper=True)
+    c.kis.paper = False  # kis not paper, so primary client not needed
 
     result = c._ensure_primary_client()
     assert result is c

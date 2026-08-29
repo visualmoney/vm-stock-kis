@@ -15,7 +15,7 @@ from vmkis.responses.dynamic import KisObject
 def mock_kis_auth():
     """KisAuth 객체를 모킹합니다."""
     auth = MagicMock(spec=KisAuth)
-    auth.virtual = False
+    auth.paper = False
     auth.id = "test_id"
     auth.key = MagicMock()
     auth.key.id = "test_id"
@@ -29,7 +29,7 @@ def mock_kis_auth():
 def mock_virtual_kis_auth():
     """가상 KisAuth 객체를 모킹합니다."""
     auth = MagicMock(spec=KisAuth)
-    auth.virtual = True
+    auth.paper = True
     auth.id = "v_test_id"
     auth.key = MagicMock()
     auth.key.id = "v_test_id"
@@ -52,7 +52,7 @@ def test_init_with_auth_path(mock_load_auth, mock_kis_auth):
     mock_load_auth.assert_called_once_with("fake/path/auth.json")
     assert kis.appkey == mock_kis_auth.key
     assert str(kis.primary_account) == mock_kis_auth.account_number
-    assert not kis.virtual
+    assert not kis.paper
 
 
 def test_init_with_kwargs():
@@ -67,7 +67,7 @@ def test_init_with_kwargs():
     assert kis.appkey.id == "test_id"
     assert kis.appkey.appkey == "test_appkey_36chars_1234567890_abcde"
     assert str(kis.primary_account) == "12345678-01"
-    assert not kis.virtual
+    assert not kis.paper
 
 
 def test_init_with_virtual_kwargs():
@@ -76,21 +76,21 @@ def test_init_with_virtual_kwargs():
         id="test_id",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_id="v_test_id",
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_id="v_test_id",
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         account="12345678-01",
         use_websocket=False,
     )
-    # The implementation builds the virtual KisKey using the main `id`,
-    # so `virtual_appkey.id` will match the provided `id` argument.
-    assert kis.virtual_appkey is not None
-    assert kis.virtual_appkey.id == "test_id"
-    assert kis.virtual_appkey.appkey == VALID_APPKEY
+    # The implementation builds the paper KisKey using the main `id`,
+    # so `paper_appkey.id` will match the provided `id` argument.
+    assert kis.paper_appkey is not None
+    assert kis.paper_appkey.id == "test_id"
+    assert kis.paper_appkey.appkey == VALID_APPKEY
     assert str(kis.primary_account) == "12345678-01"
-    # Providing `virtual_appkey` sets the `virtual` property in current
-    # implementation because `virtual_appkey` is not None.
-    assert kis.virtual
+    # Providing `paper_appkey` sets the `paper` property in current
+    # implementation because `paper_appkey` is not None.
+    assert kis.paper
 
 
 def test_init_value_errors():
@@ -107,10 +107,10 @@ def test_init_value_errors():
         VmKis(id="test", use_websocket=False)
     with pytest.raises(ValueError, match="secretkey를 입력해야 합니다."):
         VmKis(id="test", appkey="key", use_websocket=False)
-    # Note: the library requires a separate `virtual_auth` object (or
-    # explicit virtual authentication input) to treat the client as a
-    # virtual client. Passing only virtual key strings does not raise
-    # `virtual_id` errors in the current implementation, so we do not
+    # Note: the library requires a separate `paper_auth` object (or
+    # explicit paper authentication input) to treat the client as a
+    # paper client. Passing only paper key strings does not raise
+    # `paper_id` errors in the current implementation, so we do not
     # assert that behavior here.
 
 
@@ -131,7 +131,7 @@ def test_token_property(mock_token_issue, mock_session):
         KisAccessToken,
     )
     assert kis.token.token == "new_token"
-    mock_token_issue.assert_called_once_with(kis, domain="real")
+    mock_token_issue.assert_called_once_with(kis, domain="live")
 
     # 토큰이 유효할 때 재사용
     mock_token_issue.reset_mock()
@@ -159,7 +159,7 @@ def test_token_property(mock_token_issue, mock_session):
     )
 
     assert kis.token.token == "refreshed_token"
-    mock_token_issue.assert_called_once_with(kis, domain="real")
+    mock_token_issue.assert_called_once_with(kis, domain="live")
 
 
 @patch("vmkis.kis.requests.Session")
@@ -388,7 +388,7 @@ def test_save_cached_token(mock_save, mock_mkdir):
 
     with patch("vmkis.kis.VmKis._get_hashed_token_name") as mock_hash_name:
         mock_hash_name.return_value = "hashed_token_name.json"
-        kis._save_cached_token(kis._keep_token, domain="real")
+        kis._save_cached_token(kis._keep_token, domain="live")
 
         mock_save.assert_called_once()
         # `token.save`가 올바른 경로와 함께 호출되었는지 확인
@@ -416,8 +416,8 @@ def test_save_cached_token(mock_save, mock_mkdir):
             id="t",
             appkey=VALID_APPKEY,
             secretkey=VALID_SECRETKEY,
-            virtual_appkey=VALID_APPKEY,
-            virtual_secretkey=VALID_SECRETKEY,
+            paper_appkey=VALID_APPKEY,
+            paper_secretkey=VALID_SECRETKEY,
             use_websocket=False,
         )
 
@@ -431,7 +431,7 @@ def test_save_cached_token(mock_save, mock_mkdir):
             KisAccessToken,
         )
 
-        kis._virtual_token = KisObject.transform_(
+        kis._paper_token = KisObject.transform_(
             {
                 "access_token": "vtoken",
                 "token_type": "Bearer",
@@ -443,17 +443,17 @@ def test_save_cached_token(mock_save, mock_mkdir):
 
         kis.discard()
 
-        # two calls (real + virtual)
+        # two calls (live + paper)
         assert mock_revoke.call_count == 2
         # first arg should be the VmKis instance, second is token string
         assert mock_revoke.call_args_list[0][0][0] is kis
         assert mock_revoke.call_args_list[0][0][1] == "realtok"
 
     def test_get_hashed_token_name_missing_virtual_appkey():
-        """_get_hashed_token_name raises when virtual appkey missing for virtual domain"""
+        """_get_hashed_token_name raises when paper appkey missing for paper domain"""
         kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
         with pytest.raises(ValueError, match="모의도메인 AppKey가 없습니다."):
-            kis._get_hashed_token_name("virtual")
+            kis._get_hashed_token_name("paper")
 
     def test_request_get_validation_errors():
         """Request should validate GET body and appkey_location rules"""
@@ -481,62 +481,62 @@ def test_keep_token_property():
 
 
 def test_init_with_virtual_auth_validation():
-    """virtual_auth가 실전도메인일 때 에러 발생"""
-    real_auth = MagicMock(spec=KisAuth)
-    real_auth.virtual = False
-    real_auth.id = "test"
-    real_auth.key = MagicMock()
-    real_auth.key.appkey = VALID_APPKEY
-    real_auth.account_number = "12345678-01"
+    """paper_auth가 실전도메인일 때 에러 발생"""
+    live_auth = MagicMock(spec=KisAuth)
+    live_auth.paper = False
+    live_auth.id = "test"
+    live_auth.key = MagicMock()
+    live_auth.key.appkey = VALID_APPKEY
+    live_auth.account_number = "12345678-01"
 
-    virtual_auth = MagicMock(spec=KisAuth)
-    virtual_auth.virtual = False  # Should be True
-    virtual_auth.id = "test"
-    virtual_auth.key = MagicMock()
-    virtual_auth.key.appkey = VALID_APPKEY
+    paper_auth = MagicMock(spec=KisAuth)
+    paper_auth.paper = False  # Should be True
+    paper_auth.id = "test"
+    paper_auth.key = MagicMock()
+    paper_auth.key.appkey = VALID_APPKEY
 
-    with pytest.raises(ValueError, match="virtual_auth에는 모의도메인 인증 정보를 입력해야 합니다."):
-        VmKis(real_auth, virtual_auth, use_websocket=False)
+    with pytest.raises(ValueError, match="paper_auth에는 모의도메인 인증 정보를 입력해야 합니다."):
+        VmKis(live_auth, paper_auth, use_websocket=False)
 
 
 def test_init_with_auth_virtual_error():
     """auth가 모의도메인일 때 에러 발생"""
-    virtual_auth = MagicMock(spec=KisAuth)
-    virtual_auth.virtual = True
-    virtual_auth.id = "test"
-    virtual_auth.key = MagicMock()
-    virtual_auth.account_number = "12345678-01"
+    paper_auth = MagicMock(spec=KisAuth)
+    paper_auth.paper = True
+    paper_auth.id = "test"
+    paper_auth.key = MagicMock()
+    paper_auth.account_number = "12345678-01"
 
     with pytest.raises(ValueError, match="auth에는 실전도메인 인증 정보를 입력해야 합니다."):
-        VmKis(virtual_auth, use_websocket=False)
+        VmKis(paper_auth, use_websocket=False)
 
 
 def test_init_with_both_auth_objects():
     """실전도메인과 모의도메인 KisAuth 객체로 초기화"""
-    real_auth = MagicMock(spec=KisAuth)
-    real_auth.virtual = False
-    real_auth.id = "real_id"
-    real_auth.key = MagicMock()
-    real_auth.key.id = "real_id"
-    real_auth.key.appkey = VALID_APPKEY
-    real_auth.key.secretkey = VALID_SECRETKEY
-    real_auth.account_number = "12345678-01"
+    live_auth = MagicMock(spec=KisAuth)
+    live_auth.paper = False
+    live_auth.id = "real_id"
+    live_auth.key = MagicMock()
+    live_auth.key.id = "real_id"
+    live_auth.key.appkey = VALID_APPKEY
+    live_auth.key.secretkey = VALID_SECRETKEY
+    live_auth.account_number = "12345678-01"
 
-    virtual_auth = MagicMock(spec=KisAuth)
-    virtual_auth.virtual = True
-    virtual_auth.id = "virtual_id"
-    virtual_auth.key = MagicMock()
-    virtual_auth.key.id = "virtual_id"
-    virtual_auth.key.appkey = VALID_APPKEY
-    virtual_auth.key.secretkey = VALID_SECRETKEY
-    virtual_auth.account_number = "12345678-01"
+    paper_auth = MagicMock(spec=KisAuth)
+    paper_auth.paper = True
+    paper_auth.id = "paper_id"
+    paper_auth.key = MagicMock()
+    paper_auth.key.id = "paper_id"
+    paper_auth.key.appkey = VALID_APPKEY
+    paper_auth.key.secretkey = VALID_SECRETKEY
+    paper_auth.account_number = "12345678-01"
 
-    kis = VmKis(real_auth, virtual_auth, use_websocket=False)
+    kis = VmKis(live_auth, paper_auth, use_websocket=False)
 
     assert kis.appkey.id == "real_id"
-    assert kis.virtual_appkey.id == "virtual_id"
+    assert kis.paper_appkey.id == "paper_id"
     assert str(kis.primary_account) == "12345678-01"
-    assert kis.virtual
+    assert kis.paper
 
 
 @patch("vmkis.kis.requests.Session")
@@ -590,11 +590,11 @@ def test_request_with_appkey_in_body(mock_session):
 
 @patch("vmkis.kis.requests.Session")
 def test_request_virtual_domain_without_virtual_appkey(mock_session):
-    """virtual 도메인 요청 시 virtual_appkey가 없으면 에러"""
+    """paper 도메인 요청 시 paper_appkey가 없으면 에러"""
     kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     with pytest.raises(ValueError, match="모의도메인 AppKey가 없습니다."):
-        kis.request("/test", domain="virtual")
+        kis.request("/test", domain="paper")
 
 
 @patch("vmkis.kis.requests.Session")
@@ -689,20 +689,20 @@ def test_save_cached_token_with_force(mock_save, mock_mkdir):
 @patch("vmkis.kis.Path.mkdir")
 @patch("vmkis.kis.KisAccessToken.save")
 def test_save_cached_token_virtual_domain(mock_save, mock_mkdir):
-    """virtual 도메인 토큰 저장 테스트"""
+    """paper 도메인 토큰 저장 테스트"""
     kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         keep_token=True,
         use_websocket=False,
     )
 
-    kis._virtual_token = KisObject.transform_(
+    kis._paper_token = KisObject.transform_(
         {
-            "access_token": "virtual_token",
+            "access_token": "paper_token",
             "token_type": "Bearer",
             "access_token_token_expired": "2099-01-01 00:00:00",
             "expires_in": 86400,
@@ -712,7 +712,7 @@ def test_save_cached_token_virtual_domain(mock_save, mock_mkdir):
 
     with patch("vmkis.kis.VmKis._get_hashed_token_name") as mock_hash:
         mock_hash.return_value = "hashed_virtual.json"
-        kis._save_cached_token(kis._keep_token, domain="virtual")
+        kis._save_cached_token(kis._keep_token, domain="paper")
 
         assert mock_save.call_count == 1
 
@@ -742,7 +742,7 @@ def test_del_method(mock_session):
 @patch("vmkis.kis.Path.exists")
 @patch("vmkis.kis.KisAccessToken.load")
 def test_load_cached_token_for_virtual_domain(mock_load, mock_exists):
-    """virtual 도메인 캐시 토큰 로딩 테스트"""
+    """paper 도메인 캐시 토큰 로딩 테스트"""
     mock_exists.return_value = True
     mock_token = KisObject.transform_(
         {
@@ -759,13 +759,13 @@ def test_load_cached_token_for_virtual_domain(mock_load, mock_exists):
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         keep_token=True,
         use_websocket=False,
     )
 
-    # 두 번 로드되어야 함 (real, virtual)
+    # 두 번 로드되어야 함 (live, paper)
     assert mock_load.call_count == 2
 
 
@@ -840,10 +840,10 @@ def test_init_token_from_path():
 
 
 def test_init_virtual_token_from_path():
-    """virtual 토큰을 파일 경로에서 로드하는 초기화 테스트"""
+    """paper 토큰을 파일 경로에서 로드하는 초기화 테스트"""
     mock_token = KisObject.transform_(
         {
-            "access_token": "loaded_virtual_token",
+            "access_token": "loaded_paper_token",
             "token_type": "Bearer",
             "access_token_token_expired": "2099-01-01 00:00:00",
             "expires_in": 86400,
@@ -856,31 +856,31 @@ def test_init_virtual_token_from_path():
             id="t",
             appkey=VALID_APPKEY,
             secretkey=VALID_SECRETKEY,
-            virtual_appkey=VALID_APPKEY,
-            virtual_secretkey=VALID_SECRETKEY,
-            virtual_token="fake/vtoken.json",
+            paper_appkey=VALID_APPKEY,
+            paper_secretkey=VALID_SECRETKEY,
+            paper_token="fake/vtoken.json",
             use_websocket=False,
         )
 
-        assert kis._virtual_token == mock_token
+        assert kis._paper_token == mock_token
 
 
 @patch("vmkis.kis.requests.Session")
 @patch("vmkis.api.auth.token.token_issue")
 def test_primary_token_for_virtual_domain(mock_token_issue, mock_session):
-    """virtual 도메인의 primary_token 테스트"""
+    """paper 도메인의 primary_token 테스트"""
     kis = VmKis(
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         use_websocket=False,
     )
 
     mock_token_issue.return_value = KisObject.transform_(
         {
-            "access_token": "virtual_token",
+            "access_token": "paper_token",
             "token_type": "Bearer",
             "access_token_token_expired": "2099-01-01 00:00:00",
             "expires_in": 86400,
@@ -888,15 +888,15 @@ def test_primary_token_for_virtual_domain(mock_token_issue, mock_session):
         KisAccessToken,
     )
 
-    # primary_token은 virtual 도메인에서 _virtual_token을 반환
+    # primary_token은 paper 도메인에서 _virtual_token을 반환
     token = kis.primary_token
-    assert token.token == "virtual_token"
-    mock_token_issue.assert_called_once_with(kis, domain="virtual")
+    assert token.token == "paper_token"
+    mock_token_issue.assert_called_once_with(kis, domain="paper")
 
 
 @patch("vmkis.kis.requests.Session")
 def test_primary_token_returns_token_for_real_domain(mock_session):
-    """real 도메인에서 primary_token이 token을 반환하는지 테스트"""
+    """live 도메인에서 primary_token이 token을 반환하는지 테스트"""
     kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, use_websocket=False)
 
     with patch("vmkis.api.auth.token.token_issue") as mock_issue:
@@ -912,8 +912,8 @@ def test_primary_token_returns_token_for_real_domain(mock_session):
 
         token = kis.primary_token
         assert token.token == "real_token"
-        # real 도메인이므로 token property를 통해 발급됨
-        mock_issue.assert_called_once_with(kis, domain="real")
+        # live 도메인이므로 token property를 통해 발급됨
+        mock_issue.assert_called_once_with(kis, domain="live")
 
 
 @patch("vmkis.kis.requests.Session")
@@ -923,8 +923,8 @@ def test_primary_token_setter(mock_session):
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         use_websocket=False,
     )
 
@@ -939,7 +939,7 @@ def test_primary_token_setter(mock_session):
     )
 
     kis.primary_token = mock_token
-    assert kis._virtual_token == mock_token
+    assert kis._paper_token == mock_token
 
 
 @patch("vmkis.api.auth.token.token_revoke")
@@ -950,8 +950,8 @@ def test_discard_real_domain_only(mock_session, mock_revoke):
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         use_websocket=False,
     )
 
@@ -965,7 +965,7 @@ def test_discard_real_domain_only(mock_session, mock_revoke):
         KisAccessToken,
     )
 
-    kis.discard(domain="real")
+    kis.discard(domain="live")
 
     assert mock_revoke.call_count == 1
     assert kis._token is None
@@ -979,14 +979,14 @@ def test_discard_virtual_domain_only(mock_session, mock_revoke):
         id="t",
         appkey=VALID_APPKEY,
         secretkey=VALID_SECRETKEY,
-        virtual_appkey=VALID_APPKEY,
-        virtual_secretkey=VALID_SECRETKEY,
+        paper_appkey=VALID_APPKEY,
+        paper_secretkey=VALID_SECRETKEY,
         use_websocket=False,
     )
 
-    kis._virtual_token = KisObject.transform_(
+    kis._paper_token = KisObject.transform_(
         {
-            "access_token": "virtual_token",
+            "access_token": "paper_token",
             "token_type": "Bearer",
             "access_token_token_expired": "2099-01-01 00:00:00",
             "expires_in": 86400,
@@ -994,10 +994,10 @@ def test_discard_virtual_domain_only(mock_session, mock_revoke):
         KisAccessToken,
     )
 
-    kis.discard(domain="virtual")
+    kis.discard(domain="paper")
 
     assert mock_revoke.call_count == 1
-    assert kis._virtual_token is None
+    assert kis._paper_token is None
 
 
 @patch("vmkis.kis.requests.Session")
@@ -1067,7 +1067,7 @@ def test_primary_token_with_keep_token(mock_token_issue, mock_session):
     """primary_token 발급 시 keep_token이 활성화된 경우"""
     mock_token_issue.return_value = KisObject.transform_(
         {
-            "access_token": "new_virtual_token",
+            "access_token": "new_paper_token",
             "token_type": "Bearer",
             "access_token_token_expired": "2099-01-01 00:00:00",
             "expires_in": 86400,
@@ -1080,15 +1080,15 @@ def test_primary_token_with_keep_token(mock_token_issue, mock_session):
             id="t",
             appkey=VALID_APPKEY,
             secretkey=VALID_SECRETKEY,
-            virtual_appkey=VALID_APPKEY,
-            virtual_secretkey=VALID_SECRETKEY,
+            paper_appkey=VALID_APPKEY,
+            paper_secretkey=VALID_SECRETKEY,
             keep_token=True,
             use_websocket=False,
         )
 
         with patch.object(kis, "_save_cached_token") as mock_save:
             token = kis.primary_token
-            assert token.token == "new_virtual_token"
+            assert token.token == "new_paper_token"
             mock_save.assert_called_once()
 
 

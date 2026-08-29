@@ -79,11 +79,11 @@ def test_order_condition_rejects_non_positive_price():
 
 
 def test_order_condition_known_mappings():
-    # Mapping that exists after fallback logic for non-virtual KRX buy with price
+    # Mapping that exists after fallback logic for non-paper KRX buy with price
     res = ordmod.order_condition(False, "KRX", "buy", Decimal("100"), None, None)
     assert res[0] == "00" and res[2] == "지정가"
 
-    # NASDAQ mapping for real (non-virtual) and condition LOO
+    # NASDAQ mapping for live (non-paper) and condition LOO
     res2 = ordmod.order_condition(False, "NASDAQ", "buy", Decimal("100"), "LOO", None)
     assert res2[0] == "32" and res2[2] == "장개시지정가"
 
@@ -111,7 +111,7 @@ def test_kis_ordernumber_eq_and_hash():
 
 
 def test_order_condition_fallback_virtual_none():
-    # Test fallback logic when virtual is not in map - converts to None (real)
+    # Test fallback logic when paper is not in map - converts to None (live)
     ordmod.order_condition(True, "KRX", "buy", Decimal("100"), None, None)
 
 
@@ -356,23 +356,23 @@ def test_domestic_order_endpoints_mapping():
     """국내 주문 스펙이 실전/모의 TR 을 둘 다 들고 있어야 한다.
 
     예전에는 `(실전여부, 주문종류) -> TR` 표였고 호출부가
-    `if self.virtual` 로 골랐다. 지금은 실전/모의 차원이 스펙 안으로 들어가
+    `if self.paper` 로 골랐다. 지금은 실전/모의 차원이 스펙 안으로 들어가
     호출부에서 분기가 사라졌다 (이슈 #43).
     """
     assert set(ordmod.DOMESTIC_ORDER_ENDPOINTS) == {"buy", "sell"}
 
     buy = ordmod.DOMESTIC_ORDER_ENDPOINTS["buy"]
-    assert buy.tr_real == "TTTC0802U"
-    assert buy.tr_virtual == "VTTC0802U"
+    assert buy.tr_live == "TTTC0802U"
+    assert buy.tr_paper == "VTTC0802U"
     assert buy.method == "POST"
 
     sell = ordmod.DOMESTIC_ORDER_ENDPOINTS["sell"]
-    assert sell.tr_real == "TTTC0801U"
-    assert sell.tr_virtual == "VTTC0801U"
+    assert sell.tr_live == "TTTC0801U"
+    assert sell.tr_paper == "VTTC0801U"
 
     # 스펙은 데이터라 네트워크 없이 규칙을 검증할 수 있다.
-    assert buy.resolve(virtual=False) == ("TTTC0802U", "real")
-    assert buy.resolve(virtual=True) == ("VTTC0802U", "virtual")
+    assert buy.resolve(paper=False) == ("TTTC0802U", "live")
+    assert buy.resolve(paper=True) == ("VTTC0802U", "paper")
 
 
 def test_order_condition_fallback_market_none():
@@ -400,9 +400,9 @@ def test_order_condition_fallback_to_market_price():
 
 
 def test_order_condition_virtual_not_supported_error():
-    # Test error message when virtual trading doesn't support a condition
+    # Test error message when paper trading doesn't support a condition
     with pytest.raises(ValueError) as exc_info:
-        # Try a condition that exists for real but not virtual
+        # Try a condition that exists for live but not paper
         ordmod.order_condition(True, "NYSE", "buy", Decimal("100"), "LOO", None)
 
     error_msg = str(exc_info.value)
@@ -610,7 +610,7 @@ def test_kissimpleorder_init_full_valid():
 def test_domestic_order_validation_no_account(monkeypatch):
     # Test domestic_order raises when account is missing
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="계좌번호를 입력해주세요"):
         ordmod.domestic_order(mock_kis, account=None, symbol="005930")
@@ -619,7 +619,7 @@ def test_domestic_order_validation_no_account(monkeypatch):
 def test_domestic_order_validation_no_symbol(monkeypatch):
     # Test domestic_order raises when symbol is missing
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="종목코드를 입력해주세요"):
         ordmod.domestic_order(mock_kis, account="12345678-01", symbol="")
@@ -628,7 +628,7 @@ def test_domestic_order_validation_no_symbol(monkeypatch):
 def test_domestic_order_validation_negative_qty(monkeypatch):
     # Test domestic_order raises when quantity is negative
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="수량은 0보다 커야합니다"):
         ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", qty=-10)
@@ -639,7 +639,7 @@ def test_domestic_order_converts_string_account(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -659,7 +659,7 @@ def test_domestic_order_sets_price_upper_when_market_buy(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -684,7 +684,7 @@ def test_domestic_order_uses_orderable_quantity_when_qty_none(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = True
+    mock_kis.paper = True
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -707,7 +707,7 @@ def test_domestic_order_fetch_with_correct_api_code(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -725,17 +725,17 @@ def test_domestic_order_fetch_with_correct_api_code(monkeypatch):
 
 
 def test_domestic_order_virtual_api_codes(monkeypatch):
-    # Test domestic_order uses virtual API codes in virtual mode
+    # Test domestic_order uses paper API codes in paper mode
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = True
+    mock_kis.paper = True
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
     monkeypatch.setattr(ordmod, "_orderable_quantity", lambda *a, **k: (Decimal("10"), None))
 
-    # Test virtual buy
+    # Test paper buy
     ordmod.domestic_order(mock_kis, account="12345678-01", symbol="005930", order="buy", price=50000)
 
     assert mock_kis.fetch.call_args.kwargs["api"] == "VTTC0802U"
@@ -744,7 +744,7 @@ def test_domestic_order_virtual_api_codes(monkeypatch):
 def test_foreign_order_validation_no_account(monkeypatch):
     # Test foreign_order raises when account is missing
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="계좌번호를 입력해주세요"):
         ordmod.foreign_order(mock_kis, account=None, market="NASDAQ", symbol="AAPL")
@@ -753,7 +753,7 @@ def test_foreign_order_validation_no_account(monkeypatch):
 def test_foreign_order_validation_no_symbol(monkeypatch):
     # Test foreign_order raises when symbol is missing
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="종목코드를 입력해주세요"):
         ordmod.foreign_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="")
@@ -762,7 +762,7 @@ def test_foreign_order_validation_no_symbol(monkeypatch):
 def test_foreign_order_validation_negative_qty(monkeypatch):
     # Test foreign_order raises when quantity is negative
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="수량은 0보다 커야합니다"):
         ordmod.foreign_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="AAPL", qty=-5)
@@ -773,7 +773,7 @@ def test_foreign_order_uses_correct_market_api_code(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -793,7 +793,7 @@ def test_foreign_order_tokyo_market(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -807,7 +807,7 @@ def test_foreign_order_tokyo_market(monkeypatch):
 def test_foreign_daytime_order_validation_no_account(monkeypatch):
     # Test foreign_daytime_order raises when account is missing
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="계좌번호를 입력해주세요"):
         ordmod.foreign_daytime_order(mock_kis, account=None, market="NASDAQ", symbol="AAPL")
@@ -816,7 +816,7 @@ def test_foreign_daytime_order_validation_no_account(monkeypatch):
 def test_foreign_daytime_order_validation_no_symbol(monkeypatch):
     # Test foreign_daytime_order raises when symbol is missing
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     with pytest.raises(ValueError, match="종목코드를 입력해주세요"):
         ordmod.foreign_daytime_order(mock_kis, account="12345678-01", market="NASDAQ", symbol="")
@@ -827,7 +827,7 @@ def test_foreign_daytime_order_uses_daytime_market_code(monkeypatch):
     from decimal import Decimal
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -981,7 +981,7 @@ def test_account_product_sell_uses_sell_order(monkeypatch):
 def test_order_function_routes_to_domestic_order(monkeypatch):
     # Test order() routes KRX market to domestic_order
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     domestic_called = []
 
@@ -999,7 +999,7 @@ def test_order_function_routes_to_domestic_order(monkeypatch):
 def test_order_function_routes_to_foreign_order(monkeypatch):
     # Test order() routes non-KRX market to foreign_order
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     foreign_called = []
 
@@ -1058,17 +1058,17 @@ def test_foreign_order_api_codes_mapping():
     assert ("NASDAQ", "buy") in ordmod.FOREIGN_ORDER_ENDPOINTS
     assert ("NYSE", "sell") in ordmod.FOREIGN_ORDER_ENDPOINTS
     assert ("TYO", "buy") in ordmod.FOREIGN_ORDER_ENDPOINTS
-    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NASDAQ", "buy")].tr_virtual == "VTTT1002U"
+    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NASDAQ", "buy")].tr_paper == "VTTT1002U"
 
-    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NASDAQ", "buy")].tr_real == "TTTT1002U"
-    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NYSE", "sell")].tr_real == "TTTT1006U"
+    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NASDAQ", "buy")].tr_live == "TTTT1002U"
+    assert ordmod.FOREIGN_ORDER_ENDPOINTS[("NYSE", "sell")].tr_live == "TTTT1006U"
 
 
 def test_order_routes_to_domestic_for_krx(monkeypatch):
     # Test that order() function routes KRX orders correctly
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     domestic_called = []
 
@@ -1087,7 +1087,7 @@ def test_order_routes_to_foreign_for_nasdaq(monkeypatch):
     # Test that order() function routes NASDAQ orders correctly
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
 
     foreign_called = []
 
@@ -1134,7 +1134,7 @@ def test_order_condition_price_none_converts_to_false():
     # Test that price=None is treated as price not provided
     res = ordmod.order_condition(False, "KRX", "buy", None, None, None)
     # Should get market order code
-    assert res[0] == "01"  # Market order code for real trading
+    assert res[0] == "01"  # Market order code for live trading
     assert res[2] == "시장가"
 
 
@@ -1178,7 +1178,7 @@ def test_domestic_order_with_explicit_qty(monkeypatch):
     # Test domestic_order with explicit quantity (skips _orderable_quantity)
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -1200,7 +1200,7 @@ def test_foreign_order_with_explicit_qty(monkeypatch):
     # Test foreign_order with explicit quantity
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 
@@ -1222,7 +1222,7 @@ def test_foreign_daytime_order_with_explicit_qty(monkeypatch):
     # Test foreign_daytime_order with explicit quantity
 
     mock_kis = Mock()
-    mock_kis.virtual = False
+    mock_kis.paper = False
     mock_kis.fetch = Mock(return_value=Mock())
     _bind_real_call(mock_kis)
 

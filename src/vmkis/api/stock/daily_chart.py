@@ -31,15 +31,15 @@ __all__ = [
 ]
 
 
-# 차트 TR 은 모의도메인에 없습니다. `tr_virtual` 생략으로 실전 라우팅됩니다.
+# 차트 TR 은 모의도메인에 없습니다. `tr_paper` 생략으로 실전 라우팅됩니다.
 DOMESTIC_DAILY_CHART = KisEndpoint(
     path="/uapi/domestic-stock/v1/quotations/inquire-daily-itemchartprice",
-    tr_real="FHKST03010100",
+    tr_live="FHKST03010100",
 )
 
 FOREIGN_DAILY_CHART = KisEndpoint(
     path="/uapi/overseas-price/v1/quotations/dailyprice",
-    tr_real="HHDFS76240000",
+    tr_live="HHDFS76240000",
 )
 
 

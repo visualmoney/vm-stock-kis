@@ -26,7 +26,7 @@ class KisAuth:
         ...     # 앱 키와 연결된 계좌번호  예) 00000000-01
         ...     account="00000000-01",
         ...     # 모의투자 여부
-        ...     virtual=False,
+        ...     paper=False,
         ... )
 
         안전한 경로에 시크릿 키를 파일로 저장합니다.
@@ -42,7 +42,7 @@ class KisAuth:
     """앱 시크릿"""
     account: str
     """계좌번호"""
-    virtual: bool
+    paper: bool
     """모의투자 여부"""
 
     @property
@@ -74,4 +74,4 @@ class KisAuth:
             raise ValueError("계좌 및 인증 정보를 불러오는데 실패했습니다.") from e
 
     def __repr__(self):
-        return f"<KisAuth account={self.account} virtual={self.virtual}>"
+        return f"<KisAuth account={self.account} paper={self.paper}>"

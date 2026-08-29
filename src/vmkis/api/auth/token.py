@@ -69,7 +69,7 @@ class KisAccessToken(KisDynamic, KisForm):
             )
 
 
-def token_issue(self: "VmKis", domain: Literal["real", "virtual"] | None = None) -> KisAccessToken:
+def token_issue(self: "VmKis", domain: Literal["live", "paper"] | None = None) -> KisAccessToken:
     """
     API 접속 토큰을 발급합니다.
 

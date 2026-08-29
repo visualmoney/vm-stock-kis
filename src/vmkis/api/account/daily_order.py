@@ -47,8 +47,8 @@ __all__ = [
 
 _FOREIGN_DAILY_ORDERS = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-ccnl",
-    tr_real="TTTS3035R",
-    tr_virtual="VTTS3035R",
+    tr_live="TTTS3035R",
+    tr_paper="VTTS3035R",
     page_size=200,
 )
 
@@ -611,14 +611,14 @@ class KisIntegrationDailyOrders(KisDailyOrdersBase):
 DOMESTIC_DAILY_ORDERS_ENDPOINTS: dict[bool, KisEndpoint] = {
     True: KisEndpoint(
         path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
-        tr_real="TTTC8001R",
-        tr_virtual="VTTC8001R",
+        tr_live="TTTC8001R",
+        tr_paper="VTTC8001R",
         page_size=100,
     ),  # 최근 3개월 이내
     False: KisEndpoint(
         path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
-        tr_real="CTSC9115R",
-        tr_virtual="VTSC9115R",
+        tr_live="CTSC9115R",
+        tr_paper="VTSC9115R",
         page_size=100,
     ),  # 3개월 이전
 }
@@ -748,12 +748,12 @@ def _internal_foreign_daily_orders(
     return self.fetch_pages(
         _FOREIGN_DAILY_ORDERS,
         params={
-            "PDNO": "" if self.virtual else "%",
+            "PDNO": "" if self.paper else "%",
             "ORD_STRT_DT": start.strftime("%Y%m%d"),
             "ORD_END_DT": end.strftime("%Y%m%d"),
             "SLL_BUY_DVSN": "00",
             "CCLD_NCCS_DVSN": "00",
-            "OVRS_EXCG_CD": ("" if self.virtual else "%") if market is None else get_market_code(market),
+            "OVRS_EXCG_CD": ("" if self.paper else "%") if market is None else get_market_code(market),
             "SORT_SQN": "DS",
             "ORD_DT": "",
             "ORD_GNO_BRNO": "",

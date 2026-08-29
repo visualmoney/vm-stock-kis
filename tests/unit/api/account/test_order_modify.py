@@ -17,8 +17,8 @@ class FakeOrder:
 
 
 class FakeKis:
-    def __init__(self, virtual=False):
-        self.virtual = virtual
+    def __init__(self, paper=False):
+        self.paper = paper
         self._fetch_calls = []
 
     # 이슈 #43 이후 api/ 는 `call()` 을 거친다. 실제 구현을 붙여
@@ -38,7 +38,7 @@ class FakeKis:
 
 
 def test_domestic_modify_virtual_raises():
-    kis = FakeKis(virtual=True)
+    kis = FakeKis(paper=True)
     order = FakeOrder()
 
     with pytest.raises(NotImplementedError):
@@ -46,7 +46,7 @@ def test_domestic_modify_virtual_raises():
 
 
 def test_domestic_modify_qty_zero_raises():
-    kis = FakeKis(virtual=False)
+    kis = FakeKis(paper=False)
     order = FakeOrder()
 
     with pytest.raises(ValueError):
@@ -202,17 +202,17 @@ def test_account_modify_and_cancel_forward_to_kis(monkeypatch):
 def test_domestic_cancel_api_code_for_virtual_flag():
     order = FakeOrder()
 
-    kis = FakeKis(virtual=False)
+    kis = FakeKis(paper=False)
     om.domestic_cancel_order(kis, order)
     assert kis._fetch_calls[-1][1]["api"] == "TTTC0803U"
 
-    kis_v = FakeKis(virtual=True)
+    kis_v = FakeKis(paper=True)
     om.domestic_cancel_order(kis_v, order)
     assert kis_v._fetch_calls[-1][1]["api"] == "VTTC0803U"
 
 
 def test_foreign_modify_success_calls_get_market_code_and_fetch(monkeypatch):
-    kis = FakeKis(virtual=False)
+    kis = FakeKis(paper=False)
     order = FakeOrder(market="NASDAQ")
 
     sample_info = types.SimpleNamespace(price=10, qty=5, condition=None, execution=None, branch="001", number="1")
@@ -227,13 +227,13 @@ def test_foreign_modify_success_calls_get_market_code_and_fetch(monkeypatch):
 
     om.foreign_modify_order(kis, order)
     called = kis._fetch_calls[-1][1]
-    # api mapping for (not self.virtual, 'NASDAQ', 'modify') -> True key -> 'TTTT1004U'
+    # api mapping for (not self.paper, 'NASDAQ', 'modify') -> True key -> 'TTTT1004U'
     assert called["api"] == "TTTT1004U"
     assert called["body"]["OVRS_EXCG_CD"] == "MK"
 
 
 def test_foreign_modify_price_setting_uses_quote(monkeypatch):
-    kis = FakeKis(virtual=False)
+    kis = FakeKis(paper=False)
     order = FakeOrder(market="NASDAQ")
 
     sample_info = types.SimpleNamespace(price=10, qty=5, condition=None, execution=None, branch="001", number="1")
@@ -254,7 +254,7 @@ def test_foreign_modify_price_setting_uses_quote(monkeypatch):
 def test_foreign_daytime_modify_quote_path_and_price_selection(monkeypatch):
     # pick a market that is in DAYTIME_MARKETS
     market = next(iter(om.DAYTIME_MARKETS))
-    kis = FakeKis(virtual=False)
+    kis = FakeKis(paper=False)
     order = FakeOrder(market=market)
 
     # order_info with no price but with qty
@@ -278,7 +278,7 @@ def test_foreign_daytime_modify_quote_path_and_price_selection(monkeypatch):
 
 def test_foreign_daytime_cancel_order_success_and_virtual(monkeypatch):
     market = next(iter(om.DAYTIME_MARKETS))
-    kis = FakeKis(virtual=False)
+    kis = FakeKis(paper=False)
     order = FakeOrder(market=market)
 
     sample_info = types.SimpleNamespace(qty=7)
@@ -293,7 +293,7 @@ def test_foreign_daytime_cancel_order_success_and_virtual(monkeypatch):
     called = kis._fetch_calls[-1][1]
     assert called["body"]["ORD_QTY"] == "7"
 
-    kis_v = FakeKis(virtual=True)
+    kis_v = FakeKis(paper=True)
     with pytest.raises(NotImplementedError):
         om.foreign_daytime_cancel_order(kis_v, order)
 

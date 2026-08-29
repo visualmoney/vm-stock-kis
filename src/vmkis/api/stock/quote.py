@@ -41,17 +41,17 @@ __all__ = [
 ]
 
 
-# 시세 TR 은 모의도메인에 없습니다. `tr_virtual` 을 생략하면 `resolve()` 가
+# 시세 TR 은 모의도메인에 없습니다. `tr_paper` 을 생략하면 `resolve()` 가
 # 모의 계좌에서도 실전 도메인을 돌려주므로 도메인을 손으로 지정할 필요가
 # 없습니다. 예전에는 이 인자를 빠뜨리면 모의 계정에서만 터졌습니다.
 DOMESTIC_QUOTE = KisEndpoint(
     path="/uapi/domestic-stock/v1/quotations/inquire-price",
-    tr_real="FHKST01010100",
+    tr_live="FHKST01010100",
 )
 
 FOREIGN_QUOTE = KisEndpoint(
     path="/uapi/overseas-price/v1/quotations/price-detail",
-    tr_real="HHDFS76200200",
+    tr_live="HHDFS76200200",
 )
 
 STOCK_SIGN_TYPE = Literal["upper", "rise", "steady", "decline", "lower"]

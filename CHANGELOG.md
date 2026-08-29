@@ -7,6 +7,50 @@
 
 ## [미출시]
 
+### 변경 (Breaking)
+
+- **`real`/`virtual` 어휘를 `live`/`paper` 로 바꿨습니다.** (#70, 결정은 #55)
+
+  `real` 은 한국투자증권의 표기가 아닙니다 — KIS 는 **실전/모의**라고 쓰고,
+  `real`/`virtual` 은 이 라이브러리가 고른 번역이었습니다. 영어권 표준은
+  `paper trading` 이고 영어 문서가 이미 그 말을 쓰고 있었습니다.
+
+  **별칭도 경고도 남기지 않았습니다.** 옛 이름은 `AttributeError` 또는
+  `TypeError` 로 즉시 실패합니다. 0.0.1 이 2026-08-28 첫 배포라 지금이 가장
+  싼 시점이고, 호환 폴백을 지우려고 열려 있는 이슈(#33·#34)에 한 줄을 더하지
+  않기 위해서입니다.
+
+  | 이전 | 이후 |
+  |---|---|
+  | `KisAuth(virtual=True)` | `KisAuth(paper=True)` |
+  | `VmKis(virtual_auth=...)` | `VmKis(paper_auth=...)` |
+  | `VmKis(virtual_id=, virtual_appkey=, virtual_secretkey=, virtual_token=)` | `VmKis(paper_id=, paper_appkey=, paper_secretkey=, paper_token=)` |
+  | `kis.virtual` | `kis.paper` |
+  | `kis.virtual_appkey` | `kis.paper_appkey` |
+  | `domain="real"` / `domain="virtual"` | `domain="live"` / `domain="paper"` |
+  | `Literal["real", "virtual"]` | `Literal["live", "paper"]` |
+  | `KisEndpoint(tr_real=, tr_virtual=)` | `KisEndpoint(tr_live=, tr_paper=)` |
+  | `endpoint.resolve(virtual)` | `endpoint.resolve(paper)` |
+  | `__env__.REAL_DOMAIN` / `VIRTUAL_DOMAIN` | `LIVE_DOMAIN` / `PAPER_DOMAIN` |
+  | `__env__.WEBSOCKET_REAL_DOMAIN` / `WEBSOCKET_VIRTUAL_DOMAIN` | `WEBSOCKET_LIVE_DOMAIN` / `WEBSOCKET_PAPER_DOMAIN` |
+  | `__env__.REAL_API_REQUEST_PER_SECOND` / `VIRTUAL_...` | `LIVE_API_REQUEST_PER_SECOND` / `PAPER_...` |
+
+  기여자용 — 테스트 환경변수도 바뀌었습니다. 기존 `.env` 의 키 이름을
+  고쳐야 합니다(`tests/.env.sample` 참고). 조용히 깨지지는 않습니다 —
+  `pytest` 가 누락된 이름을 그대로 찍고 건너뜁니다.
+
+  | 이전 | 이후 |
+  |---|---|
+  | `VMKIS_VIRTUAL_ACCOUNT_NUMBER` | `VMKIS_PAPER_ACCOUNT_NUMBER` |
+  | `VMKIS_VIRTUAL_HTS_ID` | `VMKIS_PAPER_HTS_ID` |
+  | `VMKIS_VIRTUAL_APPKEY` | `VMKIS_PAPER_APPKEY` |
+  | `VMKIS_VIRTUAL_SECRETKEY` | `VMKIS_PAPER_SECRETKEY` |
+
+  `Realtime`/`realtime`(실시간)은 **다른 개념이라 건드리지 않았습니다.**
+  설정 파일의 어휘는 #75 에서 이미 `mode: live | paper` 가 되어 있었고,
+  이 변경으로 설정과 코드가 같은 말을 쓰게 되어 `helpers` 의 번역표가
+  사라졌습니다.
+
 ### 수정
 
 - **`vmkis.exceptions.KisNotFoundError` 가 한 번도 발생하지 않는 클래스를

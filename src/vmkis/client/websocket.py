@@ -52,7 +52,7 @@ class KisWebsocketClient:
     kis: "VmKis"
     """한국투자증권 API"""
 
-    virtual: bool
+    paper: bool
     """모의투자 서버 여부"""
 
     websocket: WebSocketApp | None = None
@@ -93,9 +93,9 @@ class KisWebsocketClient:
     _primary_client: "KisWebsocketClient | None" = None
     """계좌 조회가 가능한 서버의 클라이언트 (모의투자에서만 사용)"""
 
-    def __init__(self, kis: "VmKis", virtual: bool = False):
+    def __init__(self, kis: "VmKis", paper: bool = False):
         self.kis = kis
-        self.virtual = virtual
+        self.paper = paper
         self.subscribed_event = KisEventHandler()
         self.unsubscribed_event = KisEventHandler()
         self.event = KisEventHandler()
@@ -209,7 +209,7 @@ class KisWebsocketClient:
                     kis=self.kis,
                     type=type,
                     body=body,
-                    domain="virtual" if self.virtual else "real",
+                    domain="paper" if self.paper else "live",
                 ).build()
             )
         )
@@ -367,7 +367,7 @@ class KisWebsocketClient:
                 try:
                     self._connected_event.clear()
                     self.websocket = WebSocketApp(
-                        f"{self.kis.ws_url('virtual' if self.virtual else 'real')}/tryitout",
+                        f"{self.kis.ws_url('paper' if self.paper else 'live')}/tryitout",
                         on_open=self._on_open,  # type: ignore
                         on_error=self._on_error,  # type: ignore
                         on_close=self._on_close,  # type: ignore
@@ -409,7 +409,7 @@ class KisWebsocketClient:
         if websocket is not self.websocket:
             return
 
-        logging.logger.info("RTC Connected to %s server", "virtual" if self.virtual else "real")
+        logging.logger.info("RTC Connected to %s server", "paper" if self.paper else "live")
         self._reset_session_state()
         self._restore_subscriptions()
         self._connected_event.set()
@@ -574,8 +574,8 @@ class KisWebsocketClient:
 
     @thread_safe("primary_client")
     def _ensure_primary_client(self) -> "KisWebsocketClient":
-        if self.kis.virtual and not self.virtual and not self._primary_client:
-            self._primary_client = KisWebsocketClient(self.kis, virtual=True)
+        if self.kis.paper and not self.paper and not self._primary_client:
+            self._primary_client = KisWebsocketClient(self.kis, paper=True)
 
             self._primary_client.subscribed_event += self._primary_client_subscribed_event
             self._primary_client.unsubscribed_event += self._primary_client_unsubscribed_event

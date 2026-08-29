@@ -40,7 +40,7 @@ def test__domestic_daily_orders_calls_fetch_and_returns_result():
 
     class FakeSelf:
         def __init__(self):
-            self.virtual = False
+            self.paper = False
 
         # 이슈 #43·#44 이후 `_domestic_daily_orders` 는 `fetch_pages()` 를
         # 거친다. 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)과
@@ -75,7 +75,7 @@ def test__domestic_daily_orders_calls_fetch_and_returns_result():
 def test_domestic_daily_orders_swapped_dates_and_page_to():
     class FakeSelf:
         def __init__(self):
-            self.virtual = False
+            self.paper = False
 
         # 이슈 #43·#44 이후 `_domestic_daily_orders` 는 `fetch_pages()` 를
         # 거친다. 실제 구현을 붙여 스펙 해석(TR ID·도메인·커서 길이)과
@@ -422,12 +422,12 @@ def test_domestic_daily_orders_endpoints():
     `resolve()` 로 확인한다 — 네트워크가 필요 없다.
     """
     recent = dord.DOMESTIC_DAILY_ORDERS_ENDPOINTS[True]
-    assert recent.resolve(virtual=False) == ("TTTC8001R", "real")
-    assert recent.resolve(virtual=True) == ("VTTC8001R", "virtual")
+    assert recent.resolve(paper=False) == ("TTTC8001R", "live")
+    assert recent.resolve(paper=True) == ("VTTC8001R", "paper")
 
     old = dord.DOMESTIC_DAILY_ORDERS_ENDPOINTS[False]
-    assert old.resolve(virtual=False) == ("CTSC9115R", "real")
-    assert old.resolve(virtual=True) == ("VTSC9115R", "virtual")
+    assert old.resolve(paper=False) == ("CTSC9115R", "live")
+    assert old.resolve(paper=True) == ("VTSC9115R", "paper")
 
     # 커서 길이는 KIS 문서의 `CTX_AREA_FK100` 에서 온다. 틀리면 연속조회가
     # 엉뚱한 필드명(`ctx_area_fk200`)을 찾는다.

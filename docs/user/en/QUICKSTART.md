@@ -112,7 +112,7 @@ auth = KisAuth(
     appkey="YOUR_APP_KEY",
     secretkey="YOUR_APP_SECRET",
     account="00000000-01",
-    virtual=True,              # paper trading
+    paper=True,                # paper trading
 )
 kis = VmKis(None, auth)        # paper credentials go in the second slot
 ```
