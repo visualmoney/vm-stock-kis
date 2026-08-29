@@ -7,7 +7,59 @@
 
 ## [미출시]
 
+<!-- 다음 변경을 여기 적으세요. 비어 있어도 절이 남아 있어야 합니다 —
+     자리가 없으면 릴리스 때 커밋을 훑게 되고, 훑으면 빠집니다.
+     0.1.0 에서 설정 스키마 Breaking 두 건이 실제로 그렇게 빠져 있었습니다. -->
+
+---
+
+## [0.1.0] — 2026-08-30
+
 ### 변경 (Breaking)
+
+- **설정 파일이 3블록 스키마로 바뀌었습니다 — 하위 호환 없음.** (#75)
+
+  ```yaml
+  version: 1
+  apps: # 토큰 발급 단위 (KIS 토큰은 app_key 단위)
+    app_live1: { mode: "live", hts_id: ..., app_key: ..., app_secret: ... }
+    app_paper1: { mode: "paper", ... }
+  accounts: # 어느 앱으로 접속할지만 가리킵니다
+    acc_live1: { app: "app_live1", account_no: "00000000", product_code: "01" }
+    acc_paper1: { app: "app_paper1", ... }
+  default_account: "acc_paper1"
+  ```
+
+  옛 형식(`default:` + `configs:` + `virtual: true`)은 **읽지 않습니다.**
+  `apps` 를 계좌와 분리한 근거는 **토큰 수명 하나**입니다 — 같은 앱키를 쓰는
+  계좌 N개가 토큰 1개를 공유하는 것이 KIS 의 실제 제약입니다.
+
+  토큰 파일 경로는 **앱 이름에서 파생**됩니다. 직접 적지 않습니다 — 두 앱이
+  같은 파일을 가리키면 "가끔 인증이 풀립니다"가 됩니다.
+
+  사양: [`docs/guidelines/CONFIG_SCHEMA.md`](./docs/guidelines/CONFIG_SCHEMA.md)
+
+- **`vmkis.helpers.load_config` 를 제거했습니다.** (#69, #75)
+  `vmkis.config.load_kis_config` 가 대신하며 `dict` 가 아니라 `KisConfig` 를
+  돌려줍니다.
+
+  같은 함수가 **5벌**이었고 **4벌이 `examples/`** 였습니다. 그중 하나가
+  `cfg.get("virtual", False)` 였는데 **기본값이 실전**이라, `virtaul: true`
+  오타 하나로 모의투자 의도가 **경고 없이 실전 주문**이 됐습니다.
+
+  이제 모르는 키·필수 키 누락·모드 키 누락이 전부 예외입니다. **기본값을
+  두지 않습니다.**
+
+- **모의 계좌만 적은 설정은 더 이상 유효하지 않습니다.** (#87)
+
+  시세 TR 이 모의도메인에 없어서 모의 계좌로 조회해도 요청이 실전 도메인으로
+  나갑니다. 그래서 실전 앱이 설정에 있어야 합니다
+  (`CONFIG_SCHEMA.md` 의 R10). `create_client()` 가 무엇을 추가해야 하는지
+  알려주며 멈춥니다.
+
+  > 참고로 `create_client` 는 **0.0.1 에서도 모의 계좌면 항상 실패**했습니다
+  > (`ValueError: id를 입력해야 합니다`). 그때는 원인을 알 수 없는 메시지였고,
+  > 템플릿의 기본 계좌가 모의라 정규 경로가 끝까지 가지 않았습니다.
 
 - **`real`/`virtual` 어휘를 `live`/`paper` 로 바꿨습니다.** (#70, 결정은 #55)
 
@@ -84,12 +136,29 @@
 - 자격증명 없이 `pytest` 를 돌리면 17개가 **error** 로 떴습니다. **skip** 으로
   바꾸고 누락된 환경변수를 사유에 적습니다.
 
+- **`import vmkis` 가 helpers 의 결함을 삼켰습니다.** (#73)
+  `ImportError` 를 잡아 `create_client` · `save_config_interactive` ·
+  `SimpleKIS` 를 조용히 `None` 으로 만들었고, 사용자는 한참 뒤 호출 지점에서
+  `TypeError: 'NoneType' object is not callable` 을 받았습니다 — 원인 모듈
+  이름이 어디에도 나오지 않았습니다. 폴백을 없앴습니다.
+
+- **`VmKis.request()` 가 유량 초과 시 영원히 재시도**했습니다. (#37)
+  서버가 `EGW00201` 을 계속 반환하면 0.1초 간격으로 무한 반복해 호출이
+  반환되지 않았습니다. 자동매매에서는 "느리다"가 아니라 "멈춘다"입니다.
+  상한과 지수 백오프를 넣었습니다. 연속조회 커서 접미사 4변형도 함께 지원합니다.
+
 - `VmKis` 생성자가 중간에 실패하면 소멸자가 `AttributeError` 를 냈습니다.
 
 ### 추가
 
 - [`docs/user/EXTENDING_API.md`](./docs/user/EXTENDING_API.md) — 미지원 TR 을
   `fetch()` 로 호출하는 방법 (Level 0~3 + 함정 체크리스트)
+
+- [`docs/guidelines/CONFIG_SCHEMA.md`](./docs/guidelines/CONFIG_SCHEMA.md) —
+  설정 파일 사양. 규칙 R1~R10 과 따옴표 함정을 담습니다
+
+- `vmkis.config` — 설정 읽기·검증 계층. `load_kis_config()` 가 `KisConfig` 를
+  돌려주고, 모르는 키를 **오류로 거부**합니다
 
 ### 제거
 
