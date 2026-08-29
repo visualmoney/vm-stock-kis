@@ -91,8 +91,15 @@ def _endpoint_args(spec: dict, tr_live: str, tr_paper: str | None, indent: str) 
         lines.append(f'{indent}tr_paper="{tr_paper}",')
     if spec["method"] == "POST":
         lines.append(f'{indent}method="POST",')
-    if spec.get("page_size"):
-        lines.append(f"{indent}page_size={spec['page_size']},")
+    # `is not None` 입니다. **`0` 은 falsy 인데 유효한 값입니다** —
+    # 접미사 없는 `CTX_AREA_FK` 를 뜻하는 `NO_SUFFIX`(#16). `if page_size:` 로
+    # 적었다가 국내휴장일조회가 페이징 없는 엔드포인트로 생성됐습니다.
+    if spec.get("page_size") is not None:
+        size = spec["page_size"]
+        if size == 0:
+            lines.append(f"{indent}page_size=NO_SUFFIX,  # 접미사 없는 CTX_AREA_FK")
+        else:
+            lines.append(f"{indent}page_size={size},")
     return lines
 
 
@@ -180,7 +187,11 @@ def render(spec: dict, as_list: bool | None = None) -> str:
             out.append("from decimal import Decimal")
         out.append("")
 
-    out.append("from vmkis.client.endpoint import KisEndpoint")
+    if spec.get("page_size") == 0:
+        out.append("from vmkis.client.endpoint import KisEndpoint")
+        out.append("from vmkis.client.page import NO_SUFFIX")
+    else:
+        out.append("from vmkis.client.endpoint import KisEndpoint")
     out.append("from vmkis.responses.dynamic import KisDynamic, KisList, KisObject")
     out.append("from vmkis.responses.response import KisAPIResponse")
     out.append(f"from vmkis.responses.types import {', '.join(used)}")
