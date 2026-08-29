@@ -21,6 +21,8 @@ from vmkis.__env__ import (
     USER_AGENT,
     VIRTUAL_API_REQUEST_PER_SECOND,
     VIRTUAL_DOMAIN,
+    WEBSOCKET_REAL_DOMAIN,
+    WEBSOCKET_VIRTUAL_DOMAIN,
 )
 from vmkis.api.auth.token import KisAccessToken
 from vmkis.client.account import KisAccountNumber
@@ -33,6 +35,7 @@ from vmkis.client.form import KisForm
 from vmkis.client.object import KisObjectBase, kis_object_init
 from vmkis.client.page import KisPage
 from vmkis.client.websocket import KisWebsocketClient
+from vmkis.config import Endpoint
 from vmkis.responses.dynamic import KisDynamic, KisObject, TDynamic
 from vmkis.responses.response import KisPaginationAPIResponseProtocol
 from vmkis.responses.types import KisDynamicDict
@@ -99,6 +102,29 @@ class VmKis:
         """API 접속 토큰 자동 저장 여부"""
         return self._keep_token is not None
 
+    def base_url(self, domain: Literal["real", "virtual"]) -> str:
+        """REST 서버 주소. 설정에 재정의가 있으면 그것을, 없으면 기본값을 씁니다.
+
+        벤더가 주소를 바꿔도 사용자가 설정만 고쳐 복구할 수 있게 하는 것이 목적입니다.
+        상수를 `from ... import` 로 가져오면 값이 복사되므로, 사용자가 `__env__` 를
+        고쳐도 이 모듈은 옛 값을 봅니다 — 그래서 재정의 경로가 필요합니다.
+        """
+        override = self._endpoints.get(domain)
+
+        if override is not None and override.base_url:
+            return override.base_url
+
+        return REAL_DOMAIN if domain == "real" else VIRTUAL_DOMAIN
+
+    def ws_url(self, domain: Literal["real", "virtual"]) -> str:
+        """웹소켓 서버 주소. `base_url` 과 같은 규칙입니다."""
+        override = self._endpoints.get(domain)
+
+        if override is not None and override.ws_url:
+            return override.ws_url
+
+        return WEBSOCKET_REAL_DOMAIN if domain == "real" else WEBSOCKET_VIRTUAL_DOMAIN
+
     @overload
     def __init__(
         self,
@@ -108,6 +134,8 @@ class VmKis:
         token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
+        user_agent: str | None = None,
+        endpoints: dict[str, Endpoint] | None = None,
     ):
         """
         `KisAuth` 인증 정보를 이용하여 실전투자용 한국투자증권 API를 생성합니다.
@@ -155,6 +183,8 @@ class VmKis:
         virtual_token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
+        user_agent: str | None = None,
+        endpoints: dict[str, Endpoint] | None = None,
     ):
         """
         `KisAuth` 인증 정보를 이용하여 모의투자용 한국투자증권 API를 생성합니다.
@@ -215,6 +245,8 @@ class VmKis:
         token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
+        user_agent: str | None = None,
+        endpoints: dict[str, Endpoint] | None = None,
     ):
         """
         실전투자용 한국투자증권 API를 생성합니다.
@@ -261,6 +293,8 @@ class VmKis:
         virtual_token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
+        user_agent: str | None = None,
+        endpoints: dict[str, Endpoint] | None = None,
     ):
         """
         모의투자용 한국투자증권 API를 생성합니다.
@@ -312,6 +346,8 @@ class VmKis:
         virtual_token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
+        user_agent: str | None = None,
+        endpoints: dict[str, Endpoint] | None = None,
     ):
         """
         `KisAuth` 인증 정보를 이용하여 모의투자용 한국투자증권 API를 생성합니다.
@@ -372,6 +408,8 @@ class VmKis:
         virtual_secretkey: str | None = None,
         virtual_token: KisAccessToken | str | PathLike[str] | None = None,
         use_websocket: bool = True,
+        user_agent: str | None = None,
+        endpoints: dict[str, Endpoint] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
     ):
         if auth is not None:
@@ -459,8 +497,12 @@ class VmKis:
             "virtual": requests.Session(),
         }
 
+        # 설정에서 온 재정의. 키는 이 모듈의 어휘("real"/"virtual")이며,
+        # 설정 파일의 live/paper 는 호출부(`vmkis.helpers`)가 번역합니다.
+        self._endpoints = endpoints or {}
+
         for session in self._sessions.values():
-            session.headers.update({"User-Agent": USER_AGENT})
+            session.headers.update({"User-Agent": user_agent or USER_AGENT})
 
         if keep_token:
             if keep_token is True:
@@ -599,7 +641,7 @@ class VmKis:
 
             resp = session.request(
                 method=method,
-                url=urljoin(REAL_DOMAIN if domain == "real" else VIRTUAL_DOMAIN, path),
+                url=urljoin(self.base_url(domain), path),
                 headers=request_headers,
                 params=params,
                 json=body,

@@ -1,9 +1,0 @@
-# Real-only config example (live trading)
-# Copy to config.real.yaml or use as a template for real profile
-# DO NOT commit filled config to version control
-
-id: "YOUR_REAL_ID"
-account: "00000000-02"
-appkey: "YOUR_REAL_APPKEY"
-secretkey: "YOUR_REAL_SECRET"
-virtual: false

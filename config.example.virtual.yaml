@@ -1,9 +1,0 @@
-# Virtual-only config example (paper trading)
-# Copy to config.virtual.yaml or use as a template for virtual profile
-# DO NOT commit filled config to version control
-
-id: "YOUR_VIRTUAL_ID"
-account: "00000000-01"
-appkey: "YOUR_APPKEY"
-secretkey: "YOUR_SECRET"
-virtual: true

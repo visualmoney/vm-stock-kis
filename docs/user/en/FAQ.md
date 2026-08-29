@@ -51,12 +51,16 @@ pip install -e ".[dev]"
 **A**: Yes, you can use the **virtual/sandbox environment** for testing:
 
 ```yaml
-# config.yaml
-kis:
-  server: virtual  # Sandbox environment
-  app_key: TEST_KEY
-  app_secret: TEST_SECRET
+# configs/account_profiles.yaml
+apps:
+  app_paper1:
+    mode: "paper"    # Sandbox environment
+    hts_id: "YOUR_HTS_ID"
+    app_key: "TEST_KEY"
+    app_secret: "TEST_SECRET"
 ```
+
+`mode` is required. Omitting it fails rather than defaulting to live trading.
 
 No real money is involved in virtual trading.
 
@@ -87,41 +91,54 @@ No real money is involved in virtual trading.
 2. **Configuration File** (version-controlled):
 
    ```yaml
-   # config.yaml (keep out of git)
-   kis:
-     app_key: YOUR_KEY
-     app_secret: YOUR_SECRET
+   # configs/account_profiles.yaml — already in .gitignore
+   apps:
+     app_paper1:
+       app_key: "YOUR_KEY"
+       app_secret: "YOUR_SECRET"
    ```
 
 3. **Code** (❌ NOT RECOMMENDED - security risk):
 
    ```python
    # DON'T do this in production!
-   kis = VmKis(app_key="hardcoded_key", ...)
+   kis = VmKis(auth=KisAuth(appkey="hardcoded_key", ...))
    ```
 
 ### Q6: Can I use multiple accounts?
 
-**A**: Yes, create multiple VmKis instances:
+**A**: Yes. Declare them in one config file and pick by name.
+
+```yaml
+apps:
+  app_live1:
+    mode: "live"
+    hts_id: "YOUR_HTS_ID"
+    app_key: "KEY1"
+    app_secret: "SECRET1"
+
+accounts:
+  acc_main:
+    app: "app_live1"
+    account_no: "00000000"
+    product_code: "01"
+  acc_pension:
+    app: "app_live1"
+    account_no: "00000000"
+    product_code: "22"
+
+default_account: "acc_main"
+```
 
 ```python
-from vmkis import VmKis
+from vmkis import create_client
 
-account1 = VmKis(
-    app_key="KEY1",
-    app_secret="SECRET1",
-    account_number="00000000-01"
-)
-
-account2 = VmKis(
-    app_key="KEY2",
-    app_secret="SECRET2",
-    account_number="00000000-02"
-)
-
-quote1 = account1.stock("005930").quote()
-quote2 = account2.stock("005930").quote()
+main = create_client(account="acc_main")
+pension = create_client(account="acc_pension")
 ```
+
+Accounts that share one `app_key` share one token — that is why apps and accounts
+are separate blocks.
 
 ---
 
