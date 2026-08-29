@@ -761,6 +761,79 @@ Exception
 > [미지원 API 호출 가이드](../user/EXTENDING_API.md) 참고.
 > 아래는 **라이브러리에 1급 시민으로 통합**할 때의 절차입니다.
 
+### 언제 Protocol 이 필요한가 — 판정 기준
+
+> 이 절이 없던 동안 **모든 신규 엔드포인트가 Protocol 을 요구받는 것처럼**
+> 보였습니다. 아래 표로 판정하세요. ([#45](https://github.com/visualmoney/vm-stock-kis/issues/45))
+
+`src/vmkis` 의 Protocol **53개를 전수 분류한 결과** 역할이 셋뿐이었습니다.
+새로 만들려는 것이 셋 중 어디에도 해당하지 않으면 **Protocol 을 쓰지 마세요.**
+
+| | 역할 | 판정 질문 | 예 |
+|---|---|---|---|
+| **T1** | 시장 통합 | 국내·아시아·미국 구현이 **둘 이상**이고, 호출자가 **하나의 이름**으로 받아야 하는가? | `KisQuote`, `KisBalance`, `KisOrderbook`, `KisRealtimePrice` |
+| **T2** | 공개 반환 타입 | `public_types.py` 나 `types.py` 로 내보내는 이름인가? 구체 클래스를 **감춰야** 하는가? | `KisChart`(→`Chart`), `KisTradingHours`(→`TradingHours`), `KisStockInfo` |
+| **T3** | 믹스인 self 타입 | 믹스인 메서드가 `self` 에 무엇이 있다고 **가정**하는지 선언해야 하는가? | `KisProductProtocol`, `KisObjectProtocol`, `KisResponseProtocol` |
+
+**셋 다 아니면**: `@kis_repr` 클래스 + Base + impl + 모듈 함수로 충분합니다.
+`EXTENDING_API.md` 의 Level 1 산출물을 그대로 1급 시민으로 올리면 됩니다.
+
+#### 흔한 오해 세 가지
+
+1. **"단일 시장 TR 이니 Protocol 이 필요 없다"** — T2 를 빠뜨린 판정입니다.
+   `KisStockInfo` 는 구현이 `_KisStockInfo` **하나**뿐이지만 Protocol 입니다.
+   구체 클래스를 비공개(`_` 접두)로 두고 **Protocol 만 공개**하기 때문입니다.
+   구현 개수가 아니라 **공개 여부**가 기준입니다.
+
+2. **"구현이 둘이니 Protocol 이 필요하다"** — T1 은 "구현이 둘"이 아니라
+   **"호출자가 하나의 이름으로 받는다"** 입니다. 둘을 각각 다른 함수로
+   반환한다면 공통 Protocol 이 값을 만들지 않습니다.
+
+3. **`scope/` 의 Protocol 은 별도 역할이 아닙니다.** `KisAccount` ·
+   `KisStock` 은 T1 어댑터 Protocol 들을 **교집합으로 합성**해 사용자가 받는
+   표면을 이름 붙인 것이므로 T2 입니다. 새 기능은 어댑터 Protocol 에 추가하면
+   여기에 자동으로 따라옵니다 — `scope/` 에는 MRO 두 줄만 늘어납니다.
+
+#### 전수 확인 결과 (2026-08-30)
+
+**불필요하게 Protocol 을 쓴 사례는 없었습니다.** 53개가 전부 T1/T2/T3 에
+들어갑니다. 이 절은 **기존 코드를 고치기 위한 것이 아니라, 다음 사람이 판정을
+다시 발명하지 않게 하려는 것**입니다.
+
+### `@overload` 는 유지합니다 — 측정 결과
+
+[#45](https://github.com/visualmoney/vm-stock-kis/issues/45) 의 (B)안은
+`adapter/websocket/price.py` 의 `@overload` 8개를 `dict[str, Callable]`
+레지스트리로 대체하자는 것이었습니다. **하지 않기로 했습니다.**
+
+pyright(VS Code 의 Pylance 엔진)로 세 가지를 재 본 결과입니다.
+
+```text
+@overload           c.on("price")  ->  Ticket[Price]                     ✅ 좁혀짐
+dict 레지스트리      r.on("price")  ->  Ticket[Price] | Ticket[Orderbook]  ❌ 못 좁힘
+@overload + dict    h.on("price")  ->  Ticket[Price]                     ✅ 좁혀짐
+```
+
+파이썬 타입 시스템에는 **키에 따라 반환 타입이 달라지는 매핑**을 표현할 방법이
+없습니다. `@overload` 를 걷어내면 사용자는 `Ticket[Price] | Ticket[Orderbook]`
+을 받아 매번 `isinstance` 로 좁혀야 합니다.
+
+그리고 (B)는 **줄이려던 것을 줄이지 못합니다.**
+
+```text
+adapter/websocket/price.py   331줄
+  @overload 스텁              170줄  (51%)   ← 유지해야 하는 부분
+  실제 구현부                 118줄  (36%)   ← dict 로 바꿔도 ~20줄 절감
+```
+
+비용의 절반이 overload 스텁인데 그것이 타입 힌트라는 **이 라이브러리의 핵심
+가치**를 지탱합니다. 셋째 줄(절충안)은 좁힘을 지키지만 331줄 중 ~20줄을 줄이면서
+간접 참조를 늘리므로 남는 장사가 아닙니다.
+
+**보일러플레이트를 줄이려면 손으로 덜 쓰는 쪽이 아니라 생성하는 쪽**
+([#21](https://github.com/visualmoney/vm-stock-kis/issues/21) codegen)이 남은
+선택지입니다.
+
 ### 새로운 REST API 추가 — 6단계, 250~800 LOC
 
 | 단계 | 파일 | 작업 | LOC |
@@ -773,7 +846,10 @@ Exception
 | 6 | docstring + `scripts/generate_api_reference.py` 재생성 + `CHANGELOG.md` | — | — |
 
 **실측**: 단일 시장 신규 TR 1개 → 250~400 LOC. 국내+해외 통합 → 500~800 LOC.
-**절반 이상이 Protocol / overload / docstring 중복입니다.**
+**절반 이상이 Protocol / overload / docstring 중복입니다.** 실측으로 51% 였습니다
+(`adapter/websocket/price.py` 331줄 중 170줄). 그중 Protocol 은
+[판정 기준](#언제-protocol-이-필요한가--판정-기준)으로 줄일 수 있고, overload 는
+[유지하기로 정했습니다](#overload-는-유지합니다--측정-결과).
 
 페이지네이션 API 라면 `KisPaginationAPIResponse` 를 상속하고 `form=[account, page]`,
 `continuous=not page.is_first`, `result.is_last` / `next_page` 루프를 씁니다.
@@ -802,7 +878,9 @@ Exception
 3. **`on_xxx` / `on_product_xxx` 구독 함수 작성** — 이벤트 필터 + `client.on(...)`
 
 4. **adapter 확장** — `adapter/websocket/*.py` 의 `on()` 문자열 분기에 추가하고
-   Protocol / Mixin 양쪽에 `@overload` 를 답니다. 보일러플레이트가 가장 많은 지점입니다.
+   Protocol / Mixin 양쪽에 `@overload` 를 답니다. 보일러플레이트가 가장 많은
+   지점이지만 **줄이지 않기로 정했습니다** — 걷어내면 타입 좁힘이 사라집니다.
+   근거는 위 [측정 결과](#overload-는-유지합니다--측정-결과).
 
 5. **새 모듈이면 `api/websocket/__init__.py` 에 import 추가** — 그 import 가
    곧 등록입니다. 모듈이 로드되지 않으면 데코레이터가 실행되지 않습니다.
