@@ -142,6 +142,19 @@ kis = VmKis(auth)
 
 ### 2. 환경 변수 사용
 
+`.env` 파일을 읽으려면 **python-dotenv 를 따로 설치해야 합니다.**
+
+```console
+$ pip install python-dotenv
+```
+
+vm-stock-kis 는 이것을 끌어오지 않습니다. `load_dotenv()` 는 프로세스 전역
+`os.environ` 을 변형하므로, `import vmkis` 만으로 환경이 바뀔지는 라이브러리가
+아니라 **애플리케이션이 정할 일**이기 때문입니다.
+
+> `.env` 를 쓰지 않는다면 설치할 필요가 없습니다. 아래 코드에서
+> `load_dotenv()` 두 줄을 빼고 셸에서 환경 변수를 지정해도 동일하게 동작합니다.
+
 ```python
 # .env 파일 생성
 KIS_ID=your_hts_id

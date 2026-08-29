@@ -591,17 +591,17 @@ src/vmkis/
 ├── cryptography (>=43.0.0)
 │   └── 웹소켓 페이로드 복호화 (저장되는 자격증명과 무관)
 │
+├── pyyaml (>=6.0)
+│   └── `vmkis.config` / `vmkis.helpers` 의 YAML 설정 파일 읽기
+│
 ├── colorlog (>=6.8.2)
 │   └── 색상 로깅
 │
 ├── tzdata
 │   └── 시간대 정보
 │
-├── typing-extensions
-│   └── 확장된 타입 힌팅
-│
-└── python-dotenv (>=1.2.1)
-    └── .env 파일 로드
+└── typing-extensions
+    └── 확장된 타입 힌팅
 ```
 
 ### 개발 의존성
@@ -618,6 +618,10 @@ pytest-html (^4.1.1)
 
 pytest-asyncio (^1.3.0)
     └── 비동기 테스트
+
+python-dotenv (>=1.2.1,<2)
+    └── `tests/env.py` 가 저장소 루트의 `.env` 를 읽습니다.
+        런타임 의존성이었으나 `src/` 사용 0건이어서 옮겼습니다 (#72).
 ```
 
 ### 내부 모듈 의존성 그래프

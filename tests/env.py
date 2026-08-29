@@ -2,16 +2,22 @@ import os
 import unittest
 from typing import Literal
 
+import dotenv
+
 import vmkis.logging
 from vmkis import VmKis
 
-try:
-    import dotenv
-
-    dotenv.load_dotenv()
-except ImportError:
-    pass
-
+# 이 import 와 호출은 `try/except ImportError: pass` 로 감싸여 있었습니다.
+# #72 에서 지웠습니다.
+#
+# python-dotenv 는 이제 `[dependency-groups] test` 의 선언된 의존성이고,
+# **pytest 자신이 같은 그룹에 있습니다.** 즉 이 파일을 실행할 수 있는 환경이면
+# dotenv 도 반드시 있습니다 — 폴백이 걸릴 수 있는 경우가 없었습니다.
+#
+# 걸렸다면 더 나빴습니다. 아래 `require_credentials` 가 "저장소 루트에 .env 를
+# 만들어 채우세요" 라고 안내하는데, dotenv 가 없으면 .env 를 만들어도 아무 일도
+# 일어나지 않습니다. 사용자는 영원히 같은 자리를 돕니다.
+dotenv.load_dotenv()
 
 #: 도메인별로 반드시 있어야 하는 환경변수.
 #: 저장소 루트에 `.env` 를 두면 python-dotenv 가 자동으로 읽습니다.

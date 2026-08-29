@@ -760,6 +760,10 @@ logger.error("에러 메시지")
 
 ### 환경 변수
 
+`.env` 를 읽는 python-dotenv 는 **런타임 의존성이 아닙니다**(#72). 저장소에서
+개발 중이라면 `[dependency-groups] test` 에 있으므로 `uv sync --group dev` 로
+이미 들어와 있고, 그 밖의 환경에서는 `pip install python-dotenv` 가 필요합니다.
+
 ```python
 # .env 파일
 DEBUG=true
