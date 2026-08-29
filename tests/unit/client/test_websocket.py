@@ -18,6 +18,14 @@ class DummyKis:
     def __init__(self, virtual=False):
         self.virtual = virtual
 
+    def ws_url(self, domain):
+        """#75 부터 웹소켓 주소를 `VmKis` 가 해석합니다.
+
+        설정으로 주소를 재정의할 수 있게 하려면 상수를 직접 읽어서는 안 되고,
+        클라이언트를 거쳐야 합니다. 이 대역도 그 계약을 따라야 합니다.
+        """
+        return f"ws://dummy-{domain}:1"
+
 
 class DummyWS:
     def __init__(self):

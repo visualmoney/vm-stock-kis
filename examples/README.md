@@ -100,17 +100,11 @@ cd vm-stock-kis
 source .venv/bin/activate  # Linux/Mac
 .venv\Scripts\Activate.ps1  # Windows PowerShell
 
-# 설정 파일 생성
-# 옵션 1: 전체 멀티프로파일 예제 사용
-cp config.example.yaml config.yaml
+# 설정 파일 생성 — 템플릿을 복사합니다.
+# 제자리에서 고치지 마세요. 템플릿은 추적 대상이라 채우면 시크릿이 커밋됩니다.
+cp configs/template_account_profiles.yaml configs/account_profiles.yaml
 
-# 옵션 2: 프로파일별 예제 사용 (가상/실계좌)
-cp config.example.virtual.yaml config.yaml
-# 또는
-cp config.example.real.yaml config.yaml
-
-# config.yaml 편집
-nano config.yaml
+nano configs/account_profiles.yaml
 ```
 
 ### 2단계: 초급 예제 실행
@@ -211,29 +205,34 @@ python examples/03_advanced/03_error_handling.py
 ### 모의투자 vs 실계좌
 
 ```yaml
-# config.yaml
+# configs/account_profiles.yaml
 
-# ✅ 모의투자 (권장)
-virtual: true
-
-# ⚠️ 실계좌 (주의!)
-virtual: false
+apps:
+  app_paper1:
+    mode: "paper"    # ✅ 모의투자 (권장)
+  app_live1:
+    mode: "live"     # ⚠️ 실계좌 (주의!)
 ```
+
+`mode` 는 **생략할 수 없습니다.** 빠뜨리면 실전으로 간주하지 않고 실패합니다.
 
 ---
 
 ## 🔍 트러블슈팅
 
-### "config.yaml을 찾을 수 없습니다"
+### "설정 파일을 찾을 수 없습니다"
 
 ```bash
-# 루트 디렉터리 확인
-ls config.yaml
+ls configs/account_profiles.yaml
 
-# 없으면 생성
-cp config.example.yaml config.yaml
-nano config.yaml
+# 없으면 템플릿에서 복사
+cp configs/template_account_profiles.yaml configs/account_profiles.yaml
+nano configs/account_profiles.yaml
 ```
+
+### "`version` 이 없습니다"
+
+0.0.x 형식 파일입니다. 하위 호환을 지원하지 않으므로 템플릿을 보고 다시 쓰세요.
 
 ### "한글이 깨집니다"
 

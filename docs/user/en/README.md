@@ -29,9 +29,9 @@
 
 ```python
 # Simple and intuitive API
-from vmkis import VmKis
+from vmkis import create_client
 
-kis = VmKis(app_key="YOUR_KEY", app_secret="YOUR_SECRET")
+kis = create_client()          # reads configs/account_profiles.yaml
 quote = kis.stock("005930").quote()  # Samsung Electronics
 print(f"Current price: {quote.price:,} KRW")
 ```
@@ -113,34 +113,55 @@ kis = VmKis()  # Loads from environment
 
 #### Method 2: Configuration File
 
-**config.yaml**:
+Copy the template, then fill it in:
 
-```yaml
-kis:
-  server: real  # or "virtual" for sandbox
-  app_key: YOUR_APP_KEY
-  app_secret: YOUR_APP_SECRET
-  account_number: "00000000-01"
+```bash
+cp configs/template_account_profiles.yaml configs/account_profiles.yaml
 ```
 
-```python
-from vmkis.helpers import load_config
-from vmkis import VmKis
+**configs/account_profiles.yaml**:
 
-config = load_config("config.yaml")
-kis = VmKis(**config['kis'])
+```yaml
+version: 1
+
+apps:
+  app_paper1:
+    mode: "paper"              # "live" for real trading
+    hts_id: "YOUR_HTS_ID"
+    app_key: "YOUR_APP_KEY"
+    app_secret: "YOUR_APP_SECRET"
+
+accounts:
+  acc_paper1:
+    app: "app_paper1"
+    account_no: "00000000"
+    product_code: "01"
+
+default_account: "acc_paper1"
+```
+
+Quote every string. Without quotes YAML turns `account_no: 00000000` into the
+integer `0`.
+
+```python
+from vmkis import create_client
+
+kis = create_client()          # defaults to configs/account_profiles.yaml
 ```
 
 #### Method 3: Direct Parameters
 
 ```python
-from vmkis import VmKis
+from vmkis import KisAuth, VmKis
 
-kis = VmKis(
-    app_key="YOUR_APP_KEY",
-    app_secret="YOUR_APP_SECRET",
-    account_number="00000000-01"
+auth = KisAuth(
+    id="YOUR_HTS_ID",
+    appkey="YOUR_APP_KEY",
+    secretkey="YOUR_APP_SECRET",
+    account="00000000-01",
+    virtual=True,              # paper trading
 )
+kis = VmKis(None, auth)        # paper credentials go in the second slot
 ```
 
 ### 3. Basic Usage

@@ -295,9 +295,9 @@ Closes #123
 ```bash
 feat(api): add futures trading API
 fix(websocket): resolve reconnection issue
-docs(quickstart): update config.yaml example
-refactor(helpers): simplify load_config logic
-test(unit): add tests for load_config with profiles
+docs(quickstart): update account_profiles.yaml example
+refactor(helpers): simplify create_client logic
+test(unit): add tests for config schema rules
 ```
 
 ### 4. PR 리뷰 프로세스
@@ -356,35 +356,58 @@ tests/
 ### 2. 단위 테스트 예시
 
 ```python
-# tests/unit/test_helpers.py
+# tests/unit/test_config.py
 import pytest
-from vmkis.helpers import load_config
+import yaml
 
-def test_load_config_single_profile():
-    """단일 프로필 설정 파일 로드 테스트"""
-    cfg = load_config("config.example.virtual.yaml")
+from vmkis.config import load_kis_config
 
-    assert cfg["id"] == "YOUR_VIRTUAL_ID"
-    assert cfg["virtual"] is True
 
-def test_load_config_multi_profile_default():
-    """다중 프로필 설정 파일에서 기본 프로필 로드"""
-    cfg = load_config("config.example.yaml")
+def write(tmp_path, data):
+    path = tmp_path / "account_profiles.yaml"
+    path.write_text(yaml.dump(data, sort_keys=False), encoding="utf-8")
+    return path
 
-    assert cfg["id"] == "YOUR_VIRTUAL_ID"  # default = virtual
 
-def test_load_config_multi_profile_explicit():
-    """다중 프로필 설정 파일에서 명시적 프로필 선택"""
-    cfg = load_config("config.example.yaml", profile="real")
+def config(**overrides):
+    """통과하는 최소 설정. 테스트마다 한 가지만 망가뜨립니다."""
+    base = {
+        "version": 1,
+        "apps": {"app_paper1": {"mode": "paper", "hts_id": "x", "app_key": "k", "app_secret": "s"}},
+        "accounts": {"acc_paper1": {"app": "app_paper1", "account_no": "00000000", "product_code": "01"}},
+        "default_account": "acc_paper1",
+    }
+    return {**base, **overrides}
 
-    assert cfg["id"] == "YOUR_REAL_ID"
-    assert cfg["virtual"] is False
 
-def test_load_config_profile_not_found():
-    """존재하지 않는 프로필 선택 시 에러"""
-    with pytest.raises(ValueError, match="Profile 'unknown' not found"):
-        load_config("config.example.yaml", profile="unknown")
+def test_minimal_config_loads(tmp_path):
+    account = load_kis_config(write(tmp_path, config())).account()
+
+    assert account.account == "00000000-01"
+    assert account.is_paper is True
+
+
+def test_unknown_key_is_rejected(tmp_path):
+    """조용히 무시하면 오타가 사고가 됩니다 (R2)."""
+    data = config()
+    data["apps"]["app_paper1"]["nickname"] = "주계좌"
+
+    with pytest.raises(ValueError, match="모르는 키가 있습니다: nickname"):
+        load_kis_config(write(tmp_path, data))
+
+
+def test_orphan_app_is_rejected(tmp_path):
+    """아무 계좌도 쓰지 않는 앱 — 자격증명 블록이 방치되지 않게 (R6)."""
+    data = config()
+    data["apps"]["app_live1"] = {"mode": "live", "hts_id": "y", "app_key": "k2", "app_secret": "s2"}
+
+    with pytest.raises(ValueError, match="아무 계좌도 쓰지 않는"):
+        load_kis_config(write(tmp_path, data))
 ```
+
+> 규칙 번호(R1~R9)는 [docs/guidelines/CONFIG_SCHEMA.md](docs/guidelines/CONFIG_SCHEMA.md) 와
+> 1:1 로 대응합니다. 규칙을 지웠는데 테스트가 남아 있으면 어느 쪽이 사양인지 알 수
+> 없으므로, 번호를 테스트 이름에 답니다.
 
 ### 3. 통합 테스트 예시
 
@@ -425,7 +448,7 @@ uv run pytest
 uv run pytest tests/unit/test_helpers.py
 
 # 특정 테스트만
-uv run pytest tests/unit/test_helpers.py::test_load_config_single_profile
+uv run pytest tests/unit/test_config.py::TestRules::test_r2_unknown_key_in_app
 
 # 커버리지 포함
 uv run pytest --cov --cov-report=html

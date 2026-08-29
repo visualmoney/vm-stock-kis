@@ -78,29 +78,44 @@ class TestEnvironmentVariableFallback:
         assert helpers._env("PROFILE") == "new"
         assert not [w for w in recwarn if issubclass(w.category, DeprecationWarning)]
 
-    def test_load_config_honours_legacy_profile_variable(self, tmp_path, monkeypatch):
-        """`load_config`가 폴백을 실제로 탄다"""
+    def test_create_client_honours_legacy_account_variable(self, tmp_path, monkeypatch):
+        """`create_client` 가 폴백을 실제로 탄다.
+
+        #75 에서 선택 축이 `PROFILE` 에서 `ACCOUNT` 로 바뀌었습니다. 스키마에
+        프로필이 없어졌기 때문입니다 — 폴백이 사는 곳도 따라 옮겼습니다.
+        """
         import yaml
 
-        # 프로필에 키를 다 채우는 이유: `load_config` 가 #69 부터 프로필을 검증합니다.
-        # 이 테스트의 대상은 `PYKIS_PROFILE` 폴백이지 부분 설정이 아니므로
-        # 키를 채워도 검증력이 줄지 않습니다.
-        def _profile(id_: str) -> dict:
-            return {
-                "id": id_,
-                "account": "00000000-01",
-                "appkey": "appkey",
-                "secretkey": "secret",
-                "virtual": True,
-            }
+        from vmkis.kis import VmKis
 
-        config = {"default": "virtual", "configs": {"virtual": _profile("v"), "real": _profile("r")}}
-        path = tmp_path / "config.yaml"
+        config = {
+            "version": 1,
+            "apps": {
+                "app_paper1": {
+                    "mode": "paper",
+                    "hts_id": "x",
+                    "app_key": "k",
+                    "app_secret": "s",
+                }
+            },
+            "accounts": {
+                "acc_a": {"app": "app_paper1", "account_no": "00000000", "product_code": "01"},
+                "acc_b": {"app": "app_paper1", "account_no": "11111111", "product_code": "02"},
+            },
+            "default_account": "acc_a",
+        }
+        path = tmp_path / "account_profiles.yaml"
         path.write_text(yaml.dump(config), encoding="utf-8")
-        monkeypatch.setenv("PYKIS_PROFILE", "real")
+
+        captured = {}
+        monkeypatch.setattr(helpers, "VmKis", lambda *a, **kw: captured.update(auth=a[1]) or object())
+        monkeypatch.setenv("PYKIS_ACCOUNT", "acc_b")
 
         with pytest.warns(DeprecationWarning):
-            assert helpers.load_config(str(path))["id"] == "r"
+            helpers.create_client(path, keep_token=False)
+
+        assert captured["auth"].account == "11111111-02", "환경변수가 가리킨 계좌여야 한다"
+        assert VmKis is not None
 
 
 class TestUserAgentAndPackageName:

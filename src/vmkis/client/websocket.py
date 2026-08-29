@@ -11,11 +11,7 @@ from typing import TYPE_CHECKING
 from websocket import WebSocketApp, WebSocketConnectionClosedException
 
 from vmkis import logging
-from vmkis.__env__ import (
-    WEBSOCKET_MAX_SUBSCRIPTIONS,
-    WEBSOCKET_REAL_DOMAIN,
-    WEBSOCKET_VIRTUAL_DOMAIN,
-)
+from vmkis.__env__ import WEBSOCKET_MAX_SUBSCRIPTIONS
 from vmkis.client.messaging import (
     TR_SUBSCRIBE_TYPE,
     TR_UNSUBSCRIBE_TYPE,
@@ -371,7 +367,7 @@ class KisWebsocketClient:
                 try:
                     self._connected_event.clear()
                     self.websocket = WebSocketApp(
-                        f"{WEBSOCKET_VIRTUAL_DOMAIN if self.virtual else WEBSOCKET_REAL_DOMAIN}/tryitout",
+                        f"{self.kis.ws_url('virtual' if self.virtual else 'real')}/tryitout",
                         on_open=self._on_open,  # type: ignore
                         on_error=self._on_error,  # type: ignore
                         on_close=self._on_close,  # type: ignore

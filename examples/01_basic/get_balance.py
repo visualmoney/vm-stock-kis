@@ -3,28 +3,18 @@
 config.yaml의 인증 정보를 사용해 계좌 잔고를 조회합니다.
 """
 
-from vmkis import KisAuth, VmKis, load_config
+from vmkis import create_client
 
 
 def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (virtual|real)")
+    parser.add_argument("--config", default="configs/account_profiles.yaml", help="설정 파일 경로")
+    parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
-    cfg = load_config(path=args.config, profile=args.profile)
-
-    auth = KisAuth(
-        id=cfg["id"],
-        account=cfg["account"],
-        appkey=cfg["appkey"],
-        secretkey=cfg["secretkey"],
-        virtual=cfg["virtual"],
-    )
-
-    kis = VmKis(auth, keep_token=True)
+    kis = create_client(args.config, account=args.account)
 
     account = kis.account()
     balance = account.balance()

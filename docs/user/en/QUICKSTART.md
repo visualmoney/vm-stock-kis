@@ -68,40 +68,53 @@ kis = VmKis()
 
 ### Option B: Configuration File
 
-Create `config.yaml`:
+Copy the template, then fill it in:
 
-```yaml
-kis:
-  server: real              # Use "virtual" for sandbox
-  app_key: YOUR_APP_KEY
-  app_secret: YOUR_APP_SECRET
-  account_number: "00000000-01"
-
-# Optional: Logging configuration
-logging:
-  level: INFO
-  json_format: true
+```bash
+cp configs/template_account_profiles.yaml configs/account_profiles.yaml
 ```
 
-```python
-from vmkis.helpers import load_config
-from vmkis import VmKis
+```yaml
+version: 1
 
-config = load_config("config.yaml")
-kis = VmKis(**config['kis'])
+apps:
+  app_paper1:
+    mode: "paper"              # "live" for real trading
+    hts_id: "YOUR_HTS_ID"
+    app_key: "YOUR_APP_KEY"
+    app_secret: "YOUR_APP_SECRET"
+
+accounts:
+  acc_paper1:
+    app: "app_paper1"
+    account_no: "00000000"
+    product_code: "01"
+
+default_account: "acc_paper1"
+```
+
+Quote every string. Without quotes YAML turns `account_no: 00000000` into the
+integer `0`.
+
+```python
+from vmkis import create_client
+
+kis = create_client()          # defaults to configs/account_profiles.yaml
 ```
 
 ### Option C: Direct Parameters
 
 ```python
-from vmkis import VmKis
+from vmkis import KisAuth, VmKis
 
-kis = VmKis(
-    app_key="YOUR_APP_KEY",
-    app_secret="YOUR_APP_SECRET",
-    account_number="00000000-01",
-    server="real"  # or "virtual" for testing
+auth = KisAuth(
+    id="YOUR_HTS_ID",
+    appkey="YOUR_APP_KEY",
+    secretkey="YOUR_APP_SECRET",
+    account="00000000-01",
+    virtual=True,              # paper trading
 )
+kis = VmKis(None, auth)        # paper credentials go in the second slot
 ```
 
 ---

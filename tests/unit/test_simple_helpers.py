@@ -2,15 +2,21 @@ import yaml
 
 
 def test_create_client_and_simple(monkeypatch, tmp_path):
-    # prepare temporary config
+    # prepare temporary config (#75 스키마)
     cfg = {
-        "id": "testid",
-        "account": "00000000-01",
-        "appkey": "appkey",
-        "secretkey": "secret",
-        "virtual": True,
+        "version": 1,
+        "apps": {
+            "app_paper1": {
+                "mode": "paper",
+                "hts_id": "testid",
+                "app_key": "appkey",
+                "app_secret": "secret",
+            }
+        },
+        "accounts": {"acc_paper1": {"app": "app_paper1", "account_no": "00000000", "product_code": "01"}},
+        "default_account": "acc_paper1",
     }
-    p = tmp_path / "config.yaml"
+    p = tmp_path / "account_profiles.yaml"
     p.write_text(yaml.dump(cfg, sort_keys=False), encoding="utf-8")
 
     # Dummy VmKis to avoid network calls

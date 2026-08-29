@@ -6,35 +6,25 @@
 
 import os
 
-from vmkis import KisAuth, VmKis, load_config
+from vmkis import create_client
 
 
 def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (virtual|real)")
+    parser.add_argument("--config", default="configs/account_profiles.yaml", help="설정 파일 경로")
+    parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
-    cfg = load_config(path=args.config, profile=args.profile)
+    kis = create_client(args.config, account=args.account)
 
     allow_live = os.environ.get("ALLOW_LIVE_TRADES") == "1"
 
-    auth = KisAuth(
-        id=cfg["id"],
-        account=cfg["account"],
-        appkey=cfg["appkey"],
-        secretkey=cfg["secretkey"],
-        virtual=cfg["virtual"],
-    )
-
     # 이 파일의 docstring이 약속하는 안전장치. 이전에는 allow_live를 계산만 하고
     # 사용하지 않아, 실계좌 설정으로 실행하면 아무 확인 없이 실주문이 나갔다.
-    if not auth.virtual and not allow_live:
+    if not kis.virtual and not allow_live:
         raise SystemExit("실계좌 주문입니다. 의도한 것이 맞다면 ALLOW_LIVE_TRADES=1 을 설정하고 다시 실행하세요.")
-
-    kis = VmKis(auth, keep_token=True)
 
     stock = kis.stock("005930")  # 삼성전자
 

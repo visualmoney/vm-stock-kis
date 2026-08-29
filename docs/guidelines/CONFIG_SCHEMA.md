@@ -1,8 +1,8 @@
 # 설정 파일 스키마
 
 **작성일**: 2026-08-29
-**상태**: 초안 — 구현 전 (#75)
-**범위**: `vmkis.load_config` 가 읽는 YAML 의 구조와 검증 규칙
+**상태**: 구현됨 (#75)
+**범위**: `vmkis.config.load_kis_config` 가 읽는 YAML 의 구조와 검증 규칙
 
 ---
 
@@ -35,7 +35,7 @@ version: 1
 # 토큰 발급 단위. KIS 토큰은 app_key 단위로 발급되므로,
 # 같은 앱키를 쓰는 계좌 N개가 토큰 1개를 공유합니다.
 apps:
-  paper1:
+  app_paper1:
     mode: "paper"                # live | paper — 생략 불가
     hts_id: "YOUR_HTS_ID"
     app_key: "YOUR_APP_KEY"      # 36자
@@ -43,12 +43,12 @@ apps:
 
 # 계좌. 어느 앱으로 접속할지만 가리킵니다.
 accounts:
-  paper1_main:
-    app: "paper1"
+  acc_paper1:
+    app: "app_paper1"
     account_no: "00000000"       # 종합계좌번호 8자리
     product_code: "01"           # 01 종합 / 22 개인연금 / 29 IRP
 
-default_account: "paper1_main"
+default_account: "acc_paper1"
 ```
 
 > **문자열은 전부 따옴표로 감쌉니다.** `version` 만 따옴표가 없습니다 — 그것만
@@ -128,8 +128,8 @@ YAML 1.1 의 `no`/`off`/`n` 이 `False` 로, `on`/`yes` 가 `True` 로 바뀌는
 configs/
 ├── account_profiles.yaml
 └── token/
-    ├── paper1.json
-    └── live1.json
+    ├── app_paper1.json
+    └── app_live1.json
 ```
 
 파일명은 **앱 이름에서 만듭니다**(`token/<app>.json`). 사용자가 앱마다 경로를 직접
@@ -165,7 +165,7 @@ R9 가 없으면 `account_no: 00000000` 이 정수 `0` 으로 조용히 들어�
 오류 메시지가 원인을 바로 말해야 합니다.
 
 ```text
-accounts.paper1_main.account_no 가 정수 0 입니다. 계좌번호는 문자열이어야 합니다 —
+accounts.acc_paper1.account_no 가 정수 0 입니다. 계좌번호는 문자열이어야 합니다 —
 따옴표를 씌우세요: account_no: "00000000"
 ```
 
@@ -259,14 +259,23 @@ config.yaml 에 `version` 이 없습니다. 이 파일은 0.0.x 형식으로 보
 
 ```text
 configs/
-├── account_profiles.yaml        # 사용자가 채우는 것. .gitignore 대상
-└── token/                       # 토큰. .gitignore 대상
-
-template_account_profiles.yaml   # 저장소가 배포하는 템플릿
+├── template_account_profiles.yaml   # 저장소가 배포. 유일하게 추적됩니다
+├── account_profiles.yaml            # 사용자가 채우는 것. 무시됨
+└── token/                           # 토큰. 무시됨
 ```
 
-템플릿은 **저장소 루트**에 두고, 사용자가 `configs/` 로 복사해 채웁니다. 템플릿과
-실사용 파일의 이름이 다르므로 실수로 커밋될 여지가 줄어듭니다.
+템플릿도 `configs/` 안에 둡니다. 복사가 같은 폴더 안에서 끝나고, 첫 클론에
+`configs/` 가 이미 존재하며, **토큰 기본 경로가 자동으로 무시 대상**이 됩니다
+(토큰 폴더는 설정 파일 기준이라 템플릿이 저장소 루트에 있으면 토큰이 루트에
+떨어지고 그건 무시되지 않습니다).
+
+```gitignore
+configs/*
+!configs/template_account_profiles.yaml
+```
+
+> `configs/` 가 아니라 **`configs/*`** 입니다. 디렉터리째 제외하면 git 이 그 안으로
+> 내려가지 않아 `!` 예외가 통하지 않습니다. 실측으로 확인한 동작입니다.
 
 ---
 
@@ -285,6 +294,7 @@ template_account_profiles.yaml   # 저장소가 배포하는 템플릿
 
 ## 관련
 
-- #75 구현
+- 구현: `src/vmkis/config.py` (규칙 번호가 그대로 대응합니다)
+- 진입점: `vmkis.create_client`
 - #69 프로필 검증 (`helpers.py` `_validate_profile`) — 이 스키마의 전신
 - [API_STABILITY_POLICY.md](./API_STABILITY_POLICY.md)
