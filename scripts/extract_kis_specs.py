@@ -34,6 +34,7 @@ import re
 import sys
 from collections import Counter
 from dataclasses import asdict, dataclass, field
+from typing import Any
 
 #: 엔드포인트가 아닌 폴더. auth 는 이 라이브러리가 자체 구현을 갖고 있습니다.
 SKIP_DIRS = {"__pycache__", "auth"}
@@ -56,6 +57,9 @@ class EndpointSpec:
     kind: str = "rest"
     path: str | None = None
     tr_ids: list[str] = field(default_factory=list)
+    #: TR ID 마다 그것이 선택되는 조건. `{"env_dv": "real", "pd_dv": "before"}`.
+    #: 조건 없이 하나뿐이면 빈 dict 하나입니다.
+    tr_branches: list[dict[str, Any]] = field(default_factory=list)
     method: str = "GET"
     params: dict[str, str] = field(default_factory=dict)  # KIS 이름 -> 파이썬 인자
     required: list[str] = field(default_factory=list)
@@ -155,6 +159,90 @@ def _collect_tr_ids(func: ast.FunctionDef) -> list[str]:
                     found.append(node.value.value)
     # 순서를 지키면서 중복만 제거합니다.
     return list(dict.fromkeys(found))
+
+
+#: 실전/모의를 가르는 축. 값이 `"real"`/`"demo"` 입니다.
+#: 분기 조건에 쓰인 변수를 전수로 세면 `env_dv` 가 94회로 압도적입니다.
+DOMAIN_AXIS = "env_dv"
+
+#: `env_dv` 값 -> vmkis 도메인.
+DOMAIN_VALUES = {"real": "live", "demo": "paper"}
+
+
+def _predicate(test: ast.expr) -> tuple[str, str] | None:
+    """`x == "y"` 를 `("x", "y")` 로. 그 밖의 형태는 `None`."""
+    if (
+        isinstance(test, ast.Compare)
+        and len(test.ops) == 1
+        and isinstance(test.ops[0], ast.Eq)
+        and isinstance(test.left, ast.Name)
+        and isinstance(test.comparators[0], ast.Constant)
+        and isinstance(test.comparators[0].value, str)
+    ):
+        return test.left.id, test.comparators[0].value
+    return None
+
+
+def _collect_tr_branches(func: ast.FunctionDef) -> list[dict[str, Any]]:
+    """TR ID 와 **그것이 선택되는 조건**을 함께 모읍니다.
+
+    `inquire_daily_ccld` 가 이렇게 생겼습니다.
+
+        if env_dv == "real":
+            if pd_dv == "before":   tr_id = "CTSC9215R"
+            elif pd_dv == "inner":  tr_id = "TTTC0081R"
+        elif env_dv == "demo":
+            if pd_dv == "before":   tr_id = "VTSC9215R"
+            elif pd_dv == "inner":  tr_id = "VTTC0081R"
+
+    조건을 버리고 TR ID 만 모으면 **4개 중 어느 것이 언제 쓰이는지 알 수
+    없습니다.** 첫 판이 그랬고, 생성물은 첫 번째만 쓰고 나머지를 주석으로
+    흘렸습니다.
+
+    `ast` 에는 부모 링크가 없으므로 조건 스택을 들고 하향식으로 걷습니다.
+    `else` 가지는 **조건을 특정할 수 없으므로** 그 사실을 그대로 남깁니다
+    (`{...: None}`) — 추측해서 반대값을 넣으면 3분기 이상에서 틀립니다.
+    """
+    found: list[dict[str, Any]] = []
+
+    def walk(nodes: list[ast.stmt], conditions: dict[str, Any]) -> None:
+        for node in nodes:
+            if isinstance(node, ast.Assign) and isinstance(node.value, ast.Constant):
+                if any(isinstance(t, ast.Name) and t.id == "tr_id" for t in node.targets):
+                    if isinstance(node.value.value, str):
+                        found.append({"tr_id": node.value.value, "conditions": dict(conditions)})
+                continue
+
+            if isinstance(node, ast.If):
+                pred = _predicate(node.test)
+                taken = dict(conditions)
+                if pred:
+                    taken[pred[0]] = pred[1]
+                walk(node.body, taken)
+
+                # `else` / `elif`. elif 는 `orelse` 안의 If 로 표현됩니다.
+                fallthrough = dict(conditions)
+                if pred and not (len(node.orelse) == 1 and isinstance(node.orelse[0], ast.If)):
+                    # 순수 else 입니다. "pred 가 아니다"를 값으로 적을 수 없습니다.
+                    fallthrough[pred[0]] = None
+                walk(node.orelse, fallthrough)
+                continue
+
+            for attr in ("body", "orelse", "finalbody"):
+                inner = getattr(node, attr, None)
+                if isinstance(inner, list):
+                    walk(inner, conditions)
+
+    walk(func.body, {})
+
+    # 같은 TR ID 가 여러 경로로 나오면 첫 경로만 남깁니다.
+    seen: set[str] = set()
+    unique = []
+    for entry in found:
+        if entry["tr_id"] not in seen:
+            seen.add(entry["tr_id"])
+            unique.append(entry)
+    return unique
 
 
 def _collect_params(func: ast.FunctionDef) -> dict[str, str]:
@@ -332,7 +420,8 @@ def extract_one(folder: pathlib.Path, category: str) -> EndpointSpec:
     if func is None:
         spec.problems.append("엔드포인트 함수 없음")
     else:
-        spec.tr_ids = _collect_tr_ids(func)
+        spec.tr_branches = _collect_tr_branches(func)
+        spec.tr_ids = [b["tr_id"] for b in spec.tr_branches]
         if not spec.tr_ids:
             spec.problems.append("tr_id 없음")
         spec.params = _collect_params(func)

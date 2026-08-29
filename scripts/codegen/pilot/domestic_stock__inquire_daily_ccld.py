@@ -18,14 +18,22 @@ from vmkis.responses.dynamic import KisDynamic, KisList, KisObject
 from vmkis.responses.response import KisAPIResponse
 from vmkis.responses.types import KisBool, KisDate, KisDecimal, KisInt, KisString
 
-INQUIRE_DAILY_CCLD = KisEndpoint(
-    path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
-    tr_live="CTSC9215R",
-    tr_paper="VTSC9215R",
-    # 분기 TR ID 가 더 있습니다: TTTC0081R
-    # 어떤 조건에서 갈리는지는 사람이 정해야 합니다.
-    page_size=100,  # ctx_area_[fn]k100
-)
+#: pd_dv -> 엔드포인트.
+#: 실전/모의 축은 KisEndpoint 가 tr_live/tr_paper 로 흡수합니다.
+INQUIRE_DAILY_CCLD_ENDPOINTS: dict[str, KisEndpoint] = {
+    "before": KisEndpoint(
+        path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
+        tr_live="CTSC9215R",
+        tr_paper="VTSC9215R",
+        page_size=100,
+    ),
+    "inner": KisEndpoint(
+        path="/uapi/domestic-stock/v1/trading/inquire-daily-ccld",
+        tr_live="TTTC0081R",
+        tr_paper="VTTC0081R",
+        page_size=100,
+    ),
+}
 
 
 class KisInquireDailyCcldOutput1Item(KisDynamic):
