@@ -583,8 +583,11 @@ def test_kis_account_creation(kis):
 ### Mock을 이용한 테스트
 
 ```python
+from decimal import Decimal
+from types import SimpleNamespace
+from unittest.mock import Mock
+
 import pytest
-from unittest.mock import Mock, patch
 
 @pytest.fixture
 def mock_kis(kis):
@@ -594,9 +597,9 @@ def mock_kis(kis):
 
 def test_quote_with_mock(mock_kis):
     """시세 조회 Mock 테스트"""
-    from vmkis.responses.types import KisQuote
-
-    mock_kis.request.return_value = KisQuote(
+    # `vmkis.Quote` 는 Protocol 이라 인스턴스를 만들 수 없습니다.
+    # 반환값 대역은 필요한 속성만 가진 값 객체로 세웁니다.
+    mock_kis.request.return_value = SimpleNamespace(
         symbol="000660",
         price=Decimal("70000"),
     )
@@ -604,6 +607,9 @@ def test_quote_with_mock(mock_kis):
     stock = mock_kis.stock("000660")
     # quote = stock.quote()  # 실제 구현 테스트
     # assert quote.price == Decimal("70000")
+
+    # `Mock()` 을 그대로 반환값으로 쓰면 어떤 속성 접근이든 조용히 Mock 을
+    # 돌려주므로, 검증하는 줄이 사실상 아무것도 검사하지 않게 됩니다.
 ```
 
 ### 통합 테스트

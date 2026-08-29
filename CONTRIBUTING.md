@@ -228,7 +228,7 @@ from websocket import WebSocket
 
 # 3. 로컬 모듈
 from vmkis.client.auth import KisAuth
-from vmkis.types import Quote
+from vmkis.public_types import Quote
 ```
 
 ---
