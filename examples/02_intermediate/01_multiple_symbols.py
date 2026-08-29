@@ -23,7 +23,7 @@ from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
 
-def analyze_multiple_stocks(config_path: str | None = None, profile: str | None = None) -> None:
+def analyze_multiple_stocks(config_path: str | None = None, account: str | None = None) -> None:
     """여러 종목을 조회하고 성과를 분석합니다."""
 
     # config.yaml에서 설정 로드 및 클라이언트 생성
@@ -33,7 +33,7 @@ def analyze_multiple_stocks(config_path: str | None = None, profile: str | None 
         print("   루트 디렉터리에서 실행하거나 config.yaml을 생성하세요.")
         return
 
-    kis = create_client(config_path, profile=profile)
+    kis = create_client(config_path, account=account)
     simple = SimpleKIS(kis)
 
     # 분석할 종목 목록
@@ -132,11 +132,11 @@ def analyze_multiple_stocks(config_path: str | None = None, profile: str | None 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (paper|live)")
+    parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
     try:
-        analyze_multiple_stocks(config_path=args.config, profile=args.profile)
+        analyze_multiple_stocks(config_path=args.config, account=args.account)
     except KeyboardInterrupt:
         print("\n🛑 사용자가 중단했습니다.")
     except Exception as e:

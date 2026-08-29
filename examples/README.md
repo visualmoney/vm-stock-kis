@@ -130,16 +130,16 @@ python examples/01_basic/get_quote.py
 ### 4단계: 중급/고급 예제 진행
 
 ```bash
-# 여러 종목 분석 (프로파일 선택 예시)
-python examples/02_intermediate/01_multiple_symbols.py --profile virtual
+# 여러 종목 분석 (쓸 계좌 이름 지정)
+python examples/02_intermediate/01_multiple_symbols.py --account acc_paper1
 
-# 포트폴리오 분석
+# 포트폴리오 분석 (생략하면 설정의 default_account)
 python examples/02_intermediate/03_portfolio_analysis.py
 
-# Scope API 사용 (환경변수로도 프로파일 선택 가능)
-VMKIS_PROFILE=real python examples/03_advanced/01_scope_api_trading.py
+# Scope API 사용 (환경변수로도 계좌 선택 가능)
+VMKIS_ACCOUNT=acc_live1 python examples/03_advanced/01_scope_api_trading.py
 # 또는
-python examples/03_advanced/01_scope_api_trading.py --profile real
+python examples/03_advanced/01_scope_api_trading.py --account acc_live1
 ```
 
 ---
@@ -250,7 +250,7 @@ export LANG=ko_KR.UTF-8
 
 ### "주문이 실패합니다"
 
-1. 모의투자 모드인지 확인 (`virtual: true`)
+1. 모의투자 모드인지 확인 (앱의 `mode: "paper"`)
 2. 잔고 충분한지 확인
 3. 거래 시간인지 확인 (평일 09:00-15:30)
 4. 네트워크 연결 확인

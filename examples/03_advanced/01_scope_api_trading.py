@@ -22,7 +22,7 @@ import os
 from vmkis import create_client
 
 
-def advanced_trading_with_scope(config_path: str | None = None, profile: str | None = None) -> None:
+def advanced_trading_with_scope(config_path: str | None = None, account: str | None = None) -> None:
     """VmKis Scope API를 사용한 심화 거래"""
 
     config_path = config_path or os.path.join(os.getcwd(), "config.yaml")
@@ -30,8 +30,8 @@ def advanced_trading_with_scope(config_path: str | None = None, profile: str | N
         print(f"❌ {config_path}를 찾을 수 없습니다.")
         return
 
-    # Create VmKis client using helpers.create_client (supports multi-profile)
-    kis = create_client(config_path, profile=profile)
+    # 설정 파일에서 VmKis 클라이언트를 만듭니다. 계좌 이름은 --account 로 고릅니다.
+    kis = create_client(config_path, account=account)
 
     print("=" * 80)
     print("VM-Stock-KIS 고급 예제 01: Scope API를 사용한 심화 거래")
@@ -127,11 +127,11 @@ def advanced_trading_with_scope(config_path: str | None = None, profile: str | N
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (paper|live)")
+    parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
     try:
-        advanced_trading_with_scope(config_path=args.config, profile=args.profile)
+        advanced_trading_with_scope(config_path=args.config, account=args.account)
     except Exception as e:
         print(f"\n❌ 오류 발생: {e}")
         import traceback
