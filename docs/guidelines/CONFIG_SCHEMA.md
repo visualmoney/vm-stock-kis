@@ -36,7 +36,7 @@ version: 1
 # 같은 앱키를 쓰는 계좌 N개가 토큰 1개를 공유합니다.
 apps:
   paper1:
-    mode: paper                  # live | paper — 생략 불가
+    mode: "paper"                # live | paper — 생략 불가
     hts_id: "YOUR_HTS_ID"
     app_key: "YOUR_APP_KEY"      # 36자
     app_secret: "YOUR_SECRET"    # 180자
@@ -44,12 +44,15 @@ apps:
 # 계좌. 어느 앱으로 접속할지만 가리킵니다.
 accounts:
   paper1_main:
-    app: paper1
+    app: "paper1"
     account_no: "00000000"       # 종합계좌번호 8자리
     product_code: "01"           # 01 종합 / 22 개인연금 / 29 IRP
 
-default_account: paper1_main
+default_account: "paper1_main"
 ```
+
+> **문자열은 전부 따옴표로 감쌉니다.** `version` 만 따옴표가 없습니다 — 그것만
+> 실제로 정수입니다. 아래 [따옴표](#따옴표) 참고.
 
 블록은 셋뿐입니다. `apps` 를 계좌와 분리하는 근거는 **토큰 수명** 하나입니다 —
 그것이 KIS 의 실제 제약이라 라이브러리가 알아야 합니다.
@@ -67,6 +70,8 @@ default_account: paper1_main
 | `accounts` | ✅ | 계좌 이름 → 계좌 블록 |
 | `default_account` | 계좌가 2개 이상이면 ✅ | `accounts` 의 키 하나 |
 | `token_dir` | | 토큰 저장 폴더. 기본은 **설정 파일과 같은 폴더의 `token/`** |
+| `user_agent` | | HTTP 요청 헤더. 기본 `VmKis/<version>` |
+| `endpoints` | | 서버 주소 재정의. 생략하면 라이브러리 기본값 |
 
 > `default_account` 를 `accounts` **밖에** 둡니다. 안에 두면 `default_account` 라는
 > 이름의 계좌를 만들 수 없고, 검증기가 그 키만 특례 처리해야 합니다.
@@ -87,6 +92,31 @@ default_account: paper1_main
 | `app` | ✅ | `apps` 의 키 하나 |
 | `account_no` | ✅ | 8자리 |
 | `product_code` | ✅ | 2자리 |
+
+---
+
+## 따옴표
+
+**문자열 값은 전부 따옴표로 감쌉니다.** `version` 만 예외입니다 — 그것만 정수입니다.
+
+이유는 스타일이 아닙니다. YAML 은 따옴표 없는 값을 **추측해서 변환**합니다.
+
+```console
+account_no: 00000000    ->  0      (int)      ← 계좌번호가 사라집니다
+product_code: 01        ->  1      (int)
+mode: paper             ->  'paper' (str)     ← 이건 안전합니다
+```
+
+`mode` 는 따옴표가 있으나 없으나 같은 문자열입니다. 그런데 문서에서 `mode: paper`
+를 본 사용자는 *"따옴표는 선택"* 으로 읽고 `account_no` 에도 안 씁니다. 그 순간
+계좌번호가 **조용히 `0`** 이 됩니다.
+
+> 안전한 값 하나를 따옴표 없이 적는 대가로, 위험한 값에서 따옴표가 빠집니다.
+> 그래서 전부 씌웁니다.
+
+YAML 1.1 의 `no`/`off`/`n` 이 `False` 로, `on`/`yes` 가 `True` 로 바뀌는 것도 같은
+성질입니다 — 이 스키마에는 해당 값이 없지만, 규칙을 예외 없이 두면 신경 쓸 일이
+없습니다.
 
 ---
 
@@ -128,10 +158,81 @@ configs/
 | R6 | 어떤 앱도 참조하지 않는 `apps` 항목이 있으면 거부 | `ValueError` — 고아 블록이 조용히 남지 않게 |
 | R7 | 계좌가 2개 이상인데 `default_account` 가 없으면 거부 | `ValueError` |
 | R8 | `default_account` 가 `accounts` 에 없으면 거부 | `ValueError` |
+| R9 | 문자열이어야 할 값이 `int`/`bool` 로 들어오면 거부 | `ValueError` — **따옴표를 씌우라고 말해줍니다** |
+
+R9 가 없으면 `account_no: 00000000` 이 정수 `0` 으로 조용히 들어옵니다. YAML 이
+추측 변환을 하기 때문이고, 이건 사용자의 오타가 아니라 **형식의 함정**입니다.
+오류 메시지가 원인을 바로 말해야 합니다.
+
+```text
+accounts.paper1_main.account_no 가 정수 0 입니다. 계좌번호는 문자열이어야 합니다 —
+따옴표를 씌우세요: account_no: "00000000"
+```
 
 R5·R6 이 **양방향**인 이유: 한쪽만 검사하면 오타로 만든 블록이 고아로 남습니다.
 초안에서 실제로 `default_account: "kis_paper_1"` 이 그 파일에 없는 계좌를 가리키고
 있었습니다.
+
+---
+
+## `user_agent`
+
+브라우저 User-Agent 를 그대로 넣어야 할 때가 있어 열어 둡니다. **최상위**입니다 —
+클라이언트 전체에 걸리는 값이지 계좌·앱별 값이 아닙니다.
+
+```yaml
+user_agent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 ..."
+```
+
+> 값을 따옴표 **한 겹**으로만 감싸세요. `"'Mozilla/5.0 ...'"` 처럼 이중으로 쓰면
+> YAML 이 작은따옴표를 값에 포함시켜 헤더에 그대로 실려 나갑니다.
+
+생략하면 `VmKis/<version>` 입니다 (`src/vmkis/__env__.py`). 지정한 값은
+세션 헤더에 그대로 들어갑니다 (`src/vmkis/kis.py`).
+
+---
+
+## `endpoints` — 벤더가 주소를 바꿨을 때의 탈출구
+
+```yaml
+endpoints:            # 전부 선택. 적은 것만 덮어씁니다
+  live:
+    base_url: "https://openapi.koreainvestment.com:9443"
+    ws_url:   "ws://ops.koreainvestment.com:21000"
+  paper:
+    base_url: "https://openapivts.koreainvestment.com:29443"
+    ws_url:   "ws://ops.koreainvestment.com:31000"
+```
+
+`mode` 로 키를 잡습니다 — 같은 모드의 앱들은 어차피 같은 주소를 씁니다. **부분
+지정을 허용합니다.** 벤더가 웹소켓 포트만 바꾸는 일이 흔해서, `paper.ws_url`
+하나만 적고 나머지는 기본값을 쓸 수 있어야 합니다.
+
+### 왜 설정 항목인가
+
+이 문서는 "라이브러리가 그 값으로 무엇을 하는가"에 답하지 못하는 항목을 넣지
+않는다고 적었습니다. 이건 답합니다 — **접속할 주소**입니다.
+
+넣는 진짜 이유는 스테이징 서버가 아니라 **벤더 주소 변경 시 자력 복구**입니다.
+지금 구조에서는 사용자가 손을 쓸 수 없습니다.
+
+```console
+$ python -c "import vmkis.__env__ as env, vmkis.kis as k; \
+             env.REAL_DOMAIN='https://patched.example.com'; print(k.REAL_DOMAIN)"
+https://openapi.koreainvestment.com:9443
+```
+
+`from vmkis.__env__ import REAL_DOMAIN` 이 **값을 복사**하므로 `__env__` 를 고쳐도
+소비 모듈은 옛 값을 봅니다. 모듈마다(`vmkis.kis`, `vmkis.client.websocket`) 따로
+패치해야 하는데 문서에 없고, 나중에 다른 모듈이 그 상수를 import 하면 또 깨집니다.
+
+남는 수단은 **릴리스를 기다리는 것**뿐입니다. 장중이면 그날은 끝입니다.
+
+### 구현 메모
+
+소비 지점 2곳이 이미 객체를 들고 있어 새 배선이 필요 없습니다 —
+`kis.py` 는 `self`, `websocket.py` 는 `self.kis`
+(`KisWebsocketClient.kis: "VmKis"`).
 
 ---
 
@@ -173,9 +274,12 @@ template_account_profiles.yaml   # 저장소가 배포하는 템플릿
 
 - **환경변수 간접 참조** (`app_key_env`) — CI·컨테이너용. 필요가 확인되면 그때
   넣습니다. 지금은 YAML 을 시크릿에서 써 내려도 됩니다
-- **엔드포인트 재정의** (`base_url` / `ws_url`) — 현재 `src/vmkis/__env__.py:10-14`
-  상수입니다. 스테이징 서버 같은 실제 필요가 생기면 앱 블록에 넣습니다
 - **다중 브로커** — 넣지 않습니다. KIS 전용 라이브러리입니다
+
+> 엔드포인트 재정의는 여기 있었다가 `endpoints` 로 **들어왔습니다.** 처음에는
+> "스테이징 서버가 없으니 쓸 사람이 없다"고 판단했는데, 사용 사례를 잘못
+> 상정한 것이었습니다. 실제 사례는 **벤더가 주소를 바꿨을 때의 자력 복구**이고,
+> 그때 사용자에게 남는 수단이 없다는 것을 확인해 넣었습니다.
 
 ---
 
