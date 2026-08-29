@@ -24,7 +24,7 @@ MARKET_CAP = KisEndpoint(
 
 
 class KisMarketCapItem(KisDynamic):
-    """market_cap 응답 항목 (11개 필드)"""
+    """market_cap 응답 항목 — `output` (11개 필드)"""
 
     mksc_shrn_iscd: str = KisString["mksc_shrn_iscd"]
     """유가증권 단축 종목코드"""
@@ -55,8 +55,8 @@ class KisMarketCap(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisMarketCapItem] = KisList(KisMarketCapItem)["output"]
-    """market_cap 목록"""
+    output: list[KisMarketCapItem] = KisList(KisMarketCapItem)["output"]
+    """output 목록"""
 
 
 # 타입을 추정하지 못해 KisString 으로 둔 필드 5개:

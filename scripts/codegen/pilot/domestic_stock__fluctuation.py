@@ -25,7 +25,7 @@ FLUCTUATION = KisEndpoint(
 
 
 class KisFluctuationItem(KisDynamic):
-    """fluctuation 응답 항목 (24개 필드)"""
+    """fluctuation 응답 항목 — `output` (24개 필드)"""
 
     stck_shrn_iscd: str = KisString["stck_shrn_iscd"]
     """주식 단축 종목코드"""
@@ -82,8 +82,8 @@ class KisFluctuation(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisFluctuationItem] = KisList(KisFluctuationItem)["output"]
-    """fluctuation 목록"""
+    output: list[KisFluctuationItem] = KisList(KisFluctuationItem)["output"]
+    """output 목록"""
 
 
 # 타입을 추정하지 못해 KisString 으로 둔 필드 7개:

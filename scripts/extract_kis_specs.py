@@ -62,6 +62,12 @@ class EndpointSpec:
     optional: list[str] = field(default_factory=list)
     fields: dict[str, str] = field(default_factory=dict)  # 필드명 -> 한글 라벨
     numeric_fields: list[str] = field(default_factory=list)
+    #: 응답 블록 이름 -> "list" | "single" | "unknown".
+    #: KIS 는 한 응답에 output / output1 / output2 를 함께 담기도 합니다.
+    #: 332개 중 32개가 블록 2개, 4개가 3개 이상입니다.
+    output_blocks: dict[str, str] = field(default_factory=dict)
+    #: 연속조회 커서 폭. `ctx_area_fk200` 이면 200. 없으면 페이징이 없습니다.
+    page_size: int | None = None
     doc_code: str | None = None
     #: 완전 파싱 실패 사유. 비어 있으면 성공입니다.
     problems: list[str] = field(default_factory=list)
@@ -180,6 +186,104 @@ def _split_args(func: ast.FunctionDef) -> tuple[list[str], list[str]]:
     )
 
 
+#: `ctx_area_fk200` 같은 연속조회 커서. 숫자가 커서 폭입니다.
+_CURSOR = re.compile(r"ctx_area_[fn]k(\d+)")
+
+
+def _collect_page_size(source: str) -> int | None:
+    """연속조회 커서 폭을 읽습니다.
+
+    `KisEndpoint.page_size` 가 받는 값입니다. 실측 분포는 200(167) · 100(62) ·
+    50(2) · 30(1) 입니다. 커서가 없으면 페이징이 없는 엔드포인트입니다.
+    """
+    widths = {int(m) for m in _CURSOR.findall(source)}
+    if not widths:
+        return None
+    # 한 엔드포인트가 폭을 섞어 쓰지는 않습니다. 섞였다면 큰 쪽이 실제 커서입니다.
+    return max(widths)
+
+
+def _body_attr(node: ast.AST) -> str | None:
+    """`res.getBody().output1` 에서 `output1` 을 꺼냅니다."""
+    if (
+        isinstance(node, ast.Attribute)
+        and isinstance(node.value, ast.Call)
+        and isinstance(node.value.func, ast.Attribute)
+        and node.value.func.attr == "getBody"
+    ):
+        return node.attr
+    return None
+
+
+def _collect_output_blocks(func: ast.FunctionDef) -> dict[str, str]:
+    """응답 블록 이름과 리스트/단건 여부를 읽습니다.
+
+    판별 신호는 **샘플이 DataFrame 을 만드는 방식**입니다.
+
+        pd.DataFrame(res.getBody().output)     -> list    (그대로 넘김)
+        pd.DataFrame([res.getBody().output])   -> single  (감싸는 이유는 dict 라서)
+
+    중간 변수를 거치는 경우가 많아(`output_data = res.getBody().output`)
+    변수→블록 매핑을 먼저 만든 뒤 `pd.DataFrame` 인자를 봅니다.
+
+    `if not isinstance(x, list): x = [x]` 로 방어한 곳은 **원본도 확신이
+    없다는 뜻**이므로 `unknown` 으로 둡니다. 추측해서 채우면 생성물이 조용히
+    틀립니다 — 사람이 보게 남깁니다.
+    """
+    var_to_block: dict[str, str] = {}
+    blocks: dict[str, str] = {}
+    defensive: set[str] = set()
+
+    for node in ast.walk(func):
+        # ① 블록 이름 수집 + 변수 매핑
+        if isinstance(node, ast.Assign) and len(node.targets) == 1:
+            name = _body_attr(node.value)
+            if name and name.startswith("output") and isinstance(node.targets[0], ast.Name):
+                var_to_block[node.targets[0].id] = name
+                blocks.setdefault(name, "unknown")
+
+        if (name := _body_attr(node)) and name.startswith("output"):
+            blocks.setdefault(name, "unknown")
+
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "hasattr":
+            continue
+
+        # ② `isinstance(x, list)` 방어가 있으면 그 변수는 확신할 수 없습니다
+        if (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Name)
+            and node.func.id == "isinstance"
+            and len(node.args) == 2
+            and isinstance(node.args[0], ast.Name)
+        ):
+            defensive.add(node.args[0].id)
+
+    # ③ `pd.DataFrame(...)` 인자로 리스트/단건 판정
+    for node in ast.walk(func):
+        if not (
+            isinstance(node, ast.Call)
+            and isinstance(node.func, ast.Attribute)
+            and node.func.attr == "DataFrame"
+            and node.args
+        ):
+            continue
+
+        arg = node.args[0]
+        wrapped = isinstance(arg, ast.List) and len(arg.elts) == 1
+        inner = arg.elts[0] if wrapped else arg
+
+        block = _body_attr(inner)
+        if block is None and isinstance(inner, ast.Name):
+            if inner.id in defensive:
+                continue  # 원본이 방어했습니다 — 확신할 수 없습니다
+            block = var_to_block.get(inner.id)
+
+        if block and block.startswith("output"):
+            blocks[block] = "single" if wrapped else "list"
+
+    return blocks
+
+
 def _is_post(func: ast.FunctionDef) -> bool:
     for node in ast.walk(func):
         if isinstance(node, ast.Call):
@@ -234,6 +338,8 @@ def extract_one(folder: pathlib.Path, category: str) -> EndpointSpec:
         spec.params = _collect_params(func)
         spec.required, spec.optional = _split_args(func)
         spec.method = "POST" if _is_post(func) else "GET"
+        spec.output_blocks = _collect_output_blocks(func)
+        spec.page_size = _collect_page_size(source)
 
     chk_path = folder / f"chk_{folder.name}.py"
     if chk_path.exists():

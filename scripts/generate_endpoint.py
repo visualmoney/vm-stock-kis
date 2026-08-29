@@ -11,7 +11,7 @@
 
 | | 왜 |
 |---|---|
-| `output` 이 리스트인지 단건인지 | 샘플이 `pd.DataFrame(...)` 으로만 알려줍니다. `--list`/`--single` 로 지정 |
+| `output` 이 리스트인지 단건인지 (일부) | 샘플의 `pd.DataFrame` 인자로 판정합니다. **원본이 `isinstance` 로 방어한 곳은 원본도 모릅니다** — `unknown` 으로 표시하고 사람에게 넘깁니다 |
 | 파라미터 검증 규칙 | 샘플의 `raise ValueError(...)` 는 **원문 로직**입니다. 옮기지 않습니다 |
 | scope 바인딩 (`kis.stock().xxx()`) | Protocol 필요 여부 판정이 필요합니다 (ARCHITECTURE.md 판정표) |
 | 필드 이름의 한국어→영어 번역 | 기계가 정하면 공개 API 이름이 흔들립니다 |
@@ -85,7 +85,12 @@ PY_TYPE = {
 }
 
 
-def render(spec: dict, as_list: bool) -> str:
+def render(spec: dict, as_list: bool | None = None) -> str:
+    """스펙 하나를 vmkis 스타일 모듈로 렌더링합니다.
+
+    `as_list` 는 스펙이 판정을 못 한 블록에만 쓰이는 수동 지정입니다.
+    스펙이 `list`/`single` 을 알고 있으면 그것을 따릅니다.
+    """
     name = spec["name"]
     cls = f"Kis{_pascal(name)}"
     const = name.upper()
@@ -95,6 +100,8 @@ def render(spec: dict, as_list: bool) -> str:
     kis_types = {f: (guess_type(f) or "KisString") for f in fields}
     used = sorted(set(kis_types.values()) | {"KisString"})
     py_imports = sorted({PY_TYPE[t] for t in used if PY_TYPE[t] in ("Decimal", "date", "time")})
+
+    blocks = spec.get("output_blocks") or {"output": "unknown"}
 
     out: list[str] = [HEADER.format(title=title, category=spec["category"], name=name)]
 
@@ -107,7 +114,7 @@ def render(spec: dict, as_list: bool) -> str:
         out.append("")
 
     out.append("from vmkis.client.endpoint import KisEndpoint")
-    out.append("from vmkis.responses.dynamic import KisDynamic, KisList")
+    out.append("from vmkis.responses.dynamic import KisDynamic, KisList, KisObject")
     out.append("from vmkis.responses.response import KisAPIResponse")
     out.append(f"from vmkis.responses.types import {', '.join(used)}")
     out.append("")
@@ -129,6 +136,8 @@ def render(spec: dict, as_list: bool) -> str:
             out.append("    # 어떤 조건에서 갈리는지는 사람이 정해야 합니다.")
     if spec["method"] == "POST":
         out.append('    method="POST",')
+    if spec.get("page_size"):
+        out.append(f"    page_size={spec['page_size']},  # ctx_area_[fn]k{spec['page_size']}")
     out.append(")")
     out.append("")
     if spec["method"] == "POST":
@@ -137,34 +146,60 @@ def render(spec: dict, as_list: bool) -> str:
         out.append("")
     out.append("")
 
-    # ── 항목 클래스 ─────────────────────────────────────────────────────────
-    item_cls = f"{cls}Item" if as_list else cls
-    out.append(f"class {item_cls}(KisDynamic):")
-    out.append(f'    """{name} 응답 항목 ({len(fields)}개 필드)"""')
-    out.append("")
-    for raw, label in fields.items():
-        kt = kis_types[raw]
-        ident = _safe_ident(raw)
-        out.append(f'    {ident}: {PY_TYPE[kt]} = {kt}["{raw}"]')
-        out.append(f'    """{label}"""')
-    out.append("")
-    out.append("")
+    # ── 블록별 항목 클래스 ──────────────────────────────────────────────────
+    #
+    # KIS 는 한 응답에 output / output1 / output2 를 함께 담기도 합니다
+    # (272개 중 94개가 블록 2개 이상). 예전 생성기는 `output` 하나만
+    # 가정해서 나머지를 통째로 잃었습니다.
+    #
+    # **필드 라벨은 블록별로 나뉘어 있지 않습니다.** `COLUMN_MAPPING` 이
+    # 응답 전체를 한 표로 담기 때문입니다. 그래서 블록이 여럿이면 같은 필드
+    # 집합을 각 블록에 붙이고 사람이 갈라야 합니다 — 아래 주석으로 표시합니다.
+    multi = len(blocks) > 1
+    item_names: dict[str, str] = {}
+
+    for block in sorted(blocks):
+        item_cls = f"{cls}{_pascal(block)}Item" if multi else f"{cls}Item"
+        item_names[block] = item_cls
+        out.append(f"class {item_cls}(KisDynamic):")
+        out.append(f'    """{name} 응답 항목 — `{block}` ({len(fields)}개 필드)"""')
+        out.append("")
+        for raw, label in fields.items():
+            kt = kis_types[raw]
+            out.append(f'    {_safe_ident(raw)}: {PY_TYPE[kt]} = {kt}["{raw}"]')
+            out.append(f'    """{label}"""')
+        out.append("")
+        out.append("")
 
     # ── 응답 래퍼 ───────────────────────────────────────────────────────────
-    if as_list:
-        out.append(f"class {cls}(KisAPIResponse):")
-        out.append(f'    """{name} 응답"""')
-        out.append("")
-        out.append("    __path__ = None")
-        out.append("")
-        out.append(f'    items: list[{item_cls}] = KisList({item_cls})["output"]')
-        out.append(f'    """{name} 목록"""')
-    else:
-        out.append(f"class {cls}Response(KisAPIResponse, {item_cls}):")
-        out.append(f'    """{name} 응답"""')
-        out.append("")
-        out.append('    __path__ = "output"')
+    out.append(f"class {cls}(KisAPIResponse):")
+    out.append(f'    """{name} 응답"""')
     out.append("")
+    out.append("    __path__ = None")
+    out.append("")
+
+    for block in sorted(blocks):
+        kind = blocks[block]
+        if kind == "unknown" and as_list is not None:
+            kind = "list" if as_list else "single"
+
+        attr = _safe_ident(block)
+        item_cls = item_names[block]
+
+        if kind == "single":
+            out.append(f'    {attr}: {item_cls} = KisObject({item_cls})["{block}"]')
+            out.append(f'    """{block} (단건)"""')
+        else:
+            if kind == "unknown":
+                # 추측하지 않습니다. 원본이 `isinstance` 로 방어했다는 것은
+                # **원본 생성기도 몰랐다**는 뜻입니다. KisList 는 dict 를 받으면
+                # TypeError 를 내므로, 틀리면 런타임에 터집니다.
+                out.append(f"    # ⚠️ `{block}` 이 리스트인지 단건인지 원본이 알려주지 않습니다")
+                out.append("    #    (샘플이 `isinstance(x, list)` 로 방어하고 있습니다).")
+                out.append("    #    실제 응답을 보고 KisList / KisObject 중 하나로 확정하세요.")
+            out.append(f'    {attr}: list[{item_cls}] = KisList({item_cls})["{block}"]')
+            out.append(f'    """{block} 목록"""')
+        out.append("")
 
     untyped = [f for f, t in kis_types.items() if guess_type(f) is None]
     if untyped:
@@ -174,6 +209,13 @@ def render(spec: dict, as_list: bool) -> str:
             out.append(f"#   {', '.join(chunk)}")
         out.append("# KisString 은 어떤 문자열도 받으므로 런타임 오류가 나지 않습니다.")
         out.append("# 실제 응답을 보고 승격하세요.")
+
+    if multi:
+        out.append("")
+        out.append(f"# ⚠️ 이 응답은 블록이 {len(blocks)}개입니다: {', '.join(sorted(blocks))}")
+        out.append("#    원본의 COLUMN_MAPPING 은 블록을 나누지 않으므로 위 항목 클래스들이")
+        out.append("#    같은 필드 집합을 공유합니다. 실제 응답을 보고 갈라내세요.")
+
     return "\n".join(out) + "\n"
 
 
@@ -214,7 +256,10 @@ def main() -> int:
         if not spec["complete"] if "complete" in spec else spec["problems"]:
             print(f"완전 파싱되지 않은 스펙입니다: {name} — {spec['problems']}", file=sys.stderr)
             return 1
-        code = render(spec, as_list=name not in args.single and spec["name"] not in args.single)
+        forced = None
+        if name in args.single or spec["name"] in args.single:
+            forced = False
+        code = render(spec, as_list=forced)
         # 파일명에도 카테고리를 넣습니다. 이름이 겹치면 생성물끼리 덮어씁니다.
         path = args.out / f"{spec['category']}__{spec['name']}.py"
         path.write_text(code, encoding="utf-8")

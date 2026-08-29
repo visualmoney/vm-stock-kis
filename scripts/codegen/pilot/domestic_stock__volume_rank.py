@@ -24,7 +24,7 @@ VOLUME_RANK = KisEndpoint(
 
 
 class KisVolumeRankItem(KisDynamic):
-    """volume_rank 응답 항목 (19개 필드)"""
+    """volume_rank 응답 항목 — `output` (19개 필드)"""
 
     hts_kor_isnm: str = KisString["hts_kor_isnm"]
     """HTS 한글 종목명"""
@@ -71,8 +71,8 @@ class KisVolumeRank(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisVolumeRankItem] = KisList(KisVolumeRankItem)["output"]
-    """volume_rank 목록"""
+    output: list[KisVolumeRankItem] = KisList(KisVolumeRankItem)["output"]
+    """output 목록"""
 
 
 # 타입을 추정하지 못해 KisString 으로 둔 필드 8개:

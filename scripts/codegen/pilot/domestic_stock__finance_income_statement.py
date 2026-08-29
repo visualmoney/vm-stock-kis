@@ -22,7 +22,7 @@ FINANCE_INCOME_STATEMENT = KisEndpoint(
 
 
 class KisFinanceIncomeStatementItem(KisDynamic):
-    """finance_income_statement 응답 항목 (13개 필드)"""
+    """finance_income_statement 응답 항목 — `output` (13개 필드)"""
 
     stac_yymm: str = KisString["stac_yymm"]
     """결산 년월"""
@@ -57,8 +57,11 @@ class KisFinanceIncomeStatement(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisFinanceIncomeStatementItem] = KisList(KisFinanceIncomeStatementItem)["output"]
-    """finance_income_statement 목록"""
+    # ⚠️ `output` 이 리스트인지 단건인지 원본이 알려주지 않습니다
+    #    (샘플이 `isinstance(x, list)` 로 방어하고 있습니다).
+    #    실제 응답을 보고 KisList / KisObject 중 하나로 확정하세요.
+    output: list[KisFinanceIncomeStatementItem] = KisList(KisFinanceIncomeStatementItem)["output"]
+    """output 목록"""
 
 
 # 타입을 추정하지 못해 KisString 으로 둔 필드 13개:
