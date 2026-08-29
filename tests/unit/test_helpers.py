@@ -94,6 +94,69 @@ class TestLoadConfig:
             helpers.load_config(path, profile="nope")
 
 
+class TestProfileValidation:
+    """프로필 검증 (#69).
+
+    `create_client` 는 키를 하나씩 뽑아 쓰기 때문에 여분·오타 키가 아무 소리 없이
+    무시됐다. 여기서 막지 못하면 `virtaul: true` 오타 하나가 모의투자 의도를
+    실전 주문으로 바꾼다.
+    """
+
+    def test_typo_in_mode_key_raises(self, tmp_path):
+        """`virtaul: true` — 오타는 조용히 무시되면 안 된다.
+
+        이 저장소가 실제로 두려워한 시나리오다. 옛 동작에서는 이 설정이
+        `virtual` 키 없음으로 읽혀 기본값 `False`(실전)로 떨어졌다.
+        """
+        config = {k: v for k, v in FLAT_CONFIG.items() if k != "virtual"}
+        config["virtaul"] = True
+        path = write_yaml(tmp_path / "config.yaml", config)
+
+        with pytest.raises(ValueError, match="모르는 키가 있습니다: virtaul"):
+            helpers.load_config(path)
+
+    def test_unknown_key_raises(self, tmp_path):
+        """허용 목록에 없는 키는 거부한다."""
+        path = write_yaml(tmp_path / "config.yaml", dict(FLAT_CONFIG, nickname="주계좌"))
+
+        with pytest.raises(ValueError, match="모르는 키가 있습니다: nickname"):
+            helpers.load_config(path)
+
+    def test_missing_credential_raises(self, tmp_path):
+        """자격증명 키가 빠지면 `KeyError` 대신 읽을 수 있는 오류를 낸다."""
+        config = {k: v for k, v in FLAT_CONFIG.items() if k != "secretkey"}
+        path = write_yaml(tmp_path / "config.yaml", config)
+
+        with pytest.raises(ValueError, match="필수 키가 없습니다: secretkey"):
+            helpers.load_config(path)
+
+    def test_missing_mode_key_raises(self, tmp_path):
+        """판정 키가 없으면 기본값으로 떨어지지 않는다."""
+        config = {k: v for k, v in FLAT_CONFIG.items() if k != "virtual"}
+        path = write_yaml(tmp_path / "config.yaml", config)
+
+        with pytest.raises(ValueError, match="`virtual` 가 없습니다"):
+            helpers.load_config(path)
+
+    def test_error_names_the_profile(self, tmp_path):
+        """다중 프로필이면 어느 프로필인지 알려준다."""
+        broken = dict(FLAT_CONFIG, virtaul=True)
+        del broken["virtual"]
+        config = {"default": "real", "configs": dict(MULTI_CONFIG["configs"], real=broken)}
+        path = write_yaml(tmp_path / "config.yaml", config)
+
+        with pytest.raises(ValueError, match="프로필 'real'"):
+            helpers.load_config(path)
+
+    def test_non_mapping_profile_raises(self, tmp_path):
+        """프로필 자리에 문자열이 오면 `AttributeError` 대신 설명한다."""
+        config = {"default": "real", "configs": {"real": "oops"}}
+        path = write_yaml(tmp_path / "config.yaml", config)
+
+        with pytest.raises(ValueError, match="매핑이 아닙니다: str"):
+            helpers.load_config(path)
+
+
 class TestCreateClient:
     """`create_client` 테스트."""
 
@@ -130,15 +193,20 @@ class TestCreateClient:
         assert args[0].virtual is False
         assert kwargs["keep_token"] is False
 
-    def test_virtual_key_defaults_to_false(self, tmp_path, dummy_vmkis):
-        """`virtual` 키가 없으면 실전으로 간주한다."""
+    def test_missing_virtual_key_raises(self, tmp_path, dummy_vmkis):
+        """`virtual` 키가 없으면 실패한다. 실전으로 간주하지 않는다.
+
+        이 테스트는 원래 `test_virtual_key_defaults_to_false` 였고 *"`virtual` 키가
+        없으면 실전으로 간주한다"* 를 사양으로 못 박고 있었다. `virtaul: true` 같은
+        오타 하나가 모의투자 의도를 실전 주문으로 바꾸는 경로였다 (#69).
+        """
         config = {k: v for k, v in FLAT_CONFIG.items() if k != "virtual"}
         path = write_yaml(tmp_path / "config.yaml", config)
 
-        helpers.create_client(path)
+        with pytest.raises(ValueError, match="`virtual` 가 없습니다"):
+            helpers.create_client(path)
 
-        (args, _) = dummy_vmkis[0]
-        assert args[0].virtual is False
+        assert not dummy_vmkis, "실패해야 하는데 클라이언트가 만들어졌다"
 
     def test_profile_is_forwarded(self, tmp_path, dummy_vmkis):
         """`profile` 인자가 load_config로 전달된다."""

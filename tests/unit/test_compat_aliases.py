@@ -82,7 +82,19 @@ class TestEnvironmentVariableFallback:
         """`load_config`가 폴백을 실제로 탄다"""
         import yaml
 
-        config = {"default": "virtual", "configs": {"virtual": {"id": "v"}, "real": {"id": "r"}}}
+        # 프로필에 키를 다 채우는 이유: `load_config` 가 #69 부터 프로필을 검증합니다.
+        # 이 테스트의 대상은 `PYKIS_PROFILE` 폴백이지 부분 설정이 아니므로
+        # 키를 채워도 검증력이 줄지 않습니다.
+        def _profile(id_: str) -> dict:
+            return {
+                "id": id_,
+                "account": "00000000-01",
+                "appkey": "appkey",
+                "secretkey": "secret",
+                "virtual": True,
+            }
+
+        config = {"default": "virtual", "configs": {"virtual": _profile("v"), "real": _profile("r")}}
         path = tmp_path / "config.yaml"
         path.write_text(yaml.dump(config), encoding="utf-8")
         monkeypatch.setenv("PYKIS_PROFILE", "real")

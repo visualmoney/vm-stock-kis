@@ -48,9 +48,10 @@ except ImportError:
     SimpleKIS = None
 
 try:
-    from vmkis.helpers import create_client, save_config_interactive
+    from vmkis.helpers import create_client, load_config, save_config_interactive
 except ImportError:
     create_client = None
+    load_config = None
     save_config_interactive = None
 
 __all__ = [
@@ -68,6 +69,7 @@ __all__ = [
     # 초보자 도구
     "SimpleKIS",
     "create_client",
+    "load_config",
     "save_config_interactive",
 ]
 
