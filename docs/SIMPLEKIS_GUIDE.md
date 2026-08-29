@@ -130,45 +130,55 @@ else:
 
 ## 3. 헬퍼 함수
 
-### 3.1 설정 로드
+### 3.1 설정 읽기
 
 ```python
-from vmkis.helpers import load_config
+from vmkis.config import load_kis_config
 
-# YAML에서 설정 로드
-config = load_config("config.yaml")
-print(config)
-# {'id': '...', 'account': '...', 'appkey': '...', 'secretkey': '...', 'virtual': True}
+config = load_kis_config("configs/account_profiles.yaml")
+
+print(config.default_account)         # "acc_paper1"
+account = config.account()            # default_account 를 씁니다
+print(account.hts_id, account.account, account.is_paper)
 ```
+
+> `vmkis.helpers.load_config` 는 **없습니다.** 0.0.x 중간에 `vmkis.config` 로
+>옮기면서 `load_kis_config` 로 바뀌었고, 반환값도 평평한 `dict` 가 아니라
+> `KisConfig` 입니다. 사양은 [CONFIG_SCHEMA.md](./guidelines/CONFIG_SCHEMA.md).
+
+대부분의 경우 이 함수를 직접 부를 일은 없습니다 — 3.3 의 `create_client` 가
+안에서 부릅니다.
 
 ### 3.2 대화형 설정 저장 (보안)
 
 ```python
 from vmkis.helpers import save_config_interactive
 
-# 대화형으로 설정 저장
-# - 비밀키는 getpass로 입력 숨겨짐
+# - 비밀키는 getpass 로 입력 숨겨짐
 # - 저장 전 마스킹된 미리보기 제공
 # - 사용자 확인 필수
-
-config = save_config_interactive("config.yaml")
+config = save_config_interactive("configs/account_profiles.yaml")
 ```
+
+앱과 계좌를 **하나씩** 만듭니다. 둘 이상이 필요하면 만들어진 파일을 손으로
+늘리세요.
 
 **입력 예시:**
 
 ```text
 HTS id: my_id
-Account (XXXXXXXX-XX): 12345678-01
+Account number (8 digits): 12345678
+Product code (01): 01
 AppKey: my_appkey
-SecretKey (input hidden): (숨겨진 입력)
-Virtual (y/n): y
+AppSecret (input hidden): (숨겨진 입력)
+Paper trading? (y/n): y
 
-About to write the following config to: config.yaml
-  id: my_id
-  account: 12345678-01
-  appkey: my_appkey
-  secretkey: m...  (마스킹)
-  virtual: True
+About to write the following config to: configs/account_profiles.yaml
+  apps.app_paper1.mode: paper
+  apps.app_paper1.hts_id: my_id
+  apps.app_paper1.app_key: my_appkey
+  apps.app_paper1.app_secret: my_a...
+  accounts.acc_paper1: 12345678-01
 
 Write config file? (y/N): y
 ```
@@ -186,8 +196,8 @@ python your_script.py
 from vmkis.helpers import create_client
 from vmkis.simple import SimpleKIS
 
-# 자동으로 VmKis 생성 (paper 설정 포함)
-kis = create_client("config.yaml", keep_token=True)
+# 설정의 default_account 로 VmKis 를 만듭니다 (모의/실전은 앱의 mode 가 정합니다)
+kis = create_client("configs/account_profiles.yaml", keep_token=True)
 simple = SimpleKIS(kis)
 ```
 

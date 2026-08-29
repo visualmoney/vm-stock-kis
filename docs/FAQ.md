@@ -38,27 +38,56 @@ A: 한국투자증권 공식 웹사이트에서 다음 단계를 따르세요:
 
 A: 네, 가능합니다. 두 가지 방법이 있습니다:
 
-**방법 1: 환경 변수 사용**
+**방법 1: 설정 파일에서 모의 계좌를 고릅니다** (권장)
+
+모의투자 여부는 앱의 `mode` 가 정합니다. 환경변수는 **어느 계좌를 쓸지**만
+고릅니다 — `VMKIS_REAL_TRADING` 같은 스위치는 없습니다.
+
+```yaml
+# configs/account_profiles.yaml
+apps:
+  app_paper1:
+    mode: "paper"        # live | paper
+    ...
+accounts:
+  acc_paper1: { app: "app_paper1", account_no: "00000000", product_code: "01" }
+default_account: "acc_paper1"
+```
 
 ```bash
-export VMKIS_REAL_TRADING=false  # Linux/macOS
-set VMKIS_REAL_TRADING=false     # Windows CMD
-$env:VMKIS_REAL_TRADING = "false" # Windows PowerShell
+export VMKIS_ACCOUNT=acc_paper1   # 생략하면 default_account
 ```
+
+사양은 [CONFIG_SCHEMA.md](./guidelines/CONFIG_SCHEMA.md) 입니다.
 
 **방법 2: 코드에서 설정**
 
 ```python
-from vmkis import VmKis
+from vmkis import KisAuth, VmKis
 
-kis = VmKis(
+# 모의투자 여부는 `KisAuth` 가 들고 있습니다. `VmKis` 에는 그런 인자가 없습니다.
+live_auth = KisAuth(
     id="YOUR_ID",
     account="YOUR_ACCOUNT",
     appkey="YOUR_APPKEY",
     secretkey="YOUR_SECRETKEY",
-    paper=True  # 모의 거래 사용
+    paper=False,
 )
+paper_auth = KisAuth(
+    id="YOUR_ID",
+    account="YOUR_PAPER_ACCOUNT",
+    appkey="YOUR_PAPER_APPKEY",
+    secretkey="YOUR_PAPER_SECRETKEY",
+    paper=True,
+)
+
+# 두 번째 위치 인자가 모의 인증입니다. 둘 다 주면 모의 클라이언트가 됩니다.
+kis = VmKis(live_auth, paper_auth)
+assert kis.paper is True
 ```
+
+> 실전 인증을 생략한 `VmKis(None, paper_auth)` 는 지금 동작하지 않습니다
+> (`ValueError: id를 입력해야 합니다`). [#87](https://github.com/visualmoney/vm-stock-kis/issues/87) 참고.
 
 ### Q4: "401 Unauthorized" 에러가 발생합니다
 
@@ -382,8 +411,7 @@ if latest['signal'] == 1 and df.iloc[-2]['signal'] != 1:
 A: 다음과 같이 조절할 수 있습니다:
 
 ```python
-from vmkis import setLevel
-from vmkis.logging import enable_json_logging
+from vmkis.logging import enable_json_logging, setLevel
 
 # 로그 레벨 설정
 setLevel("DEBUG")  # 상세 로그

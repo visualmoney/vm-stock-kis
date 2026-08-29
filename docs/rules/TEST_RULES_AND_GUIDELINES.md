@@ -10,7 +10,7 @@ KisAuth(
     account="50000000-01",                 # 필수: 계좌번호
     appkey="P" + "A" * 35,                 # 필수: 앱 키 (최소 36자)
     secretkey="S" * 180,                   # 필수: 시크릿 키 (180자)
-    virtual=True,                          # 필수: 테스트 모드 여부
+    paper=True,                            # 필수: 모의투자 여부
 )
 ```
 

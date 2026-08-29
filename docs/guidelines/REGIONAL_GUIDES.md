@@ -27,28 +27,30 @@ VM-Stock-KIS는 **한국 사용자**와 **글로벌 개발자**를 모두 지원
 **설정 파일** (`config.yaml`):
 
 ```yaml
-# 한국 - 실제 거래
-kis:
-  server: real                    # 실제 서버
-  app_key: "YOUR_APP_KEY"
-  app_secret: "YOUR_APP_SECRET"
-  account_number: "00000000-01"  # 계좌번호 형식
+# configs/account_profiles.yaml — 한국, 실전
+version: 1
 
-market:
-  timezone: "Asia/Seoul"         # 한국 시간대
-  holidays:                       # 한국 휴장일
-    - "2025-01-01"  # 신정
-    - "2025-02-10"  # 설날
-    - "2025-03-01"  # 삼일절
-    # ... (나머지 휴장일)
-  trading_hours:
-    - start: "09:00"             # 개장: 9시
-      end: "15:30"               # 폐장: 15시 30분
-      session: "normal"          # 정규거래
-    - start: "15:40"
-      end: "16:00"
-      session: "after_hours"     # 시간외거래
+apps:
+  app_live1:
+    mode: "live" # live | paper
+    hts_id: "YOUR_HTS_ID"
+    app_key: "YOUR_APP_KEY" # 36자
+    app_secret: "YOUR_APP_SECRET" # 180자
+
+accounts:
+  acc_live1:
+    app: "app_live1"
+    account_no: "00000000" # 종합계좌번호 8자리
+    product_code: "01" # 01 종합 / 22 개인연금 / 29 IRP
+
+default_account: "acc_live1"
 ```
+
+> 시간대·휴장일·거래시간은 **설정 파일이 받지 않습니다.** 스키마가 받는 키는
+> `version` · `apps` · `accounts` · `default_account` · `token_dir` ·
+> `user_agent` · `endpoints` 뿐이고, 그 밖의 키는 오류로 거부됩니다
+> ([CONFIG_SCHEMA.md](./CONFIG_SCHEMA.md)). 휴장일은 아래 1.2 처럼 호출하는
+> 쪽에서 다룹니다.
 
 **특수 기능**:
 
@@ -71,15 +73,26 @@ market:
 
 **목적**: 실제 돈 없이 거래 연습
 
-**설정 파일** (`config_virtual.yaml`):
+**설정 파일** (`configs/account_profiles.yaml`):
 
 ```yaml
-# 한국 - 가상 거래 (시뮬레이션)
-kis:
-  server: virtual                # 가상 서버
-  app_key: "YOUR_VIRTUAL_KEY"
-  app_secret: "YOUR_VIRTUAL_SECRET"
-  account_number: "00000000-01"
+# 한국 - 모의투자
+version: 1
+
+apps:
+  app_paper1:
+    mode: "paper" # 이 한 줄이 모의 도메인을 고릅니다
+    hts_id: "YOUR_HTS_ID"
+    app_key: "YOUR_PAPER_APP_KEY"
+    app_secret: "YOUR_PAPER_APP_SECRET"
+
+accounts:
+  acc_paper1:
+    app: "app_paper1"
+    account_no: "00000000"
+    product_code: "01"
+
+default_account: "acc_paper1"
 
 market:
   timezone: "Asia/Seoul"
@@ -165,12 +178,17 @@ print(f"가격: {quote.price:,}원")    # 예: 60,000원
 from vmkis import VmKis
 
 # 1. 클라이언트 초기화
+#    `app_key`·`app_secret`·`account_number`·`server` 라는 인자는 없습니다.
 kis = VmKis(
-    app_key="YOUR_APP_KEY",
-    app_secret="YOUR_APP_SECRET",
-    account_number="00000000-01",
-    server="real"  # 실제 거래
+    id="YOUR_HTS_ID",
+    appkey="YOUR_APP_KEY",
+    secretkey="YOUR_APP_SECRET",
+    account="00000000-01",
 )
+
+# 설정 파일이 있다면 이 한 줄이 위를 대신합니다.
+#     from vmkis import create_client
+#     kis = create_client("configs/account_profiles.yaml")
 
 # 2. 주식 시세 조회
 samsung = kis.stock("005930")  # 삼성전자
@@ -201,37 +219,42 @@ for o in orders:
 
 #### ⚠️ 테스트/개발 환경 (Development)
 
-**목적**: 코드 개발 및 테스트 (실제 계정 불필요)
+**목적**: 코드 개발 및 테스트
 
-**설정 파일** (`config_dev.yaml`):
+> **이 라이브러리에는 mock/offline 모드가 없습니다.** 예전 이 문서는
+> `server: mock` 설정과 `vmkis.mock.MockKisClient` 를 안내했는데 **둘 다 존재한
+> 적이 없습니다.** 설정 스키마는 `mock` 키를 오류로 거부합니다.
 
-```yaml
-# 글로벌 - 개발 환경
-kis:
-  server: mock                   # Mock 서버 (실제 API 미호출)
-  app_key: "MOCK_KEY"
-  app_secret: "MOCK_SECRET"
+계정 없이 개발하려면 **HTTP 계층에서 대역을 세웁니다.** 이 저장소의 테스트가
+그렇게 합니다 — `requests-mock` 이 `[dependency-groups] test` 에 있습니다.
 
-mock:
-  mode: offline                  # 오프라인 모드
-  use_dummy_data: true           # 더미 데이터 사용
+```python
+import requests_mock
 
-development:
-  debug: true                    # 디버그 로깅
-  log_level: DEBUG
+from vmkis import VmKis
+
+def test_quote_without_network():
+    kis = VmKis(
+        id="tester",
+        appkey="P" + "A" * 35,       # 36자
+        secretkey="S" * 180,          # 180자
+        account="50000000-01",
+        use_websocket=False,
+        keep_token=False,
+    )
+
+    with requests_mock.Mocker() as m:
+        m.get(requests_mock.ANY, json={...})
+        ...
 ```
 
-**특징**:
-
-- ✅ 실제 API 호출 없음
-- ✅ 인터넷 연결 불필요
-- ✅ 빠른 테스트 가능
-- ✅ 무료 (한계 없음)
+실제 KIS 데이터가 필요하면 **모의투자 계좌**(1절)가 답입니다. 실제 돈이 들지
+않으면서 진짜 서버를 씁니다.
 
 **제약**:
 
-- ❌ 실제 데이터가 아님
-- ❌ 거래 기능 제한
+- ❌ 모의투자 계좌 발급에는 한국투자증권 계정이 필요합니다
+- ❌ 일부 TR 은 모의 도메인에 없습니다 (시세 계열은 실전 도메인으로 갑니다)
 
 ---
 
@@ -298,46 +321,19 @@ print(f"Market opens in EST: {market_open_est}")
 
 ### 2.3 글로벌 개발 예제
 
+예전 이 절은 `from vmkis.mock import MockKisClient` 로 시작하는 예제를 실었습니다.
+**그런 모듈은 없습니다.** 실제로 도는 형태는 위 2.1 의 `requests_mock` 이거나,
+모의투자 계좌를 쓰는 1.3 의 예제입니다.
+
 ```python
-# Mock 환경에서 개발 및 테스트
-from vmkis import VmKis
-from vmkis.mock import MockKisClient
+from vmkis import create_client
 
-# 1. Mock 클라이언트 생성 (실제 API 미호출)
-kis = MockKisClient(
-    mode="offline",
-    use_dummy_data=True
-)
+# configs/account_profiles.yaml 의 default_account 를 씁니다.
+# 그 계좌가 모의(mode: "paper")면 모의 도메인으로 나갑니다.
+kis = create_client()
 
-# 2. 더미 데이터로 시세 조회 (Mock)
 samsung = kis.stock("005930")
-quote = samsung.quote()
-print(f"Mock price: {quote.price}")  # 60,000 (더미 데이터)
-
-# 3. 거래 로직 테스트
-order = samsung.buy(quantity=10, price=60000)
-print(f"Mock order ID: {order.order_id}")
-
-# 4. 단위 테스트
-import unittest
-
-class TestVmKis(unittest.TestCase):
-    def setUp(self):
-        self.kis = MockKisClient(mode="offline")
-
-    def test_quote_fetch(self):
-        """주가 조회 테스트"""
-        quote = self.kis.stock("005930").quote()
-        self.assertGreater(quote.price, 0)
-
-    def test_buy_order(self):
-        """매수 주문 테스트"""
-        order = self.kis.stock("005930").buy(10, 60000)
-        self.assertIsNotNone(order.order_id)
-
-# 5. 실행
-if __name__ == '__main__':
-    unittest.main()
+print(samsung.quote().price)
 ```
 
 ---
@@ -346,26 +342,28 @@ if __name__ == '__main__':
 
 ### 3.1 기능 비교
 
-| 기능 | 한국 (실제) | 한국 (가상) | 글로벌 (모의) |
-|------|-----------|----------|-----------|
-| **주식 조회** | ✅ | ✅ | ✅ Mock |
-| **실시간 시세** | ✅ | ✅ | ✅ Mock |
-| **주문** | ✅ 실제 | ✅ 모의 | ❌ Mock only |
-| **신용거래** | ✅ | ✅ | ❌ |
-| **선물/옵션** | ⚠️ 예정 | ⚠️ 예정 | ❌ |
-| **계좌 관리** | ✅ | ✅ | ❌ |
+| 기능 | 실전 (`mode: "live"`) | 모의 (`mode: "paper"`) |
+|------|-----------|----------|
+| **주식 조회** | ✅ | ✅ (시세는 실전 도메인으로 나갑니다) |
+| **실시간 시세** | ✅ | ✅ |
+| **주문** | ✅ 실제 | ✅ 모의 |
+| **신용거래** | ✅ | ✅ |
+| **선물/옵션** | ⚠️ 예정 | ⚠️ 예정 |
+| **계좌 관리** | ✅ | ✅ |
+
+> `mock` 열은 지웠습니다. 그런 모드가 없습니다.
 
 ---
 
 ### 3.2 설정 파일 비교
 
-| 설정 | 한국 (실제) | 한국 (가상) | 글로벌 (모의) |
-|------|-----------|----------|-----------|
-| **서버** | `real` | `virtual` | `mock` |
-| **인증** | 실제 키 | 가상 키 | Mock 키 |
-| **계좌번호** | 실제 | 가상 | Mock |
-| **거래 가능** | Yes | Yes (모의) | No |
-| **비용** | 거래 수수료 | 없음 | 없음 |
+| 설정 | 실전 | 모의 |
+|------|-----------|----------|
+| **앱의 `mode`** | `"live"` | `"paper"` |
+| **인증** | 실전 앱키 | 모의 앱키 (별도 발급) |
+| **계좌번호** | 실전 계좌 | 모의 계좌 |
+| **거래 가능** | Yes (실제 체결) | Yes (모의 체결) |
+| **비용** | 거래 수수료 | 없음 |
 
 ---
 

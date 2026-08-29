@@ -179,7 +179,7 @@ vm-stock-kis 1.0.0      위 호환 경로 **완전 제거**
 from vmkis import VmKis, Quote, Balance, Order
 
 # 0.0.x 전 구간에서 동일하게 작동
-kis = VmKis(app_key="...", app_secret="...")
+kis = VmKis(id="...", account="...", appkey="...", secretkey="...")
 quote = kis.stock("005930").quote()  # Always works
 ```
 
