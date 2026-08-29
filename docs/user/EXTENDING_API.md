@@ -171,6 +171,12 @@ kis.fetch(..., response_type=MyResponse(symbol="005930"))
 절차는 [ARCHITECTURE.md 의 확장성 절](../architecture/ARCHITECTURE.md#새로운-rest-api-추가--6단계-250800-loc)에
 있습니다.
 
+> **Protocol 을 반드시 써야 하는 것은 아닙니다.** 단일 시장 TR 이고 공개
+> 타입으로 내보내지 않는다면 impl 클래스 + 모듈 함수만으로 1급 시민이 됩니다.
+> 판정표는 [언제 Protocol 이 필요한가](../architecture/ARCHITECTURE.md#언제-protocol-이-필요한가--판정-기준)
+> 에 있습니다 — 이 기준이 없던 동안 필요 없는 곳에도 Protocol 을 쓰게
+> 되어 있었습니다.
+
 **대부분의 경우 Level 1로 충분하고, 여기까지 올 필요가 없습니다.** 라이브러리에
 넣어야 하는 경우는 (1) 여러 사람이 쓰는 사내 표준이 되거나, (2) 이 저장소에
 기여할 때입니다.
