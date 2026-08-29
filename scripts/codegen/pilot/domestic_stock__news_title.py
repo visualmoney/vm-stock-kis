@@ -24,7 +24,7 @@ NEWS_TITLE = KisEndpoint(
 
 
 class KisNewsTitleItem(KisDynamic):
-    """news_title 응답 항목 (12개 필드)"""
+    """news_title 응답 항목 — `output` (12개 필드)"""
 
     cntt_usiq_srno: str = KisString["cntt_usiq_srno"]
     """내용 조회용 일련번호"""
@@ -57,8 +57,11 @@ class KisNewsTitle(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisNewsTitleItem] = KisList(KisNewsTitleItem)["output"]
-    """news_title 목록"""
+    # ⚠️ `output` 이 리스트인지 단건인지 원본이 알려주지 않습니다
+    #    (샘플이 `isinstance(x, list)` 로 방어하고 있습니다).
+    #    실제 응답을 보고 KisList / KisObject 중 하나로 확정하세요.
+    output: list[KisNewsTitleItem] = KisList(KisNewsTitleItem)["output"]
+    """output 목록"""
 
 
 # 타입을 추정하지 못해 KisString 으로 둔 필드 8개:

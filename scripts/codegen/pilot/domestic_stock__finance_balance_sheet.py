@@ -22,7 +22,7 @@ FINANCE_BALANCE_SHEET = KisEndpoint(
 
 
 class KisFinanceBalanceSheetItem(KisDynamic):
-    """finance_balance_sheet 응답 항목 (11개 필드)"""
+    """finance_balance_sheet 응답 항목 — `output` (11개 필드)"""
 
     stac_yymm: str = KisString["stac_yymm"]
     """결산 년월"""
@@ -53,8 +53,8 @@ class KisFinanceBalanceSheet(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisFinanceBalanceSheetItem] = KisList(KisFinanceBalanceSheetItem)["output"]
-    """finance_balance_sheet 목록"""
+    output: list[KisFinanceBalanceSheetItem] = KisList(KisFinanceBalanceSheetItem)["output"]
+    """output 목록"""
 
 
 # 타입을 추정하지 못해 KisString 으로 둔 필드 11개:

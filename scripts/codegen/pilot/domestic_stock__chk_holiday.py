@@ -24,7 +24,7 @@ CHK_HOLIDAY = KisEndpoint(
 
 
 class KisChkHolidayItem(KisDynamic):
-    """chk_holiday 응답 항목 (6개 필드)"""
+    """chk_holiday 응답 항목 — `output` (6개 필드)"""
 
     bass_dt: date = KisDate["bass_dt"]
     """기준일자"""
@@ -45,5 +45,8 @@ class KisChkHoliday(KisAPIResponse):
 
     __path__ = None
 
-    items: list[KisChkHolidayItem] = KisList(KisChkHolidayItem)["output"]
-    """chk_holiday 목록"""
+    # ⚠️ `output` 이 리스트인지 단건인지 원본이 알려주지 않습니다
+    #    (샘플이 `isinstance(x, list)` 로 방어하고 있습니다).
+    #    실제 응답을 보고 KisList / KisObject 중 하나로 확정하세요.
+    output: list[KisChkHolidayItem] = KisList(KisChkHolidayItem)["output"]
+    """output 목록"""

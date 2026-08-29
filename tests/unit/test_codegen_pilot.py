@@ -172,3 +172,75 @@ def test_tr_ids_look_like_kis_tr_ids() -> None:
                     assert pattern.match(value.tr_paper), f"{path.name}: {value.tr_paper!r}"
                 seen += 1
     assert seen >= 8
+
+
+# ── 다중 응답 블록 · 페이지네이션 (2026-08-30 확장) ──────────────────────────
+#
+# 첫 판 생성기는 `output` 하나만 가정해서 **`output2` 를 통째로 잃었습니다.**
+# 실측하니 REST 272개 중 94개가 블록 2개 이상입니다. 아래 검사가 그 회귀를 막습니다.
+
+
+def _pilot(stem: str) -> pathlib.Path:
+    matches = [p for p in _pilot_files() if p.stem.endswith(stem)]
+    assert matches, f"파일럿에 {stem} 이 없습니다"
+    return matches[0]
+
+
+def test_multi_block_endpoint_keeps_every_block() -> None:
+    """`inquire_daily_ccld` 는 `output1`(목록) + `output2`(단건) 입니다.
+
+    첫 판은 `output1` 만 만들고 `output2` 를 버렸습니다. 버려도 테스트는
+    통과했습니다 — 잃어버린 것을 세는 검사가 없었기 때문입니다.
+    """
+    module = _load(_pilot("inquire_daily_ccld"))
+    names = set(vars(module))
+
+    assert "KisInquireDailyCcldOutput1Item" in names
+    assert "KisInquireDailyCcldOutput2Item" in names, "output2 블록이 사라졌습니다"
+
+    source = _pilot("inquire_daily_ccld").read_text(encoding="utf-8")
+    assert 'KisList(KisInquireDailyCcldOutput1Item)["output1"]' in source
+    assert 'KisObject(KisInquireDailyCcldOutput2Item)["output2"]' in source, (
+        "output2 는 단건입니다 — 목록으로 만들면 KisList 가 TypeError 를 냅니다"
+    )
+
+
+def test_pagination_cursor_becomes_page_size() -> None:
+    """`ctx_area_fk100` -> `page_size=100`.
+
+    `KisEndpoint.page_size` 가 받는 값이고, 없으면 연속조회를 못 합니다.
+    """
+    from vmkis.client.endpoint import KisEndpoint
+
+    module = _load(_pilot("inquire_daily_ccld"))
+    endpoints = [v for v in vars(module).values() if isinstance(v, KisEndpoint)]
+
+    assert endpoints[0].page_size == 100, "커서 폭을 못 읽었습니다"
+
+
+def test_endpoint_without_cursor_has_no_page_size() -> None:
+    """커서가 없으면 `page_size` 도 없어야 합니다 — 아무 값이나 넣으면 안 됩니다."""
+    from vmkis.client.endpoint import KisEndpoint
+
+    module = _load(_pilot("volume_rank"))
+    endpoints = [v for v in vars(module).values() if isinstance(v, KisEndpoint)]
+
+    assert endpoints[0].page_size is None
+
+
+def test_undecided_blocks_are_marked_not_guessed() -> None:
+    """원본이 `isinstance` 로 방어한 블록은 **표시**되어야 합니다.
+
+    373개 블록 중 163개(43.7%)가 이 경우입니다. 원본 생성기도 몰랐다는
+    뜻이라 우리도 알 수 없습니다. **추측해서 채우면 생성물이 조용히
+    틀리고, `KisList` 는 dict 를 받으면 `TypeError` 를 냅니다.**
+    """
+    marked = 0
+    for path in _pilot_files():
+        text = path.read_text(encoding="utf-8")
+        if "리스트인지 단건인지 원본이 알려주지 않습니다" in text:
+            marked += 1
+
+    assert marked >= 1, (
+        "판정 못 한 블록을 표시하는 생성물이 하나도 없습니다. 생성기가 추측으로 채우고 있지 않은지 확인하세요."
+    )
