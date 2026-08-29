@@ -37,21 +37,32 @@ from vmkis.public_types import (
     TradingHours,
 )
 
-# 초보자용 유틸(선택적).
+# isort: split
 #
-# 두 import를 분리한 이유: 하나의 try로 묶여 있으면 helpers가 실패할 때 이미
-# 성공한 SimpleKIS까지 None으로 덮어써집니다. except도 Exception에서
-# ImportError로 좁혔습니다 — 다른 오류까지 삼키면 원인을 알 수 없습니다.
-try:
-    from vmkis.simple import SimpleKIS
-except ImportError:
-    SimpleKIS = None
-
-try:
-    from vmkis.helpers import create_client, save_config_interactive
-except ImportError:
-    create_client = None
-    save_config_interactive = None
+# 초보자용 유틸.
+#
+# 예전에는 아래 두 줄이 각각 `try/except ImportError: ... = None` 로 감싸여
+# 있었습니다. 그 폴백의 이력은 이렇습니다.
+#
+#   1. 처음에는 하나의 `try` 에 `except Exception` 이었습니다.
+#   2. helpers 가 실패하면 이미 성공한 SimpleKIS 까지 None 으로 덮어써져서
+#      try 를 둘로 쪼갰고, except 도 ImportError 로 좁혔습니다.
+#   3. 그래도 남는 문제가 이것입니다 — 폴백이 걸리면 사용자가 받는 것은
+#      `TypeError: 'NoneType' object is not callable` 이고, **pyyaml 도
+#      helpers 도 이름이 나오지 않습니다.** 무엇을 설치해야 하는지, 어디가
+#      고장 났는지 알 수 없습니다.
+#
+# 이슈 #73 에서 폴백을 없앴습니다. pyyaml 은 필수 의존성으로 유지하므로
+# (`pyproject.toml` 참고) 여기서 남는 ImportError 원인은 helpers/simple
+# **자체의 버그**뿐이고, 그건 조용히 None 이 되면 안 됩니다.
+#
+# `tests/unit/test_helpers_import_contract.py` 가 이것을 지킵니다.
+#
+# `# isort: split` 은 위 핵심 블록과 이 두 줄을 갈라 두기 위한 것입니다.
+# 없으면 정렬이 helpers 를 `kis` 앞으로, simple 을 맨 뒤로 흩어 놓아 이
+# 주석이 가리키는 "두 줄"이 서로 떨어집니다.
+from vmkis.helpers import create_client, save_config_interactive
+from vmkis.simple import SimpleKIS
 
 __all__ = [
     # 핵심

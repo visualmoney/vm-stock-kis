@@ -72,9 +72,14 @@ dependencies = [
     "colorlog>=6.8.2",
     "cryptography>=43.0.0",
     "python-dotenv>=1.2.1,<2",
-    # vmkis.helpers가 YAML 설정 파일을 읽습니다. 이 의존성이 없으면 helpers가
-    # import에 실패하고 vmkis/__init__.py가 그것을 삼켜 create_client와
-    # save_config_interactive가 조용히 None이 됩니다.
+    # vmkis.config 와 vmkis.helpers 가 YAML 설정 파일을 읽습니다. 예제 9개와
+    # 문서의 첫 화면이 `from vmkis import create_client` 로 시작하므로, 선택
+    # 의존성으로 빼면 그 비용이 **가장 디버깅을 못 하는 사용자**에게 갑니다.
+    # pyyaml 은 전 플랫폼에 휠이 있어 필수로 두는 비용이 거의 없습니다.
+    #
+    # 예전 근거는 "없으면 __init__.py 가 ImportError 를 삼켜 create_client 가
+    # 조용히 None 이 된다"였습니다. 그 폴백은 #73 에서 없앴습니다 — 즉 이제
+    # 필수인 이유는 나쁜 실패 모드를 덮기 위해서가 아니라 위의 것뿐입니다.
     "pyyaml>=6.0",
     "requests>=2.32.3",
     "typing-extensions>=4.12",
