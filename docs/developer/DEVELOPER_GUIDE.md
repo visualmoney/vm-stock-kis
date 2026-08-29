@@ -414,14 +414,14 @@ if TYPE_CHECKING:
 def get_my_data(
     kis: "VmKis",
     symbol: str,
-    domain: Literal["real", "virtual"] = "real"
+    domain: Literal["live", "paper"] = "live"
 ) -> KisMyData:
     """내 데이터 조회
 
     Args:
         kis: VmKis 인스턴스
         symbol: 종목코드
-        domain: 도메인 ("real" 또는 "virtual")
+        domain: 도메인 ("live" 또는 "paper")
 
     Returns:
         KisMyData: 조회 결과
@@ -684,7 +684,7 @@ def balance(self, account: Optional[str] = None) -> KisBalance:
     pass
 
 # 리터럴
-def api(self, domain: Literal["real", "virtual"] = "real"):
+def api(self, domain: Literal["live", "paper"] = "live"):
     pass
 
 # Union (가능하면 | 사용)

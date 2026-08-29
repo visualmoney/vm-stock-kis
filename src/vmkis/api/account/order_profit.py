@@ -38,17 +38,17 @@ __all__ = [
 ]
 
 
-# 기간 손익 조회는 모의투자를 지원하지 않습니다(`tr_virtual` 생략).
+# 기간 손익 조회는 모의투자를 지원하지 않습니다(`tr_paper` 생략).
 # 커서 길이는 각 API 의 `CTX_AREA_FK{n}` 에서 옵니다.
 _DOMESTIC_ORDER_PROFITS = KisEndpoint(
     path="/uapi/domestic-stock/v1/trading/inquire-period-trade-profit",
-    tr_real="TTTC8715R",
+    tr_live="TTTC8715R",
     page_size=100,
 )
 
 _FOREIGN_ORDER_PROFITS = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-period-profit",
-    tr_real="TTTS3039R",
+    tr_live="TTTS3039R",
     page_size=200,
 )
 
@@ -560,7 +560,7 @@ def domestic_order_profits(
         KisAPIError: API 호출에 실패한 경우
         ValueError: 계좌번호가 잘못된 경우
     """
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("모의투자에서는 국내 기간 손익 조회를 지원하지 않습니다.")
 
     if end is None:
@@ -627,7 +627,7 @@ def foreign_order_profits(
         KisAPIError: API 호출에 실패한 경우
         ValueError: 계좌번호가 잘못된 경우
     """
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("모의투자에서는 해외 기간 손익 조회를 지원하지 않습니다.")
 
     if end is None:
@@ -686,7 +686,7 @@ def foreign_order_fees(
         KisAPIError: API 호출에 실패한 경우
         ValueError: 계좌번호가 잘못된 경우
     """
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("모의투자에서는 해외 기간 손익 조회를 지원하지 않습니다.")
 
     if end is None:

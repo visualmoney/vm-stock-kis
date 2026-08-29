@@ -54,18 +54,18 @@ __all__ = [
 ]
 
 
-# 미체결 주문 조회는 모의투자를 지원하지 않습니다(`tr_virtual` 생략).
+# 미체결 주문 조회는 모의투자를 지원하지 않습니다(`tr_paper` 생략).
 # 커서 길이 100 은 KIS 문서의 `CTX_AREA_FK100` 에서 옵니다.
 _DOMESTIC_PENDING_ORDERS = KisEndpoint(
     path="/uapi/domestic-stock/v1/trading/inquire-psbl-rvsecncl",
-    tr_real="TTTC8036R",
+    tr_live="TTTC8036R",
     page_size=100,
 )
 
 _FOREIGN_PENDING_ORDERS = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-nccs",
-    tr_real="TTTS3018R",
-    tr_virtual="VTTS3018R",
+    tr_live="TTTS3018R",
+    tr_paper="VTTS3018R",
     page_size=200,
 )
 
@@ -706,7 +706,7 @@ def domestic_pending_orders(
         KisAPIError: API 호출에 실패한 경우
         ValueError: 계좌번호가 잘못된 경우
     """
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("모의투자에서는 미체결 주문 조회를 지원하지 않습니다.")
 
     if not isinstance(account, KisAccountNumber):
@@ -758,7 +758,7 @@ def _foreign_pending_orders(
         _FOREIGN_PENDING_ORDERS,
         params={
             "OVRS_EXCG_CD": get_market_code(market) if market is not None else "",
-            "SORT_SQN": "DS" if self.virtual else "",
+            "SORT_SQN": "DS" if self.paper else "",
         },
         form=[account],
         response_type=lambda: KisForeignPendingOrders(
@@ -841,7 +841,7 @@ def pending_orders(
     if not isinstance(account, KisAccountNumber):
         account = KisAccountNumber(account)
 
-    if country is None and not self.virtual:
+    if country is None and not self.paper:
         return KisIntegrationPendingOrders(
             self,
             account,

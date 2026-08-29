@@ -54,7 +54,7 @@ def test_integration_pending_orders_merges_and_sorts():
 def test_domestic_pending_orders_raises_on_virtual():
     class FakeKis:
         def __init__(self):
-            self.virtual = True
+            self.paper = True
 
     with pytest.raises(NotImplementedError):
         po.domestic_pending_orders(FakeKis(), account="123")
@@ -418,7 +418,7 @@ def test_pending_orders_kr_country(monkeypatch):
 
     monkeypatch.setattr(po, "domestic_pending_orders", mock_domestic)
 
-    mock_kis = types.SimpleNamespace(virtual=False)
+    mock_kis = types.SimpleNamespace(paper=False)
     account = KisAccountNumber("12345678-01")
 
     result = po.pending_orders(mock_kis, account, country="KR")
@@ -439,7 +439,7 @@ def test_pending_orders_foreign_country(monkeypatch):
 
     monkeypatch.setattr(po, "foreign_pending_orders", mock_foreign)
 
-    mock_kis = types.SimpleNamespace(virtual=False)
+    mock_kis = types.SimpleNamespace(paper=False)
     account = KisAccountNumber("12345678-01")
 
     result = po.pending_orders(mock_kis, account, country="US")
@@ -449,7 +449,7 @@ def test_pending_orders_foreign_country(monkeypatch):
 
 
 def test_pending_orders_integration_none_country_not_virtual(monkeypatch):
-    """Test pending_orders with None country and not virtual returns integration."""
+    """Test pending_orders with None country and not paper returns integration."""
     from vmkis.client.account import KisAccountNumber
 
     def mock_domestic(kis, account):
@@ -461,7 +461,7 @@ def test_pending_orders_integration_none_country_not_virtual(monkeypatch):
     monkeypatch.setattr(po, "domestic_pending_orders", mock_domestic)
     monkeypatch.setattr(po, "foreign_pending_orders", mock_foreign)
 
-    mock_kis = types.SimpleNamespace(virtual=False)
+    mock_kis = types.SimpleNamespace(paper=False)
     account = KisAccountNumber("12345678-01")
 
     result = po.pending_orders(mock_kis, account, country=None)
@@ -471,7 +471,7 @@ def test_pending_orders_integration_none_country_not_virtual(monkeypatch):
 
 
 def test_pending_orders_virtual(monkeypatch):
-    """Test pending_orders with virtual=True only calls foreign_pending_orders."""
+    """Test pending_orders with paper=True only calls foreign_pending_orders."""
     from vmkis.client.account import KisAccountNumber
 
     called = []
@@ -482,7 +482,7 @@ def test_pending_orders_virtual(monkeypatch):
 
     monkeypatch.setattr(po, "foreign_pending_orders", mock_foreign)
 
-    mock_kis = types.SimpleNamespace(virtual=True)
+    mock_kis = types.SimpleNamespace(paper=True)
     account = KisAccountNumber("12345678-01")
 
     result = po.pending_orders(mock_kis, account, country=None)
@@ -496,7 +496,7 @@ def test_account_pending_orders_delegates():
     """Test account_pending_orders delegates to pending_orders."""
     from vmkis.client.account import KisAccountNumber
 
-    mock_kis = types.SimpleNamespace(virtual=False)
+    mock_kis = types.SimpleNamespace(paper=False)
     account = KisAccountNumber("12345678-01")
 
     mock_account = types.SimpleNamespace(kis=mock_kis, account_number=account)
@@ -510,7 +510,7 @@ def test_account_product_pending_orders_filters_by_symbol(monkeypatch):
     """Test account_product_pending_orders filters orders by symbol and market."""
     from vmkis.client.account import KisAccountNumber
 
-    mock_kis = types.SimpleNamespace(virtual=False)
+    mock_kis = types.SimpleNamespace(paper=False)
     account = KisAccountNumber("12345678-01")
 
     # Create mock orders

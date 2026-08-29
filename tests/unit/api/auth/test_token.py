@@ -91,10 +91,10 @@ def test_token_issue_calls_fetch_and_returns_instance(monkeypatch):
 
     kis = FakeKis()
 
-    res = token_issue(kis, domain="real")
+    res = token_issue(kis, domain="live")
     assert res is t
     assert kis.last is not None
-    assert kis.last.get("domain") == "real"
+    assert kis.last.get("domain") == "live"
 
 
 def test_token_revoke_success_and_failure():

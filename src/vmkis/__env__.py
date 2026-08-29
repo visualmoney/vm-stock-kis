@@ -7,16 +7,16 @@ from importlib.metadata import version as _dist_version
 APPKEY_LENGTH = 36
 SECRETKEY_LENGTH = 180
 
-REAL_DOMAIN = "https://openapi.koreainvestment.com:9443"
-VIRTUAL_DOMAIN = "https://openapivts.koreainvestment.com:29443"
+LIVE_DOMAIN = "https://openapi.koreainvestment.com:9443"
+PAPER_DOMAIN = "https://openapivts.koreainvestment.com:29443"
 
-WEBSOCKET_REAL_DOMAIN = "ws://ops.koreainvestment.com:21000"
-WEBSOCKET_VIRTUAL_DOMAIN = "ws://ops.koreainvestment.com:31000"
+WEBSOCKET_LIVE_DOMAIN = "ws://ops.koreainvestment.com:21000"
+WEBSOCKET_PAPER_DOMAIN = "ws://ops.koreainvestment.com:31000"
 
 WEBSOCKET_MAX_SUBSCRIPTIONS = 40
 
-REAL_API_REQUEST_PER_SECOND = 20 - 1
-VIRTUAL_API_REQUEST_PER_SECOND = 2
+LIVE_API_REQUEST_PER_SECOND = 20 - 1
+PAPER_API_REQUEST_PER_SECOND = 2
 
 # `VmKis.request()` 의 재시도 정책입니다.
 #

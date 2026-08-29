@@ -20,19 +20,19 @@ def mock_auth():
         account="50000000-01",
         appkey="P" + "A" * 35,  # 36자
         secretkey="S" * 180,  # 180자
-        virtual=False,  # 실전도메인
+        paper=False,  # 실전도메인
     )
 
 
 @pytest.fixture
 def mock_virtual_auth():
-    """테스트용 모의(virtual) 인증 정보"""
+    """테스트용 모의(paper) 인증 정보"""
     return KisAuth(
         id="test_user",
         account="50000000-01",
         appkey="P" + "A" * 35,  # 36자
         secretkey="S" * 180,  # 180자
-        virtual=True,
+        paper=True,
     )
 
 
@@ -121,7 +121,7 @@ class TestIntegrationMockAPISimulation:
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
             # VmKis 초기화 시 자동으로 토큰 발급 (모의도메인)
-            # auth와 virtual_auth는 위치 인자로 전달
+            # auth와 paper_auth는 위치 인자로 전달
             kis = VmKis(mock_auth, mock_virtual_auth)
 
             # 토큰이 설정되었는지 확인
@@ -133,19 +133,19 @@ class TestIntegrationMockAPISimulation:
     ):
         """시세 조회 API 호출 흐름"""
         with requests_mock.Mocker() as m:
-            # 토큰 발급 - real 도메인
+            # 토큰 발급 - live 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
 
-            # 토큰 발급 - virtual 도메인
+            # 토큰 발급 - paper 도메인
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
-            # 종목 기본정보 조회 API Mock - real 도메인
+            # 종목 기본정보 조회 API Mock - live 도메인
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/search-info",
                 json=mock_search_info_response,
             )
 
-            # 시세 조회 API Mock - real 도메인
+            # 시세 조회 API Mock - live 도메인
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price",
                 json=mock_quote_response,
@@ -184,10 +184,10 @@ class TestIntegrationMockAPISimulation:
         error_response = {"rt_cd": "1", "msg_cd": "EGW00123", "msg1": "시스템 오류가 발생했습니다."}
 
         with requests_mock.Mocker() as m:
-            # 토큰 발급 - real 도메인
+            # 토큰 발급 - live 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
 
-            # 토큰 발급 - virtual 도메인
+            # 토큰 발급 - paper 도메인
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
             # 에러 응답
@@ -205,7 +205,7 @@ class TestIntegrationMockAPISimulation:
                     "/uapi/domestic-stock/v1/quotations/inquire-price",
                     api="FHKST01010100",
                     params={"fid_input_iscd": "000660"},
-                    domain="virtual",
+                    domain="paper",
                     response_type=KisAPIResponse,
                 )
 
@@ -214,10 +214,10 @@ class TestIntegrationMockAPISimulation:
     def test_http_error_handling(self, mock_auth, mock_virtual_auth, mock_token_response):
         """HTTP 에러 처리"""
         with requests_mock.Mocker() as m:
-            # 토큰 발급 - real 도메인
+            # 토큰 발급 - live 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
 
-            # 토큰 발급 - virtual 도메인
+            # 토큰 발급 - paper 도메인
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
             # HTTP 500 에러
@@ -235,7 +235,7 @@ class TestIntegrationMockAPISimulation:
                     "/uapi/domestic-stock/v1/quotations/inquire-price",
                     method="GET",
                     params={"fid_input_iscd": "000660"},
-                    domain="virtual",
+                    domain="paper",
                 )
 
             assert exc_info.value.status_code == 500
@@ -243,10 +243,10 @@ class TestIntegrationMockAPISimulation:
     def test_token_expiration_and_refresh(self, mock_auth, mock_virtual_auth, mock_token_response):
         """토큰 만료 및 재발급"""
         with requests_mock.Mocker() as m:
-            # 토큰 발급 - real 도메인
+            # 토큰 발급 - live 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
 
-            # 토큰 발급 - virtual 도메인
+            # 토큰 발급 - paper 도메인
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
             # 401 Unauthorized (토큰 만료)
@@ -270,19 +270,19 @@ class TestIntegrationMockAPISimulation:
         import time
 
         with requests_mock.Mocker() as m:
-            # 토큰 발급 - real 도메인
+            # 토큰 발급 - live 도메인
             m.post("https://openapi.koreainvestment.com:9443/oauth2/tokenP", json=mock_token_response)
 
-            # 토큰 발급 - virtual 도메인
+            # 토큰 발급 - paper 도메인
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
-            # 종목 기본정보 조회 API Mock - real 도메인 (any symbol)
+            # 종목 기본정보 조회 API Mock - live 도메인 (any symbol)
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/search-info",
                 json=mock_search_info_response,
             )
 
-            # quotable_market에서 사용하는 inquire-price API Mock - real 도메인
+            # quotable_market에서 사용하는 inquire-price API Mock - live 도메인
             m.get(
                 "https://openapi.koreainvestment.com:9443/uapi/domestic-stock/v1/quotations/inquire-price",
                 json=mock_quote_response,
@@ -311,12 +311,12 @@ class TestIntegrationMockAPISimulation:
     def test_multiple_accounts(self, mock_token_response):
         """여러 계좌 처리"""
         # 실전 도메인 인증 정보
-        real_auth = KisAuth(
+        live_auth = KisAuth(
             id="real_user",
             account="50000000-00",
             appkey="P" + "R" * 35,
             secretkey="R" * 180,
-            virtual=False,
+            paper=False,
         )
 
         # 모의 도메인 인증 정보 1
@@ -325,7 +325,7 @@ class TestIntegrationMockAPISimulation:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=True,
+            paper=True,
         )
 
         # 모의 도메인 인증 정보 2
@@ -334,7 +334,7 @@ class TestIntegrationMockAPISimulation:
             account="50000000-02",
             appkey="P" + "B" * 35,
             secretkey="T" * 180,
-            virtual=True,
+            paper=True,
         )
 
         with requests_mock.Mocker() as m:
@@ -344,8 +344,8 @@ class TestIntegrationMockAPISimulation:
             # 모의 도메인 토큰 발급
             m.post("https://openapivts.koreainvestment.com:29443/oauth2/tokenP", json=mock_token_response)
 
-            kis1 = VmKis(real_auth, auth1)
-            kis2 = VmKis(real_auth, auth2)
+            kis1 = VmKis(live_auth, auth1)
+            kis2 = VmKis(live_auth, auth2)
 
             assert kis1.primary_account != kis2.primary_account
 

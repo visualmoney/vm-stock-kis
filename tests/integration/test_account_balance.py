@@ -15,13 +15,13 @@ pytestmark = pytest.mark.requires_api
 
 class AccountBalanceTests(TestCase):
     vmkis: VmKis
-    virtual_vmkis: VmKis
+    paper_vmkis: VmKis
 
     @classmethod
     def setUpClass(cls) -> None:
         """클래스 레벨에서 한 번만 실행 - 토큰 발급 횟수 제한 방지"""
-        cls.vmkis = load_vmkis("real", use_websocket=False)
-        cls.virtual_vmkis = load_vmkis("virtual", use_websocket=False)
+        cls.vmkis = load_vmkis("live", use_websocket=False)
+        cls.paper_vmkis = load_vmkis("paper", use_websocket=False)
 
     def test_account_scope(self):
         account = self.vmkis.account()
@@ -29,7 +29,7 @@ class AccountBalanceTests(TestCase):
         self.assertTrue(isinstance(account, KisAccount))
 
     def test_virtual_account_scope(self):
-        account = self.virtual_vmkis.account()
+        account = self.paper_vmkis.account()
 
         self.assertTrue(isinstance(account, KisAccount))
 
@@ -49,7 +49,7 @@ class AccountBalanceTests(TestCase):
 
     def test_virtual_balance(self):
         try:
-            balance = self.virtual_vmkis.account().balance()
+            balance = self.paper_vmkis.account().balance()
 
             self.assertTrue(isinstance(balance, KisBalance))
             self.assertIsNotNone(balance.deposits["KRW"])
@@ -77,7 +77,7 @@ class AccountBalanceTests(TestCase):
 
     def test_virtual_balance_stock(self):
         try:
-            balance = self.virtual_vmkis.account().balance()
+            balance = self.paper_vmkis.account().balance()
 
             if not balance.stocks:
                 self.skipTest("No stocks in account")

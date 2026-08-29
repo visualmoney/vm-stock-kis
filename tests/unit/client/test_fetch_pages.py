@@ -18,7 +18,7 @@ from vmkis.kis import MAX_PAGES, VmKis
 
 ENDPOINT = KisEndpoint(
     path="/uapi/test/pages",
-    tr_real="TTTEST01R",
+    tr_live="TTTEST01R",
     page_size=100,
 )
 
@@ -41,7 +41,7 @@ class FakeKis:
     """
 
     def __init__(self, pages: int, *, always_more: bool = False):
-        self.virtual = False
+        self.paper = False
         self.pages = pages
         self.always_more = always_more
         self.calls: list[dict] = []
@@ -144,7 +144,7 @@ def test_resolves_endpoint_spec():
     _run(kis)
 
     assert kis.calls[0]["api"] == "TTTEST01R"
-    assert kis.calls[0]["domain"] == "real"
+    assert kis.calls[0]["domain"] == "live"
 
 
 def test_page_size_comes_from_spec():

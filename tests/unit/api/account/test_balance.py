@@ -141,7 +141,7 @@ def test_integration_balance_merges_balances():
 
 def test_foreign_balance_stock_exchange_rate_cached():
     # Use a plain object to exercise the cached_property descriptor without
-    # trying to set read-only attributes on the real class.
+    # trying to set read-only attributes on the live class.
     deposit = SimpleNamespace(exchange_rate=Decimal("123"))
     balance = SimpleNamespace(deposits={"USD": deposit})
     dummy = SimpleNamespace()
@@ -279,7 +279,7 @@ def test_domestic_balance_fetch_pagination(monkeypatch):
 
     class FakeKis:
         def __init__(self):
-            self.virtual = False
+            self.paper = False
             self.call_count = 0
 
         # 이슈 #43·#44 이후 api/ 는 `fetch_pages()` -> `call()` 을 거친다.
@@ -333,7 +333,7 @@ def test_foreign_balance_routes_to_internal(monkeypatch):
 
     monkeypatch.setattr(bal, "_internal_foreign_balance", mock_internal)
 
-    kis = SimpleNamespace(virtual=False)
+    kis = SimpleNamespace(paper=False)
     result = bal._foreign_balance(kis, "12345678-01", country="US")
 
     # Should call for NASDAQ market

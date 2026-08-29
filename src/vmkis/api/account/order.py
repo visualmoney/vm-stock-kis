@@ -256,17 +256,17 @@ def orderable_conditions_repr():
             f"order(market={repr(market) if market else '전체'}, order={order!r}, price={'100' if price else 'None'}, condition={condition!r}, execution={execution!r}) "
             f"# {get_market_name(market)} {label} {'매수' if order == 'buy' else '매도'}{'' if ((False, market, order, price, condition, execution) in ORDER_CONDITION_MAP) or (None, market, order, price, condition, execution) in ORDER_CONDITION_MAP else ' (모의투자 미지원)'}"
         )
-        for (real, market, order, price, condition, execution), (
+        for (live, market, order, price, condition, execution), (
             _,
             _,
             label,
         ) in ORDER_CONDITION_MAP.items()
-        if real is not False
+        if live is not False
     )
 
 
 def order_condition(
-    virtual: bool,
+    paper: bool,
     market: MARKET_TYPE,
     order: ORDER_TYPE,
     price: Decimal | None = None,
@@ -276,7 +276,7 @@ def order_condition(
     if price and price <= 0:
         raise ValueError("가격은 0보다 커야합니다.")
 
-    order_condition = [not virtual, market, order, price is not None, condition, execution]
+    order_condition = [not paper, market, order, price is not None, condition, execution]
 
     if tuple(order_condition) not in ORDER_CONDITION_MAP:
         # 조건을 찾을 수 없을 경우, 투자구분을 기본값으로 변환
@@ -292,16 +292,16 @@ def order_condition(
 
     if tuple(order_condition) not in ORDER_CONDITION_MAP:
         # 모의투자 미지원 여부 확인
-        virtual_not_supported = False
+        paper_not_supported = False
 
-        if virtual:
+        if paper:
             order_condition[0] = False
 
             if tuple(order_condition) in ORDER_CONDITION_MAP:
-                virtual_not_supported = True
+                paper_not_supported = True
 
         raise ValueError(
-            ("모의투자는 해당 주문조건을 지원하지 않습니다." if virtual_not_supported else "주문조건이 잘못되었습니다.")
+            ("모의투자는 해당 주문조건을 지원하지 않습니다." if paper_not_supported else "주문조건이 잘못되었습니다.")
             + f" (market={market!r}, order={order!r}, price={price!r}, condition={condition!r}, execution={execution!r})\n"
             "아래 주문 가능 조건을 참고하세요.\n\n" + orderable_conditions_repr()
         )
@@ -895,10 +895,10 @@ class KisForeignDaytimeOrder(KisAPIResponse, KisOrderBase):
 _DOMESTIC_ORDER_PATH = "/uapi/domestic-stock/v1/trading/order-cash"
 
 #: 국내주식 주문 엔드포인트. 실전/모의 TR ID 는 각 스펙이 들고 있으므로
-#: 호출부에서 `if self.virtual` 분기를 하지 않습니다.
+#: 호출부에서 `if self.paper` 분기를 하지 않습니다.
 DOMESTIC_ORDER_ENDPOINTS: dict[ORDER_TYPE, KisEndpoint] = {
-    "buy": KisEndpoint(_DOMESTIC_ORDER_PATH, tr_real="TTTC0802U", tr_virtual="VTTC0802U", method="POST"),
-    "sell": KisEndpoint(_DOMESTIC_ORDER_PATH, tr_real="TTTC0801U", tr_virtual="VTTC0801U", method="POST"),
+    "buy": KisEndpoint(_DOMESTIC_ORDER_PATH, tr_live="TTTC0802U", tr_paper="VTTC0802U", method="POST"),
+    "sell": KisEndpoint(_DOMESTIC_ORDER_PATH, tr_live="TTTC0801U", tr_paper="VTTC0801U", method="POST"),
 }
 
 
@@ -1071,7 +1071,7 @@ def domestic_order(
     price = None if price is None else ensure_price(price, 0)
 
     condition_code, price_setting, _ = order_condition(
-        virtual=self.virtual,
+        paper=self.paper,
         market="KRX",
         order=order,
         price=price,
@@ -1126,69 +1126,69 @@ _FOREIGN_ORDER_PATH = "/uapi/overseas-stock/v1/trading/order"
 #: `KisEndpoint` 안으로 들어갔습니다.
 FOREIGN_ORDER_ENDPOINTS: dict[tuple[MARKET_TYPE, ORDER_TYPE], KisEndpoint] = {
     ("NASDAQ", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTT1002U", tr_virtual="VTTT1002U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTT1002U", tr_paper="VTTT1002U", method="POST"
     ),  # 미국 매수 주문
     ("NYSE", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTT1002U", tr_virtual="VTTT1002U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTT1002U", tr_paper="VTTT1002U", method="POST"
     ),  # 미국 매수 주문
     ("AMEX", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTT1002U", tr_virtual="VTTT1002U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTT1002U", tr_paper="VTTT1002U", method="POST"
     ),  # 미국 매수 주문
     ("NASDAQ", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTT1006U", tr_virtual="VTTT1001U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTT1006U", tr_paper="VTTT1001U", method="POST"
     ),  # 미국 매도 주문
     ("NYSE", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTT1006U", tr_virtual="VTTT1001U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTT1006U", tr_paper="VTTT1001U", method="POST"
     ),  # 미국 매도 주문
     ("AMEX", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTT1006U", tr_virtual="VTTT1001U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTT1006U", tr_paper="VTTT1001U", method="POST"
     ),  # 미국 매도 주문
     ("TYO", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0308U", tr_virtual="VTTS0308U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0308U", tr_paper="VTTS0308U", method="POST"
     ),  # 일본 매수 주문
     ("TYO", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0307U", tr_virtual="VTTS0307U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0307U", tr_paper="VTTS0307U", method="POST"
     ),  # 일본 매도 주문
     ("SSE", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0202U", tr_virtual="VTTS0202U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0202U", tr_paper="VTTS0202U", method="POST"
     ),  # 상하이 매수 주문
     ("SSE", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS1005U", tr_virtual="VTTS1005U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS1005U", tr_paper="VTTS1005U", method="POST"
     ),  # 상하이 매도 주문
     ("HKEX", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS1002U", tr_virtual="VTTS1002U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS1002U", tr_paper="VTTS1002U", method="POST"
     ),  # 홍콩 매수 주문
     ("HKEX", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS1001U", tr_virtual="VTTS1001U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS1001U", tr_paper="VTTS1001U", method="POST"
     ),  # 홍콩 매도 주문
     ("SZSE", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0305U", tr_virtual="VTTS0305U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0305U", tr_paper="VTTS0305U", method="POST"
     ),  # 심천 매수 주문
     ("SZSE", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0304U", tr_virtual="VTTS0304U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0304U", tr_paper="VTTS0304U", method="POST"
     ),  # 심천 매도 주문
     ("HNX", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0311U", tr_virtual="VTTS0311U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0311U", tr_paper="VTTS0311U", method="POST"
     ),  # 베트남 매수 주문
     ("HSX", "buy"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0311U", tr_virtual="VTTS0311U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0311U", tr_paper="VTTS0311U", method="POST"
     ),  # 베트남 매수 주문
     ("HNX", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0310U", tr_virtual="VTTS0310U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0310U", tr_paper="VTTS0310U", method="POST"
     ),  # 베트남 매도 주문
     ("HSX", "sell"): KisEndpoint(
-        _FOREIGN_ORDER_PATH, tr_real="TTTS0310U", tr_virtual="VTTS0310U", method="POST"
+        _FOREIGN_ORDER_PATH, tr_live="TTTS0310U", tr_paper="VTTS0310U", method="POST"
     ),  # 베트남 매도 주문
 }
 
-# 주간거래는 모의투자를 지원하지 않습니다. `tr_virtual` 을 생략하면
+# 주간거래는 모의투자를 지원하지 않습니다. `tr_paper` 을 생략하면
 # 모의 계좌에서도 실전 도메인으로 나갑니다.
 FOREIGN_DAYTIME_ORDER_ENDPOINTS: dict[ORDER_TYPE, KisEndpoint] = {
     "buy": KisEndpoint(
-        "/uapi/overseas-stock/v1/trading/daytime-order", tr_real="TTTS6036U", method="POST"
+        "/uapi/overseas-stock/v1/trading/daytime-order", tr_live="TTTS6036U", method="POST"
     ),  # 해외 주간거래 매수 주문
     "sell": KisEndpoint(
-        "/uapi/overseas-stock/v1/trading/daytime-order", tr_real="TTTS6037U", method="POST"
+        "/uapi/overseas-stock/v1/trading/daytime-order", tr_live="TTTS6037U", method="POST"
     ),  # 해외 주간거래 매도 주문
 }
 
@@ -1273,7 +1273,7 @@ def foreign_order(
     price = None if price is None else ensure_price(price)
 
     condition_code, price_setting, _ = order_condition(
-        virtual=self.virtual,
+        paper=self.paper,
         market=market,
         order=order,
         price=price,
@@ -1350,7 +1350,7 @@ def foreign_daytime_order(
         qty (IN_ORDER_QUANTITY, optional): 주문수량
         include_foreign (bool, optional): 전량 주문시 외화 주문가능금액 포함 여부
     """
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("주간거래 주문은 모의투자를 지원하지 않습니다.")
 
     if market not in DAYTIME_MARKET_SHORT_TYPE_MAP:

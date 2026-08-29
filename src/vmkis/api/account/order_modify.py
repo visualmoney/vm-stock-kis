@@ -35,8 +35,8 @@ __all__ = [
 
 _DOMESTIC_ORDER_MODIFY = KisEndpoint(
     path="/uapi/domestic-stock/v1/trading/order-rvsecncl",
-    tr_real="TTTC0803U",
-    tr_virtual="VTTC0803U",
+    tr_live="TTTC0803U",
+    tr_paper="VTTC0803U",
     method="POST",
 )
 
@@ -130,7 +130,7 @@ def domestic_modify_order(
         condition (ORDER_CONDITION, optional): 주문조건
         execution (ORDER_EXECUTION_CONDITION, optional): 체결조건
     """
-    if self.virtual:
+    if self.paper:
         # 모의투자에서 domestic_pending_orders를 지원하지 않으므로, 일관된 구현이 어려워 정정주문도 지원하지 않습니다.
         raise NotImplementedError("모의투자에서는 정정주문을 지원하지 않습니다.")
 
@@ -163,7 +163,7 @@ def domestic_modify_order(
     price = None if price is None else ensure_price(price, 0)
 
     condition_code, price_setting, _ = order_condition(
-        virtual=self.virtual,
+        paper=self.paper,
         market="KRX",
         order=order_info.type,
         price=price,
@@ -230,10 +230,10 @@ def domestic_cancel_order(
 
 _FOREIGN_ORDER_MODIFY_PATH = "/uapi/overseas-stock/v1/trading/order-rvsecncl"
 
-# 주간거래 정정취소는 모의투자를 지원하지 않습니다(`tr_virtual` 생략).
+# 주간거래 정정취소는 모의투자를 지원하지 않습니다(`tr_paper` 생략).
 _FOREIGN_DAYTIME_ORDER_MODIFY = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/daytime-order-rvsecncl",
-    tr_real="TTTS6038U",
+    tr_live="TTTS6038U",
     method="POST",
 )
 
@@ -242,46 +242,46 @@ _FOREIGN_DAYTIME_ORDER_MODIFY = KisEndpoint(
 # 것 자체가 "그 시장은 그 주문을 지원하지 않는다"는 뜻입니다.
 FOREIGN_ORDER_MODIFY_ENDPOINTS: dict[tuple[MARKET_TYPE, Literal["modify", "cancel"]], KisEndpoint] = {
     ("NASDAQ", "modify"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTT1004U", tr_paper="VTTT1004U", method="POST"
     ),  # 미국 정정 주문
     ("NYSE", "modify"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTT1004U", tr_paper="VTTT1004U", method="POST"
     ),  # 미국 정정 주문
     ("AMEX", "modify"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTT1004U", tr_paper="VTTT1004U", method="POST"
     ),  # 미국 정정 주문
     ("NASDAQ", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTT1004U", tr_paper="VTTT1004U", method="POST"
     ),  # 미국 취소 주문
     ("NYSE", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTT1004U", tr_paper="VTTT1004U", method="POST"
     ),  # 미국 취소 주문
     ("AMEX", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTT1004U", tr_virtual="VTTT1004U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTT1004U", tr_paper="VTTT1004U", method="POST"
     ),  # 미국 취소 주문
     ("HKEX", "modify"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS1003U", tr_virtual="VTTS1003U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS1003U", tr_paper="VTTS1003U", method="POST"
     ),  # 홍콩 정정 주문
     ("HKEX", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS1003U", tr_virtual="VTTS1003U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS1003U", tr_paper="VTTS1003U", method="POST"
     ),  # 홍콩 취소 주문
     ("TYO", "modify"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0309U", tr_virtual="VTTS0309U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS0309U", tr_paper="VTTS0309U", method="POST"
     ),  # 일본 정정 주문
     ("TYO", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0309U", tr_virtual="VTTS0309U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS0309U", tr_paper="VTTS0309U", method="POST"
     ),  # 일본 취소 주문
     ("SSE", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0302U", tr_virtual="VTTS0302U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS0302U", tr_paper="VTTS0302U", method="POST"
     ),  # 상하이 취소 주문
     ("SZSE", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0302U", tr_virtual="VTTS0302U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS0302U", tr_paper="VTTS0302U", method="POST"
     ),  # 상하이 취소 주문
     ("HSX", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0312U", tr_virtual="VTTS0312U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS0312U", tr_paper="VTTS0312U", method="POST"
     ),  # 베트남 취소 주문
     ("HNX", "cancel"): KisEndpoint(
-        _FOREIGN_ORDER_MODIFY_PATH, tr_real="TTTS0312U", tr_virtual="VTTS0312U", method="POST"
+        _FOREIGN_ORDER_MODIFY_PATH, tr_live="TTTS0312U", tr_paper="VTTS0312U", method="POST"
     ),  # 베트남 취소 주문
 }
 
@@ -336,7 +336,7 @@ def foreign_modify_order(
     price = None if price is None else ensure_price(price)
 
     _, price_setting, _ = order_condition(
-        virtual=self.virtual,
+        paper=self.paper,
         market=order.market,
         order=order_info.type,
         price=price,
@@ -434,7 +434,7 @@ def foreign_daytime_modify_order(
     if order.market not in DAYTIME_MARKETS:
         raise ValueError("해당 시장은 주간거래를 지원하지 않습니다.")
 
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("모의투자에서는 주간거래 정정 주문을 지원하지 않습니다.")
 
     if qty is not None and qty <= 0:
@@ -504,7 +504,7 @@ def foreign_daytime_cancel_order(
     if order.market not in DAYTIME_MARKETS:
         raise ValueError("해당 시장은 주간거래를 지원하지 않습니다.")
 
-    if self.virtual:
+    if self.paper:
         raise NotImplementedError("모의투자에서는 주간거래 정정 주문을 지원하지 않습니다.")
 
     from vmkis.api.account.pending_order import pending_orders

@@ -2,7 +2,7 @@
 
 KIS 는 같은 기능이라도 실전/모의의 TR ID 가 다르고(잔고: `TTTC8434R` /
 `VTTC8434R`), 시세처럼 모의 서버에 아예 없는 TR 도 있습니다. 그 규칙이
-엔드포인트마다 반복되면 **빠뜨릴 기회**가 생깁니다. 특히 `domain="real"` 을
+엔드포인트마다 반복되면 **빠뜨릴 기회**가 생깁니다. 특히 `domain="live"` 을
 누락하면 모의 계정에서만 터지는 버그가 됩니다.
 
 `KisEndpoint` 는 "이 API 는 이런 것"만 데이터로 적고, 실행 규칙은
@@ -10,8 +10,8 @@ KIS 는 같은 기능이라도 실전/모의의 TR ID 가 다르고(잔고: `TTT
 
     DOMESTIC_BALANCE = KisEndpoint(
         path="/uapi/domestic-stock/v1/trading/inquire-balance",
-        tr_real="TTTC8434R",
-        tr_virtual="VTTC8434R",
+        tr_live="TTTC8434R",
+        tr_paper="VTTC8434R",
         page_size=100,
     )
 
@@ -32,7 +32,7 @@ from typing import Literal
 
 __all__ = ["KisEndpoint"]
 
-DOMAIN_TYPE = Literal["real", "virtual"]
+DOMAIN_TYPE = Literal["live", "paper"]
 
 
 @dataclass(frozen=True)
@@ -46,10 +46,10 @@ class KisEndpoint:
     path: str
     """`/uapi/...` 로 시작하는 요청 경로."""
 
-    tr_real: str
+    tr_live: str
     """실전도메인 TR ID."""
 
-    tr_virtual: str | None = None
+    tr_paper: str | None = None
     """모의도메인 TR ID.
 
     `None` 이면 **모의투자를 지원하지 않는 TR** 입니다. 이때 모의 계좌로
@@ -61,11 +61,11 @@ class KisEndpoint:
     domain_override: DOMAIN_TYPE | None = None
     """도메인을 강제합니다.
 
-    `tr_virtual` 이 있어도 이 값이 우선합니다. 실전 계좌인데 굳이 모의로
+    `tr_paper` 이 있어도 이 값이 우선합니다. 실전 계좌인데 굳이 모의로
     보내야 하는 경우처럼 예외적인 상황에만 씁니다.
 
-    모의 미지원 TR 은 `tr_virtual` 을 생략하는 것으로 충분하므로
-    `domain_override="real"` 을 함께 줄 필요가 없습니다.
+    모의 미지원 TR 은 `tr_paper` 을 생략하는 것으로 충분하므로
+    `domain_override="live"` 을 함께 줄 필요가 없습니다.
     """
 
     page_size: int | None = None
@@ -74,7 +74,7 @@ class KisEndpoint:
     `None` 이면 페이징이 없는 엔드포인트입니다.
     """
 
-    def resolve(self, virtual: bool) -> tuple[str, DOMAIN_TYPE]:
+    def resolve(self, paper: bool) -> tuple[str, DOMAIN_TYPE]:
         """계좌 종류에 맞는 `(TR ID, 도메인)` 을 고릅니다.
 
         이 판단이 흩어져 있으면 매번 다시 기억해야 합니다. 규칙은 셋뿐입니다.
@@ -83,14 +83,14 @@ class KisEndpoint:
         2. 모의 계좌이고 모의 버전이 있으면 → 모의
         3. `domain_override` 가 있으면 위를 덮어씀
         """
-        if virtual and self.tr_virtual is not None:
-            tr_id: str = self.tr_virtual
-            domain: DOMAIN_TYPE = "virtual"
+        if paper and self.tr_paper is not None:
+            tr_id: str = self.tr_paper
+            domain: DOMAIN_TYPE = "paper"
         else:
             # 실전 계좌이거나, 모의 계좌인데 모의 TR 이 없는 경우.
             # 후자에서 모의 도메인으로 보내면 "없는 TR" 오류가 납니다.
-            tr_id = self.tr_real
-            domain = "real"
+            tr_id = self.tr_live
+            domain = "live"
 
         if self.domain_override is not None:
             domain = self.domain_override

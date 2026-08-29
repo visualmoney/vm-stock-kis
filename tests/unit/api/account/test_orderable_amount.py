@@ -22,7 +22,7 @@ def test_domestic_foreign_amount_and_foreign_quantity(monkeypatch):
     # monkeypatch the internal _domestic_orderable_amount used by .foreign_quantity
     monkeypatch.setattr(oa, "_domestic_orderable_amount", lambda *a, **k: types.SimpleNamespace(quantity=Decimal("5")))
     # set a kis instance (some code expects inst.kis)
-    inst.kis = types.SimpleNamespace(virtual=False)
+    inst.kis = types.SimpleNamespace(paper=False)
 
     assert inst.foreign_amount == Decimal("1250")
     assert inst.foreign_quantity == Decimal("5")
@@ -43,7 +43,7 @@ def test_condition_kor_calls_order_condition(monkeypatch):
     # domestic property should pick last element
     assert inst.condition_kor == "설명"
 
-    # For foreign, ensure the virtual flag is passed through to order_condition
+    # For foreign, ensure the paper flag is passed through to order_condition
     finst = oa.KisForeignOrderableAmount(
         account_number="1234",
         symbol="BBB",
@@ -54,8 +54,8 @@ def test_condition_kor_calls_order_condition(monkeypatch):
         execution=None,
     )
 
-    # supply kis with virtual True to validate parameter path
-    finst.kis = types.SimpleNamespace(virtual=True)
+    # supply kis with paper True to validate parameter path
+    finst.kis = types.SimpleNamespace(paper=True)
 
     captured = {}
 
@@ -66,6 +66,6 @@ def test_condition_kor_calls_order_condition(monkeypatch):
     monkeypatch.setattr(oa, "order_condition", fake_order_condition)
 
     assert finst.condition_kor == "외국설명"
-    # check that virtual and market were forwarded
-    assert captured.get("virtual") is True
+    # check that paper and market were forwarded
+    assert captured.get("paper") is True
     assert captured.get("market") == "NASDAQ"

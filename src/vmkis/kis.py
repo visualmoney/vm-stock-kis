@@ -16,13 +16,13 @@ from vmkis.__env__ import (
     API_RETRY_MAX_ATTEMPTS,
     API_RETRY_MAX_DELAY,
     API_TOKEN_REISSUE_LIMIT,
-    REAL_API_REQUEST_PER_SECOND,
-    REAL_DOMAIN,
+    LIVE_API_REQUEST_PER_SECOND,
+    LIVE_DOMAIN,
+    PAPER_API_REQUEST_PER_SECOND,
+    PAPER_DOMAIN,
     USER_AGENT,
-    VIRTUAL_API_REQUEST_PER_SECOND,
-    VIRTUAL_DOMAIN,
-    WEBSOCKET_REAL_DOMAIN,
-    WEBSOCKET_VIRTUAL_DOMAIN,
+    WEBSOCKET_LIVE_DOMAIN,
+    WEBSOCKET_PAPER_DOMAIN,
 )
 from vmkis.api.auth.token import KisAccessToken
 from vmkis.client.account import KisAccountNumber
@@ -71,15 +71,15 @@ class VmKis:
 
     appkey: KisKey
     """한국투자증권 실전도메인 API AppKey"""
-    virtual_appkey: KisKey | None
+    paper_appkey: KisKey | None
     """한국투자증권 API AppKey"""
     primary_account: KisAccountNumber | None
     """한국투자증권 기본 계좌 정보"""
 
     @property
-    def virtual(self) -> bool:
+    def paper(self) -> bool:
         """모의도메인 여부"""
-        return self.virtual_appkey is not None
+        return self.paper_appkey is not None
 
     cache: KisCacheStorage
     """캐시 저장소"""
@@ -88,13 +88,13 @@ class VmKis:
     """API 호출 제한"""
     _token: KisAccessToken | None
     """실전투자 API 접속 토큰"""
-    _virtual_token: KisAccessToken | None
+    _paper_token: KisAccessToken | None
     """API 접속 토큰"""
     _websocket: KisWebsocketClient | None
     """웹소켓 클라이언트"""
     _keep_token: Path | None
     """API 접속 토큰 자동 저장 경로"""
-    _sessions: dict[Literal["real", "virtual"], requests.Session]
+    _sessions: dict[Literal["live", "paper"], requests.Session]
     """API 세션"""
 
     @property
@@ -102,7 +102,7 @@ class VmKis:
         """API 접속 토큰 자동 저장 여부"""
         return self._keep_token is not None
 
-    def base_url(self, domain: Literal["real", "virtual"]) -> str:
+    def base_url(self, domain: Literal["live", "paper"]) -> str:
         """REST 서버 주소. 설정에 재정의가 있으면 그것을, 없으면 기본값을 씁니다.
 
         벤더가 주소를 바꿔도 사용자가 설정만 고쳐 복구할 수 있게 하는 것이 목적입니다.
@@ -114,16 +114,16 @@ class VmKis:
         if override is not None and override.base_url:
             return override.base_url
 
-        return REAL_DOMAIN if domain == "real" else VIRTUAL_DOMAIN
+        return LIVE_DOMAIN if domain == "live" else PAPER_DOMAIN
 
-    def ws_url(self, domain: Literal["real", "virtual"]) -> str:
+    def ws_url(self, domain: Literal["live", "paper"]) -> str:
         """웹소켓 서버 주소. `base_url` 과 같은 규칙입니다."""
         override = self._endpoints.get(domain)
 
         if override is not None and override.ws_url:
             return override.ws_url
 
-        return WEBSOCKET_REAL_DOMAIN if domain == "real" else WEBSOCKET_VIRTUAL_DOMAIN
+        return WEBSOCKET_LIVE_DOMAIN if domain == "live" else WEBSOCKET_PAPER_DOMAIN
 
     @overload
     def __init__(
@@ -176,11 +176,11 @@ class VmKis:
     def __init__(
         self,
         auth: str | PathLike[str] | KisAuth | None = None,
-        virtual_auth: str | PathLike[str] | KisAuth | None = None,
+        paper_auth: str | PathLike[str] | KisAuth | None = None,
         /,
         *,
         token: KisAccessToken | str | PathLike[str] | None = None,
-        virtual_token: KisAccessToken | str | PathLike[str] | None = None,
+        paper_token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
         user_agent: str | None = None,
@@ -191,9 +191,9 @@ class VmKis:
 
         Args:
             auth (str | PathLike[str] | KisAuth | None, optional): 실전도메인 인증 정보.
-            virtual_auth (str | PathLike[str] | KisAuth | None, optional): 모의도메인 인증 정보.
+            paper_auth (str | PathLike[str] | KisAuth | None, optional): 모의도메인 인증 정보.
             token (KisAccessToken | str | PathLike[str] | None, optional): 실전도메인 API 접속 토큰.
-            virtual_token (KisAccessToken | str | PathLike[str] | None, optional): 모의도메인 API 접속 토큰.
+            paper_token (KisAccessToken | str | PathLike[str] | None, optional): 모의도메인 API 접속 토큰.
             keep_token (bool | str | PathLike[str] | None, optional): API 접속 토큰을 저장할지 여부. 기본 저장 폴더: `~/.vmkis/` (신뢰할 수 없는 환경에서 사용하지 마세요)
             use_websocket (bool, optional): 웹소켓 사용 여부.
 
@@ -201,30 +201,30 @@ class VmKis:
 
             먼저, 실전투자 인증 정보를 저장합니다.
 
-            >>> real_auth = KisAuth(
+            >>> live_auth = KisAuth(
             ...     id="soju06",                # HTS 로그인 ID
             ...     account="00000000-01",      # 계좌번호
             ...     appkey="PSED321z...",       # AppKey 36자리
             ...     secretkey="RR0sFMVB...",    # SecretKey 180자리
             ... )
-            >>> real_auth.save("vmkis_real_auth.json")
+            >>> live_auth.save("vmkis_live_auth.json")
 
             그 다음, 모의투자 인증 정보를 저장합니다.
 
-            >>> virtual_auth = KisAuth(
+            >>> paper_auth = KisAuth(
             ...     id="soju06",                # 모의투자 HTS 로그인 ID
             ...     account="00000000-01",      # 모의투자 계좌번호
             ...     appkey="PSED321z...",       # 모의투자 AppKey 36자리
             ...     secretkey="RR0sFMVB...",    # 모의투자 SecretKey 180자리
-            ...     virtual=True,               # 모의투자 여부
+            ...     paper=True,               # 모의투자 여부
             ... )
-            >>> virtual_auth.save("vmkis_virtual_auth.json")
+            >>> paper_auth.save("vmkis_paper_auth.json")
 
             그 후, 저장된 인증 정보를 불러와 VmKis 객체를 생성합니다.
 
             >>> kis = VmKis(
-            ...     "vmkis_real_auth.json",     # 실전투자 인증 정보 파일 경로
-            ...     "vmkis_virtual_auth.json",  # 모의투자 인증 정보 파일 경로
+            ...     "vmkis_live_auth.json",     # 실전투자 인증 정보 파일 경로
+            ...     "vmkis_paper_auth.json",  # 모의투자 인증 정보 파일 경로
             ...     keep_token=True             # API 접속 토큰 자동 저장
             ... )
 
@@ -287,10 +287,10 @@ class VmKis:
         appkey: str | KisKey | None = None,
         secretkey: str | None = None,
         token: KisAccessToken | str | PathLike[str] | None = None,
-        virtual_id: str | None = None,
-        virtual_appkey: str | KisKey | None = None,
-        virtual_secretkey: str | None = None,
-        virtual_token: KisAccessToken | str | PathLike[str] | None = None,
+        paper_id: str | None = None,
+        paper_appkey: str | KisKey | None = None,
+        paper_secretkey: str | None = None,
+        paper_token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
         user_agent: str | None = None,
@@ -304,11 +304,11 @@ class VmKis:
             appkey (str | KisKey | None, optional): API 실전도메인 AppKey.
             secretkey (str | None, optional): API 실전도메인 SecretKey.
             token (KisAccessToken | str | PathLike[str] | None, optional): 실전도메인 API 접속 토큰.
-            virtual_id (str | None, optional): 모의도메인 API ID.
-            virtual_appkey (str | KisKey | None, optional): 모의도메인 API AppKey.
-            virtual_secretkey (str | None, optional): 모의도메인 API SecretKey.
+            paper_id (str | None, optional): 모의도메인 API ID.
+            paper_appkey (str | KisKey | None, optional): 모의도메인 API AppKey.
+            paper_secretkey (str | None, optional): 모의도메인 API SecretKey.
             account (str | KisAccountNumber | None, optional): 계좌번호.
-            virtual_token (KisAccessToken | str | PathLike[str] | None, optional): 모의도메인 API 접속 토큰.
+            paper_token (KisAccessToken | str | PathLike[str] | None, optional): 모의도메인 API 접속 토큰.
             keep_token (bool | str | PathLike[str] | None, optional): API 접속 토큰을 저장할지 여부. 기본 저장 폴더: `~/.vmkis/` (신뢰할 수 없는 환경에서 사용하지 마세요)
             use_websocket (bool, optional): 웹소켓 사용 여부.
 
@@ -321,9 +321,9 @@ class VmKis:
             ...     account="00000000-01",              # 모의투자 계좌번호
             ...     appkey="PSED321z...",               # 실전투자 AppKey 36자리
             ...     secretkey="RR0sFMVB...",            # 실전투자 SecretKey 180자리
-            ...     virtual_id="soju06",                # 모의투자 HTS 로그인 ID
-            ...     virtual_appkey="PSED321z...",       # 모의투자 AppKey 36자리
-            ...     virtual_secretkey="RR0sFMVB...",    # 모의투자 SecretKey 180자리
+            ...     paper_id="soju06",                # 모의투자 HTS 로그인 ID
+            ...     paper_appkey="PSED321z...",       # 모의투자 AppKey 36자리
+            ...     paper_secretkey="RR0sFMVB...",    # 모의투자 SecretKey 180자리
             ...     keep_token=True,                    # API 접속 토큰 자동 저장
             ... )
 
@@ -340,10 +340,10 @@ class VmKis:
         *,
         account: str | KisAccountNumber | None = None,
         token: KisAccessToken | str | PathLike[str] | None = None,
-        virtual_id: str | None = None,
-        virtual_appkey: str | KisKey | None = None,
-        virtual_secretkey: str | None = None,
-        virtual_token: KisAccessToken | str | PathLike[str] | None = None,
+        paper_id: str | None = None,
+        paper_appkey: str | KisKey | None = None,
+        paper_secretkey: str | None = None,
+        paper_token: KisAccessToken | str | PathLike[str] | None = None,
         keep_token: bool | str | PathLike[str] | None = None,
         use_websocket: bool = True,
         user_agent: str | None = None,
@@ -356,10 +356,10 @@ class VmKis:
             auth (str | PathLike[str] | KisAuth | None, optional): 실전도메인 인증 정보.
             account (str | KisAccountNumber | None, optional): 계좌번호.
             token (KisAccessToken | str | PathLike[str] | None, optional): 실전도메인 API 접속 토큰.
-            virtual_id (str | None, optional): 모의도메인 API ID.
-            virtual_appkey (str | KisKey | None, optional): 모의도메인 API AppKey.
-            virtual_secretkey (str | None, optional): 모의도메인 API SecretKey.
-            virtual_token (KisAccessToken | str | PathLike[str] | None, optional): 모의도메인 API 접속 토큰.
+            paper_id (str | None, optional): 모의도메인 API ID.
+            paper_appkey (str | KisKey | None, optional): 모의도메인 API AppKey.
+            paper_secretkey (str | None, optional): 모의도메인 API SecretKey.
+            paper_token (KisAccessToken | str | PathLike[str] | None, optional): 모의도메인 API 접속 토큰.
             keep_token (bool | str | PathLike[str] | None, optional): API 접속 토큰을 저장할지 여부. 기본 저장 폴더: `~/.vmkis/` (신뢰할 수 없는 환경에서 사용하지 마세요)
             use_websocket (bool, optional): 웹소켓 사용 여부.
 
@@ -369,21 +369,21 @@ class VmKis:
 
             먼저, 실전투자 인증 정보를 저장합니다.
 
-            >>> real_auth = KisAuth(
+            >>> live_auth = KisAuth(
             ...     id="soju06",                        # HTS 로그인 ID
             ...     account="00000000-01",              # 모의투자 계좌번호
             ...     appkey="PSED321z...",               # AppKey 36자리
             ...     secretkey="RR0sFMVB...",            # SecretKey 180자리
             ... )
-            >>> real_auth.save("vmkis_real_auth.json")
+            >>> live_auth.save("vmkis_live_auth.json")
 
             그 후, 저장된 인증 정보를 불러와 모의투자용 VmKis 객체를 생성합니다.
 
             >>> kis = VmKis(
-            ...     "vmkis_real_auth.json",             # 실전투자 인증 정보 파일 경로
-            ...     virtual_id="soju06",                # 모의투자 HTS 로그인 ID
-            ...     virtual_appkey="PSED321z...",       # 모의투자 AppKey 36자리
-            ...     virtual_secretkey="RR0sFMVB...",    # 모의투자 SecretKey 180자리
+            ...     "vmkis_live_auth.json",             # 실전투자 인증 정보 파일 경로
+            ...     paper_id="soju06",                # 모의투자 HTS 로그인 ID
+            ...     paper_appkey="PSED321z...",       # 모의투자 AppKey 36자리
+            ...     paper_secretkey="RR0sFMVB...",    # 모의투자 SecretKey 180자리
             ...     keep_token=True,                    # API 접속 토큰 자동 저장
             ... )
 
@@ -395,7 +395,7 @@ class VmKis:
     def __init__(
         self,
         auth: str | PathLike[str] | KisAuth | None = None,
-        virtual_auth: str | PathLike[str] | KisAuth | None = None,
+        paper_auth: str | PathLike[str] | KisAuth | None = None,
         /,
         *,
         account: str | KisAccountNumber | None = None,
@@ -403,10 +403,10 @@ class VmKis:
         appkey: str | KisKey | None = None,
         secretkey: str | None = None,
         token: KisAccessToken | str | PathLike[str] | None = None,
-        virtual_id: str | None = None,
-        virtual_appkey: str | KisKey | None = None,
-        virtual_secretkey: str | None = None,
-        virtual_token: KisAccessToken | str | PathLike[str] | None = None,
+        paper_id: str | None = None,
+        paper_appkey: str | KisKey | None = None,
+        paper_secretkey: str | None = None,
+        paper_token: KisAccessToken | str | PathLike[str] | None = None,
         use_websocket: bool = True,
         user_agent: str | None = None,
         endpoints: dict[str, Endpoint] | None = None,
@@ -416,25 +416,25 @@ class VmKis:
             if not isinstance(auth, KisAuth):
                 auth = KisAuth.load(auth)
 
-            if auth.virtual:
+            if auth.paper:
                 raise ValueError("auth에는 실전도메인 인증 정보를 입력해야 합니다.")
 
             id = auth.id
             appkey = auth.key
             account = auth.account_number
 
-        if virtual_auth is not None:
-            if not isinstance(virtual_auth, KisAuth):
-                virtual_auth = KisAuth.load(virtual_auth)
+        if paper_auth is not None:
+            if not isinstance(paper_auth, KisAuth):
+                paper_auth = KisAuth.load(paper_auth)
 
-            if not virtual_auth.virtual:
-                raise ValueError("virtual_auth에는 모의도메인 인증 정보를 입력해야 합니다.")
+            if not paper_auth.paper:
+                raise ValueError("paper_auth에는 모의도메인 인증 정보를 입력해야 합니다.")
 
-            virtual_id = virtual_auth.id
-            virtual_appkey = virtual_auth.key
-            account = virtual_auth.account_number
+            paper_id = paper_auth.id
+            paper_appkey = paper_auth.key
+            account = paper_auth.account_number
 
-        virtual = virtual_appkey is not None and virtual_auth is not None
+        paper = paper_appkey is not None and paper_auth is not None
 
         if id is None:
             raise ValueError("id를 입력해야 합니다.")
@@ -442,11 +442,11 @@ class VmKis:
         if appkey is None:
             raise ValueError("appkey를 입력해야 합니다.")
 
-        if virtual and virtual_id is None:
-            raise ValueError("virtual_id를 입력해야 합니다.")
+        if paper and paper_id is None:
+            raise ValueError("paper_id를 입력해야 합니다.")
 
-        if virtual and virtual_appkey is None:
-            raise ValueError("virtual_appkey를 입력해야 합니다.")
+        if paper and paper_appkey is None:
+            raise ValueError("paper_appkey를 입력해야 합니다.")
 
         if isinstance(appkey, str):
             if secretkey is None:
@@ -460,17 +460,17 @@ class VmKis:
 
         self.appkey = appkey
 
-        if isinstance(virtual_appkey, str):
-            if virtual_secretkey is None:
+        if isinstance(paper_appkey, str):
+            if paper_secretkey is None:
                 raise ValueError("primary_secretkey를 입력해야 합니다.")
 
-            virtual_appkey = KisKey(
+            paper_appkey = KisKey(
                 id=id,
-                appkey=virtual_appkey,
-                secretkey=virtual_secretkey,
+                appkey=paper_appkey,
+                secretkey=paper_secretkey,
             )
 
-        self.virtual_appkey = virtual_appkey
+        self.paper_appkey = paper_appkey
 
         if isinstance(account, str):
             account = KisAccountNumber(account)
@@ -481,23 +481,23 @@ class VmKis:
         self.cache = KisCacheStorage()
 
         self._rate_limiters = {
-            "real": RateLimiter(REAL_API_REQUEST_PER_SECOND, 1),
-            "virtual": RateLimiter(VIRTUAL_API_REQUEST_PER_SECOND, 1),
+            "live": RateLimiter(LIVE_API_REQUEST_PER_SECOND, 1),
+            "paper": RateLimiter(PAPER_API_REQUEST_PER_SECOND, 1),
         }
         self._token = token if isinstance(token, KisAccessToken) else KisAccessToken.load(token) if token else None
-        self._virtual_token = (
-            virtual_token
-            if isinstance(virtual_token, KisAccessToken)
-            else KisAccessToken.load(virtual_token)
-            if self.virtual and virtual_token
+        self._paper_token = (
+            paper_token
+            if isinstance(paper_token, KisAccessToken)
+            else KisAccessToken.load(paper_token)
+            if self.paper and paper_token
             else None
         )
         self._sessions = {
-            "real": requests.Session(),
-            "virtual": requests.Session(),
+            "live": requests.Session(),
+            "paper": requests.Session(),
         }
 
-        # 설정에서 온 재정의. 키는 이 모듈의 어휘("real"/"virtual")이며,
+        # 설정에서 온 재정의. 키는 이 모듈의 어휘("live"/"paper")이며,
         # 설정 파일의 live/paper 는 호출부(`vmkis.helpers`)가 번역합니다.
         self._endpoints = endpoints or {}
 
@@ -513,8 +513,8 @@ class VmKis:
         else:
             self._keep_token = None
 
-    def _get_hashed_token_name(self, domain: Literal["real", "virtual"]) -> str:
-        appkey = self.appkey if domain == "real" else self.virtual_appkey
+    def _get_hashed_token_name(self, domain: Literal["live", "paper"]) -> str:
+        appkey = self.appkey if domain == "live" else self.paper_appkey
 
         if appkey is None:
             raise ValueError("모의도메인 AppKey가 없습니다.")
@@ -528,22 +528,22 @@ class VmKis:
             token_dir = Path(token_dir)
 
         token_dir = token_dir.resolve()
-        virtual_token_path = token_dir / self._get_hashed_token_name("real")
+        paper_token_path = token_dir / self._get_hashed_token_name("live")
 
-        if virtual_token_path.exists():
+        if paper_token_path.exists():
             try:
-                self.token = KisAccessToken.load(virtual_token_path)
+                self.token = KisAccessToken.load(paper_token_path)
                 logging.logger.debug("실전도메인 API 접속 토큰을 불러왔습니다.")
             except Exception:
                 # 캐시된 토큰이 손상되었거나 형식이 바뀐 경우. 새로 발급받으면 된다.
                 pass
 
-        if self.virtual:
-            virtual_token_path = token_dir / self._get_hashed_token_name("virtual")
+        if self.paper:
+            paper_token_path = token_dir / self._get_hashed_token_name("paper")
 
-            if virtual_token_path.exists():
+            if paper_token_path.exists():
                 try:
-                    self.primary_token = KisAccessToken.load(virtual_token_path)
+                    self.primary_token = KisAccessToken.load(paper_token_path)
                     logging.logger.debug("모의도메인 API 접속 토큰을 불러왔습니다.")
                 except Exception:
                     # 캐시된 토큰이 손상되었거나 형식이 바뀐 경우. 새로 발급받으면 된다.
@@ -552,7 +552,7 @@ class VmKis:
     def _save_cached_token(
         self,
         token_dir: str | PathLike[str] | Path,
-        domain: Literal["real", "virtual"] | None = None,
+        domain: Literal["live", "paper"] | None = None,
         force: bool = False,
     ):
         if not isinstance(token_dir, Path):
@@ -561,18 +561,18 @@ class VmKis:
         token_dir = token_dir.resolve()
         token_dir.mkdir(parents=True, exist_ok=True)
 
-        if domain is None or domain == "real":
+        if domain is None or domain == "live":
             token = self.token if force else self._token
 
             if token is not None:
-                token.save(token_dir / self._get_hashed_token_name("real"))
+                token.save(token_dir / self._get_hashed_token_name("live"))
                 logging.logger.debug("실전도메인 API 접속 토큰을 저장했습니다.")
 
-        if self.virtual and (domain is None or domain == "virtual"):
-            virtual_token = self.primary_token if force else self._virtual_token
+        if self.paper and (domain is None or domain == "paper"):
+            paper_token = self.primary_token if force else self._paper_token
 
-            if virtual_token is not None:
-                virtual_token.save(token_dir / self._get_hashed_token_name("virtual"))
+            if paper_token is not None:
+                paper_token.save(token_dir / self._get_hashed_token_name("paper"))
                 logging.logger.debug("모의도메인 API 접속 토큰을 저장했습니다.")
 
     def _rate_limit_exceeded(self) -> None:
@@ -587,7 +587,7 @@ class VmKis:
         body: dict[str, str] | None = None,
         form: Iterable[KisForm | None] | None = None,
         headers: dict[str, str] | None = None,
-        domain: Literal["real", "virtual"] | None = None,
+        domain: Literal["live", "paper"] | None = None,
         appkey_location: Literal["header", "body"] | None = "header",
         form_location: Literal["header", "params", "body"] | None = None,
         auth: bool = True,
@@ -604,12 +604,12 @@ class VmKis:
         request_headers = headers.copy() if headers else {}
 
         if domain is None:
-            domain = "virtual" if self.virtual else "real"
+            domain = "paper" if self.paper else "live"
 
         session = self._sessions[domain]
 
         if appkey_location:
-            appkey = self.appkey if domain == "real" else self.virtual_appkey
+            appkey = self.appkey if domain == "live" else self.paper_appkey
 
             if appkey is None:
                 raise ValueError("모의도메인 AppKey가 없습니다.")
@@ -637,7 +637,7 @@ class VmKis:
             rate_limit.acquire(blocking_callback=self._rate_limit_exceeded)
 
             if auth:
-                (self.token if domain == "real" else self.primary_token).build(request_headers)
+                (self.token if domain == "live" else self.primary_token).build(request_headers)
 
             resp = session.request(
                 method=method,
@@ -690,10 +690,10 @@ class VmKis:
 
                     token_reissues += 1
 
-                    if domain == "real":
+                    if domain == "live":
                         self._token = None
                     else:
-                        self._virtual_token = None
+                        self._paper_token = None
 
                 case _:
                     raise KisHTTPError(response=resp)
@@ -707,7 +707,7 @@ class VmKis:
         body: dict[str, str] | None = None,
         form: Iterable[KisForm | None] | None = None,
         headers: dict[str, str] | None = None,
-        domain: Literal["real", "virtual"] | None = None,
+        domain: Literal["live", "paper"] | None = None,
         appkey_location: Literal["header", "body"] | None = "header",
         form_location: Literal["header", "params", "body"] | None = None,
         auth: bool = True,
@@ -783,9 +783,9 @@ class VmKis:
         처리합니다.
 
         1. **실전/모의 TR ID 선택** — 예전에는 호출부마다
-           `api="VTTC8434R" if self.virtual else "TTTC8434R"` 를 적었습니다
+           `api="VTTC8434R" if self.paper else "TTTC8434R"` 를 적었습니다
         2. **도메인 라우팅** — 모의 미지원 TR 은 실전으로 보냅니다.
-           예전에는 `domain="real"` 을 손으로 붙였고, **빠뜨리면 모의 계정에서만
+           예전에는 `domain="live"` 을 손으로 붙였고, **빠뜨리면 모의 계정에서만
            터지는 버그**가 됐습니다
         3. **커서 길이와 연속조회** — `page.to(100)` / `continuous=not page.is_first`
 
@@ -796,7 +796,7 @@ class VmKis:
 
         `fetch()` 의 나머지 인자는 `**kwargs` 로 그대로 넘어갑니다.
         """
-        tr_id, domain = endpoint.resolve(self.virtual)
+        tr_id, domain = endpoint.resolve(self.paper)
 
         forms = list(form) if form is not None else []
         continuous = False
@@ -905,11 +905,11 @@ class VmKis:
         if self._token is None or self._token.remaining < timedelta(minutes=10):
             from vmkis.api.auth.token import token_issue
 
-            self._token = token_issue(self, domain="real")
+            self._token = token_issue(self, domain="live")
             logging.logger.debug("실전도메인 API 접속 토큰을 발급했습니다.")
 
             if self._keep_token:
-                self._save_cached_token(self._keep_token, domain="real", force=False)
+                self._save_cached_token(self._keep_token, domain="live", force=False)
 
         return self._token
 
@@ -923,37 +923,37 @@ class VmKis:
     @thread_safe("primary_token")
     def primary_token(self) -> KisAccessToken:
         """API 접속 토큰을 반환합니다."""
-        if not self.virtual:
+        if not self.paper:
             return self.token
 
-        if self._virtual_token is None or self._virtual_token.remaining < timedelta(minutes=10):
+        if self._paper_token is None or self._paper_token.remaining < timedelta(minutes=10):
             from vmkis.api.auth.token import token_issue
 
-            self._virtual_token = token_issue(self, domain="virtual")
+            self._paper_token = token_issue(self, domain="paper")
             logging.logger.debug("모의도메인 API 접속 토큰을 발급했습니다.")
 
             if self._keep_token:
-                self._save_cached_token(self._keep_token, domain="virtual", force=False)
+                self._save_cached_token(self._keep_token, domain="paper", force=False)
 
-        return self._virtual_token
+        return self._paper_token
 
     @primary_token.setter
     @thread_safe("primary_token")
     def primary_token(self, token: KisAccessToken) -> None:
         """API 접속 토큰을 설정합니다."""
-        self._virtual_token = token
+        self._paper_token = token
 
-    def discard(self, domain: Literal["real", "virtual"] | None = None) -> None:
+    def discard(self, domain: Literal["live", "paper"] | None = None) -> None:
         """API 접속 토큰을 폐기합니다."""
         from vmkis.api.auth.token import token_revoke
 
-        if self._token is not None and (domain is None or domain == "real"):
+        if self._token is not None and (domain is None or domain == "live"):
             token_revoke(self, self._token.token)
             self._token = None
 
-        if self._virtual_token is not None and (domain is None or (domain == "virtual" and self.virtual)):
-            token_revoke(self, self._virtual_token.token)
-            self._virtual_token = None
+        if self._paper_token is not None and (domain is None or (domain == "paper" and self.paper)):
+            token_revoke(self, self._paper_token.token)
+            self._paper_token = None
 
     @property
     def primary(self) -> KisAccountNumber:

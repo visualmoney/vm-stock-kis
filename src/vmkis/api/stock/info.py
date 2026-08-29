@@ -31,12 +31,12 @@ __all__ = [
 # (`DOMESTIC_QUOTE` = `FHKST01010100`).
 FOREIGN_PRICE = KisEndpoint(
     path="/uapi/overseas-price/v1/quotations/price",
-    tr_real="HHDFS00000300",
+    tr_live="HHDFS00000300",
 )
 
 PRODUCT_INFO = KisEndpoint(
     path="/uapi/domestic-stock/v1/quotations/search-info",
-    tr_real="CTPF1604R",
+    tr_live="CTPF1604R",
 )
 
 MARKET_TYPE_MAP: dict[str | None, list[str]] = {

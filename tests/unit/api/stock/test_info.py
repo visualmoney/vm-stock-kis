@@ -64,13 +64,13 @@ def _fake_kis():
     `VmKis.call` 을 바인딩하면 `fetch(api=...)` 단언이 그대로 살고 스펙
     해석(TR ID·도메인)까지 함께 검증된다.
 
-    `virtual` 을 명시적으로 `False` 로 둔다. 목의 기본값은 Mock 이라
+    `paper` 을 명시적으로 `False` 로 둔다. 목의 기본값은 Mock 이라
     **truthy** 이므로 두면 모의 계좌로 해석된다.
     """
     from vmkis.kis import VmKis
 
     kis = Mock()
-    kis.virtual = False
+    kis.paper = False
     kis.call = lambda *args, **kwargs: VmKis.call(kis, *args, **kwargs)
     return kis
 
@@ -602,7 +602,7 @@ class TestInfo:
         assert call_args[1]["api"] == "CTPF1604R"
         assert call_args[1]["params"]["PDNO"] == "005930"
         assert call_args[1]["params"]["PRDT_TYPE_CD"] in MARKET_TYPE_MAP["KR"]
-        assert call_args[1]["domain"] == "real"
+        assert call_args[1]["domain"] == "live"
         assert call_args[1]["response_type"] == _KisStockInfo
 
     def test_multiple_markets_iteration(self):

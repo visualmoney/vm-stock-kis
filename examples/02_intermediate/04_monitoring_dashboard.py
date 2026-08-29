@@ -10,7 +10,7 @@ VM-Stock-KIS 사용 예제
 
 실행 조건:
   - config.yaml이 루트에 있어야 함
-  - 모의투자 모드 권장 (virtual=true)
+  - 모의투자 모드 권장 (paper=true)
 
 사용 모듈:
   - VmKis: 한국투자증권 API
@@ -175,7 +175,7 @@ def main(config_path: str | None = None, profile: str | None = None) -> None:
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (virtual|real)")
+    parser.add_argument("--profile", help="config profile name (paper|live)")
     args = parser.parse_args()
 
     try:

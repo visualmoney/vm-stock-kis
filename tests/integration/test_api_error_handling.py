@@ -20,11 +20,11 @@ class TestAuthValidation:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=False,
+            paper=False,
         )
         assert auth.id == "test_user"
         assert auth.account == "50000000-01"
-        assert auth.virtual is False
+        assert auth.paper is False
 
     def test_account_format_validation(self):
         """계좌 형식 검증."""
@@ -36,7 +36,7 @@ class TestAuthValidation:
                 account=account,
                 appkey="P" + "A" * 35,
                 secretkey="S" * 180,
-                virtual=False,
+                paper=False,
             )
             assert auth.account == account
 
@@ -47,7 +47,7 @@ class TestAuthValidation:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=False,
+            paper=False,
         )
         assert len(auth.appkey) == 36
 
@@ -58,7 +58,7 @@ class TestAuthValidation:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=False,
+            paper=False,
         )
         assert len(auth.secretkey) == 180
 
@@ -74,9 +74,9 @@ class TestEnvironmentCompatibility:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=False,
+            paper=False,
         )
-        assert auth.virtual is False
+        assert auth.paper is False
 
     def test_virtual_environment_flag(self):
         """모의 환경 플래그."""
@@ -85,9 +85,9 @@ class TestEnvironmentCompatibility:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=True,
+            paper=True,
         )
-        assert auth.virtual is True
+        assert auth.paper is True
 
     def test_multiple_auth_isolation(self):
         """여러 인증 정보 분리."""
@@ -96,7 +96,7 @@ class TestEnvironmentCompatibility:
             account="50000000-01",
             appkey="P" + "A" * 35,
             secretkey="S" * 180,
-            virtual=False,
+            paper=False,
         )
 
         auth2 = KisAuth(
@@ -104,9 +104,9 @@ class TestEnvironmentCompatibility:
             account="50000001-02",
             appkey="P" + "B" * 35,
             secretkey="B" * 180,
-            virtual=True,
+            paper=True,
         )
 
         assert auth1.id != auth2.id
         assert auth1.account != auth2.account
-        assert auth1.virtual != auth2.virtual
+        assert auth1.paper != auth2.paper

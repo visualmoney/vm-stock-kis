@@ -104,8 +104,8 @@ class TestRules:
     def test_r1_rejects_actual_old_config(self, tmp_path):
         """#69 이전 형식을 통째로 넣어도 R1 에서 걸립니다."""
         old = {
-            "default": "virtual",
-            "configs": {"virtual": {"id": "x", "account": "00000000-01", "virtual": True}},
+            "default": "paper",
+            "configs": {"paper": {"id": "x", "account": "00000000-01", "paper": True}},
         }
 
         with pytest.raises(ValueError, match="`version` 이 없습니다"):

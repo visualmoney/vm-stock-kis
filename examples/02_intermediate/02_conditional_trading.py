@@ -9,7 +9,7 @@ VM-Stock-KIS 사용 예제
 
 실행 조건:
   - config.yaml이 루트에 있어야 함
-  - 모의투자 모드 권장 (virtual=true)
+  - 모의투자 모드 권장 (paper=true)
   - 실계좌 주문 시: ALLOW_LIVE_TRADES=1 환경변수 필수
 
 사용 모듈:
@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--config", default="config.yaml", help="path to config file")
-    parser.add_argument("--profile", help="config profile name (virtual|real)")
+    parser.add_argument("--profile", help="config profile name (paper|live)")
     args = parser.parse_args()
 
     try:

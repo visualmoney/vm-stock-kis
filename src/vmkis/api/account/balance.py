@@ -42,22 +42,22 @@ __all__ = [
 
 _DOMESTIC_BALANCE = KisEndpoint(
     path="/uapi/domestic-stock/v1/trading/inquire-balance",
-    tr_real="TTTC8434R",
-    tr_virtual="VTTC8434R",
+    tr_live="TTTC8434R",
+    tr_paper="VTTC8434R",
     page_size=100,
 )
 
 _FOREIGN_BALANCE = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-balance",
-    tr_real="TTTS3012R",
-    tr_virtual="VTTS3012R",
+    tr_live="TTTS3012R",
+    tr_paper="VTTS3012R",
     page_size=200,
 )
 
 _FOREIGN_PRESENT_BALANCE = KisEndpoint(
     path="/uapi/overseas-stock/v1/trading/inquire-present-balance",
-    tr_real="CTRP6504R",
-    tr_virtual="VTRP6504R",
+    tr_live="CTRP6504R",
+    tr_paper="VTRP6504R",
 )
 
 
@@ -1044,7 +1044,7 @@ def _foreign_balance(
         KisAPIError: API 호출에 실패한 경우
         ValueError: 계좌번호가 잘못된 경우
     """
-    markets = FOREIGN_COUNTRY_MARKET_MAP.get((not self.virtual, country), FOREIGN_COUNTRY_MARKET_MAP[(None, country)])
+    markets = FOREIGN_COUNTRY_MARKET_MAP.get((not self.paper, country), FOREIGN_COUNTRY_MARKET_MAP[(None, country)])
 
     first = None
 
@@ -1111,7 +1111,7 @@ def foreign_balance(
         ),
     )
 
-    if self.virtual:
+    if self.paper:
         result.stocks = _foreign_balance(
             self,
             account=account,

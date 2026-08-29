@@ -16,16 +16,12 @@ from typing import Any
 import yaml
 
 from vmkis.client.auth import KisAuth
-from vmkis.config import AccountConfig, Endpoint, KisConfig, load_kis_config
+from vmkis.config import AccountConfig, load_kis_config
 from vmkis.kis import VmKis
 
 __all__ = ["create_client", "save_config_interactive"]
 
 DEFAULT_CONFIG_PATH = "configs/account_profiles.yaml"
-
-#: 설정 파일의 어휘 -> `VmKis` 내부 어휘.
-#: #70 이 코드 쪽을 live/paper 로 개명하면 이 표는 사라집니다.
-_MODE_TO_DOMAIN = {"live": "real", "paper": "virtual"}
 
 
 def _env(name: str) -> str | None:
@@ -55,13 +51,8 @@ def _to_auth(account: AccountConfig) -> KisAuth:
         appkey=account.app_key,
         secretkey=account.app_secret,
         account=account.account,
-        virtual=account.is_paper,
+        paper=account.is_paper,
     )
-
-
-def _to_endpoints(config: KisConfig) -> dict[str, Endpoint]:
-    """설정의 `live`/`paper` 키를 `VmKis` 의 `real`/`virtual` 로 옮깁니다."""
-    return {_MODE_TO_DOMAIN[mode]: endpoint for mode, endpoint in (config.endpoints or {}).items()}
 
 
 def create_client(
@@ -71,7 +62,7 @@ def create_client(
 ) -> VmKis:
     """설정 파일로부터 `VmKis` 클라이언트를 생성합니다.
 
-    모의투자 계좌면 `KisAuth` 를 `VmKis` 의 `virtual_auth` 인자로 전달합니다.
+    모의투자 계좌면 `KisAuth` 를 `VmKis` 의 `paper_auth` 인자로 전달합니다.
     모의도메인 전용 인증 정보를 실전 인증 정보로 잘못 다루는 것을 막기 위함입니다.
 
     토큰 저장 경로는 설정이 정합니다 — 앱 이름에서 파생되므로 앱이 다르면 토큰
@@ -100,7 +91,10 @@ def create_client(
     shared: dict[str, Any] = {
         "keep_token": token_path,
         "user_agent": config.user_agent,
-        "endpoints": _to_endpoints(config),
+        # #70 이전에는 여기에 `{"live": "real", "paper": "virtual"}` 번역표가
+        # 있었습니다. 설정과 코드가 같은 어휘를 쓰게 되어 사라졌습니다.
+        # 키 검증은 `config._parse_endpoints` 가 `MODES` 로 이미 했습니다.
+        "endpoints": dict(config.endpoints or {}),
     }
 
     if selected.is_paper:

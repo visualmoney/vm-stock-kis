@@ -424,7 +424,7 @@ def kis_client():
         account=os.environ["KIS_ACCOUNT"],
         appkey=os.environ["KIS_APPKEY"],
         secretkey=os.environ["KIS_SECRET"],
-        virtual=True,
+        paper=True,
     )
     return VmKis(auth)
 

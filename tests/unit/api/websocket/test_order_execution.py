@@ -22,8 +22,8 @@ class FakeWebsocket:
 
 
 def test_on_execution_raises_when_no_appkey():
-    """on_execution should raise if the client's appkey (or virtual_appkey) is None."""
-    client = SimpleNamespace(kis=SimpleNamespace(virtual=False, appkey=None))
+    """on_execution should raise if the client's appkey (or paper_appkey) is None."""
+    client = SimpleNamespace(kis=SimpleNamespace(paper=False, appkey=None))
     try:
         order_execution.on_execution(client, lambda *_: None)
     except ValueError as e:
@@ -36,7 +36,7 @@ def test_on_execution_registers_domestic_and_foreign_and_links_unsubscribe():
     """on_execution registers two event handlers and links foreign unsubscribe to domestic callbacks."""
     # Create a kis object with appkey
     appkey = SimpleNamespace(id="key-id")
-    kis = SimpleNamespace(virtual=False, appkey=appkey)
+    kis = SimpleNamespace(paper=False, appkey=appkey)
 
     ws = FakeWebsocket("ws")
     # client has kis and on method as itself
@@ -50,7 +50,7 @@ def test_on_account_execution_forwards_to_on_execution():
     """on_account_execution should call on_execution using the account protocol's kis.websocket."""
     appkey = SimpleNamespace(id="k")
     ws = FakeWebsocket("w")
-    kis = SimpleNamespace(virtual=False, appkey=appkey, websocket=ws)
+    kis = SimpleNamespace(paper=False, appkey=appkey, websocket=ws)
     # websocket should reference its parent kis (the production code expects self.kis on websocket)
     ws.kis = kis
     acct = SimpleNamespace(kis=kis)
@@ -311,44 +311,44 @@ def test_domestic_post_init_no_price_sets_unit_price_none():
 
 
 def test_on_execution_with_virtual_appkey():
-    """Test on_execution uses virtual appkey in virtual mode."""
-    virtual_appkey = SimpleNamespace(id="virtual-key-id")
+    """Test on_execution uses paper appkey in paper mode."""
+    paper_appkey = SimpleNamespace(id="paper-key-id")
     ws = FakeWebsocket("ws")
-    kis = SimpleNamespace(virtual=True, appkey=None, virtual_appkey=virtual_appkey)
+    kis = SimpleNamespace(paper=True, appkey=None, paper_appkey=paper_appkey)
     ws.kis = kis
     client = SimpleNamespace(kis=kis, on=ws.on)
 
     ticket = order_execution.on_execution(client, lambda *_: None)
 
     assert isinstance(ticket, FakeTicket)
-    # Should have registered with virtual IDs
+    # Should have registered with paper IDs
     assert len(ws.called) == 2
-    assert ws.called[0]["id"] == "H0STCNI9"  # Domestic virtual
-    assert ws.called[1]["id"] == "H0GSCNI9"  # Foreign virtual
+    assert ws.called[0]["id"] == "H0STCNI9"  # Domestic paper
+    assert ws.called[1]["id"] == "H0GSCNI9"  # Foreign paper
 
 
 def test_on_execution_with_real_appkey():
-    """Test on_execution uses real appkey in production mode."""
-    appkey = SimpleNamespace(id="real-key-id")
+    """Test on_execution uses live appkey in production mode."""
+    appkey = SimpleNamespace(id="live-key-id")
     ws = FakeWebsocket("ws")
-    kis = SimpleNamespace(virtual=False, appkey=appkey)
+    kis = SimpleNamespace(paper=False, appkey=appkey)
     ws.kis = kis
     client = SimpleNamespace(kis=kis, on=ws.on)
 
     ticket = order_execution.on_execution(client, lambda *_: None)
 
     assert isinstance(ticket, FakeTicket)
-    # Should have registered with real IDs
+    # Should have registered with live IDs
     assert len(ws.called) == 2
-    assert ws.called[0]["id"] == "H0STCNI0"  # Domestic real
-    assert ws.called[1]["id"] == "H0GSCNI0"  # Foreign real
+    assert ws.called[0]["id"] == "H0STCNI0"  # Domestic live
+    assert ws.called[1]["id"] == "H0GSCNI0"  # Foreign live
 
 
 def test_on_execution_with_where_filter():
     """Test on_execution passes where filter to both registrations."""
     appkey = SimpleNamespace(id="key")
     ws = FakeWebsocket("ws")
-    kis = SimpleNamespace(virtual=False, appkey=appkey)
+    kis = SimpleNamespace(paper=False, appkey=appkey)
     ws.kis = kis
     client = SimpleNamespace(kis=kis, on=ws.on)
 
@@ -365,7 +365,7 @@ def test_on_execution_with_once_flag():
     """Test on_execution passes once flag to both registrations."""
     appkey = SimpleNamespace(id="key")
     ws = FakeWebsocket("ws")
-    kis = SimpleNamespace(virtual=False, appkey=appkey)
+    kis = SimpleNamespace(paper=False, appkey=appkey)
     ws.kis = kis
     client = SimpleNamespace(kis=kis, on=ws.on)
 
@@ -379,7 +379,7 @@ def test_on_account_execution_with_where_and_once():
     """Test on_account_execution forwards all parameters correctly."""
     appkey = SimpleNamespace(id="k")
     ws = FakeWebsocket("w")
-    kis = SimpleNamespace(virtual=False, appkey=appkey, websocket=ws)
+    kis = SimpleNamespace(paper=False, appkey=appkey, websocket=ws)
     ws.kis = kis
     acct = SimpleNamespace(kis=kis)
 

@@ -7,15 +7,15 @@ import pytest
 
 from vmkis.__env__ import (
     APPKEY_LENGTH,
-    REAL_API_REQUEST_PER_SECOND,
-    REAL_DOMAIN,
+    LIVE_API_REQUEST_PER_SECOND,
+    LIVE_DOMAIN,
+    PAPER_API_REQUEST_PER_SECOND,
+    PAPER_DOMAIN,
     SECRETKEY_LENGTH,
     USER_AGENT,
-    VIRTUAL_API_REQUEST_PER_SECOND,
-    VIRTUAL_DOMAIN,
+    WEBSOCKET_LIVE_DOMAIN,
     WEBSOCKET_MAX_SUBSCRIPTIONS,
-    WEBSOCKET_REAL_DOMAIN,
-    WEBSOCKET_VIRTUAL_DOMAIN,
+    WEBSOCKET_PAPER_DOMAIN,
     __author__,
     __author_email__,
     __authors__,
@@ -49,13 +49,13 @@ def test_constants_and_metadata():
     """__env__.py의 상수와 메타데이터를 테스트합니다."""
     assert APPKEY_LENGTH == 36
     assert SECRETKEY_LENGTH == 180
-    assert REAL_DOMAIN == "https://openapi.koreainvestment.com:9443"
-    assert VIRTUAL_DOMAIN == "https://openapivts.koreainvestment.com:29443"
-    assert WEBSOCKET_REAL_DOMAIN == "ws://ops.koreainvestment.com:21000"
-    assert WEBSOCKET_VIRTUAL_DOMAIN == "ws://ops.koreainvestment.com:31000"
+    assert LIVE_DOMAIN == "https://openapi.koreainvestment.com:9443"
+    assert PAPER_DOMAIN == "https://openapivts.koreainvestment.com:29443"
+    assert WEBSOCKET_LIVE_DOMAIN == "ws://ops.koreainvestment.com:21000"
+    assert WEBSOCKET_PAPER_DOMAIN == "ws://ops.koreainvestment.com:31000"
     assert WEBSOCKET_MAX_SUBSCRIPTIONS == 40
-    assert REAL_API_REQUEST_PER_SECOND == 19
-    assert VIRTUAL_API_REQUEST_PER_SECOND == 2
+    assert LIVE_API_REQUEST_PER_SECOND == 19
+    assert PAPER_API_REQUEST_PER_SECOND == 2
 
     assert USER_AGENT == f"VmKis/{__version__}"
 

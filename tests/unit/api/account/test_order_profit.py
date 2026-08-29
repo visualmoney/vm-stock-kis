@@ -67,7 +67,7 @@ def test_domestic_order_profits_calls_fetch_and_returns(monkeypatch):
     class FakeKis:
         def __init__(self):
             self._calls = []
-            self.virtual = False
+            self.paper = False
 
         # 이슈 #43·#44 이후 `domestic_order_profits` 는 `fetch_pages()` 를
         # 거친다. 실제 구현을 붙이면 `fetch(api=...)` 단언이 그대로 살고
@@ -107,7 +107,7 @@ def test_foreign_order_fees_parses_output(monkeypatch):
             return types.SimpleNamespace(output2=types.SimpleNamespace(smtl_fee1="12.34"))
 
         def __init__(self):
-            self.virtual = False
+            self.paper = False
 
     kis = FakeKis()
     val = op.foreign_order_fees(kis, account="12345678", start=date(2024, 1, 1), end=date(2024, 1, 2), country="US")

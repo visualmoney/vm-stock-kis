@@ -103,7 +103,7 @@ colorlog>=6.8.2
         # 앱 키와 연결된 계좌번호  예) 00000000-01
         account="00000000-01",
         # 모의투자 여부
-        virtual=False,
+        paper=False,
     )
 
     # 안전한 경로에 시크릿 키를 파일로 저장합니다.
@@ -144,9 +144,9 @@ colorlog>=6.8.2
         account="00000000-01",  # 모의투자 계좌번호
         appkey="PSED321z...",  # 실전투자 AppKey 36자리
         secretkey="RR0sFMVB...",  # 실전투자 SecretKey 180자리
-        virtual_id="soju06",  # 모의투자 HTS 로그인 ID
-        virtual_appkey="PSED321z...",  # 모의투자 AppKey 36자리
-        virtual_secretkey="RR0sFMVB...",  # 모의투자 SecretKey 180자리
+        paper_id="soju06",  # 모의투자 HTS 로그인 ID
+        paper_appkey="PSED321z...",  # 모의투자 AppKey 36자리
+        paper_secretkey="RR0sFMVB...",  # 모의투자 SecretKey 180자리
         keep_token=True,  # API 접속 토큰 자동 저장
     )
     ```
@@ -285,7 +285,7 @@ ticket.unsubscribe()
 ```python
 {KisWebsocketTR(id='H0STCNT0', key='000660')}
 Press Enter to exit...
-[08/02 13:50:42] INFO: RTC Connected to real server
+[08/02 13:50:42] INFO: RTC Connected to live server
 [08/02 13:50:42] INFO: RTC Restoring subscriptions... H0STCNT0.000660
 [08/02 13:50:42] INFO: RTC Subscribed to H0STCNT0.000660
 KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:44+09:00', price=174900, change=-18400, volume=8919304, amount=1587870362300)

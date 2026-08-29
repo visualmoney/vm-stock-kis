@@ -314,8 +314,8 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
                        │
         ┌──────────────▼──────────────┐
         │  KIS OpenAPI Servers       │
-        │  - Real Domain (실전)       │
-        │  - Virtual Domain (모의)    │
+        │  - Live Domain (실전)       │
+        │  - Paper Domain (모의)      │
         └───────────────────────────┘
 ```
 
@@ -429,7 +429,7 @@ src/vmkis/
 
 ```python
 class VmKis:
-    def __init__(auth, virtual_auth=None, ...)
+    def __init__(auth, paper_auth=None, ...)
     def account() -> KisAccount         # 계좌 Scope
     def stock(symbol) -> KisStock       # 주식 Scope
     def request(...) -> KisObject       # 저수준 API 호출
@@ -694,8 +694,8 @@ Event System
 ### 목적
 
 - 한국투자증권 API 호출 제한 준수
-- 실전: 초당 19개 요청 (`REAL_API_REQUEST_PER_SECOND`)
-- 모의: 초당 2개 요청 (`VIRTUAL_API_REQUEST_PER_SECOND`)
+- 실전: 초당 19개 요청 (`LIVE_API_REQUEST_PER_SECOND`)
+- 모의: 초당 2개 요청 (`PAPER_API_REQUEST_PER_SECOND`)
 
 > 값의 유일한 출처는 `src/vmkis/__env__.py` 입니다. 이 문서와 어긋나면
 > `__env__.py` 가 맞습니다.

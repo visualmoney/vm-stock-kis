@@ -56,7 +56,7 @@ kis = VmKis(
     account="YOUR_ACCOUNT",
     appkey="YOUR_APPKEY",
     secretkey="YOUR_SECRETKEY",
-    virtual=True  # 모의 거래 사용
+    paper=True  # 모의 거래 사용
 )
 ```
 
@@ -79,8 +79,8 @@ A: 다음을 확인하세요:
    ```
 
 3. **모의 계좌와 실전 계좌를 혼동하지 않았나요?**
-   - 모의: `virtual=True` 설정
-   - 실전: `virtual=False` (기본값)
+   - 모의: `paper=True` 설정
+   - 실전: `paper=False` (기본값)
 
 ### Q5: "429 Too Many Requests" 에러가 발생합니다
 

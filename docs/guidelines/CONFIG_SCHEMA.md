@@ -218,11 +218,11 @@ endpoints:            # 전부 선택. 적은 것만 덮어씁니다
 
 ```console
 $ python -c "import vmkis.__env__ as env, vmkis.kis as k; \
-             env.REAL_DOMAIN='https://patched.example.com'; print(k.REAL_DOMAIN)"
+             env.LIVE_DOMAIN='https://patched.example.com'; print(k.LIVE_DOMAIN)"
 https://openapi.koreainvestment.com:9443
 ```
 
-`from vmkis.__env__ import REAL_DOMAIN` 이 **값을 복사**하므로 `__env__` 를 고쳐도
+`from vmkis.__env__ import LIVE_DOMAIN` 이 **값을 복사**하므로 `__env__` 를 고쳐도
 소비 모듈은 옛 값을 봅니다. 모듈마다(`vmkis.kis`, `vmkis.client.websocket`) 따로
 패치해야 하는데 문서에 없고, 나중에 다른 모듈이 그 상수를 import 하면 또 깨집니다.
 

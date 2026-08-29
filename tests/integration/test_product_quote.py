@@ -32,7 +32,7 @@ class ProductQuoteTests(TestCase):
         이 클래스는 `requires_api` 로 표시돼 있고 실제 네트워크를 쓴다.
         자격증명이 없으면 `load_vmkis` 가 skip 으로 빠진다.
         """
-        cls.vmkis = load_vmkis("real", use_websocket=False)
+        cls.vmkis = load_vmkis("live", use_websocket=False)
 
     def test_quotable(self):
         try:
