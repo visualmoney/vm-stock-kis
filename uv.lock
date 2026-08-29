@@ -1279,7 +1279,6 @@ source = { editable = "." }
 dependencies = [
     { name = "colorlog" },
     { name = "cryptography" },
-    { name = "python-dotenv" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "typing-extensions" },
@@ -1296,6 +1295,7 @@ dev = [
     { name = "pytest-benchmark" },
     { name = "pytest-cov" },
     { name = "pytest-html" },
+    { name = "python-dotenv" },
     { name = "requests-mock" },
     { name = "ruff" },
 ]
@@ -1313,6 +1313,7 @@ test = [
     { name = "pytest-benchmark" },
     { name = "pytest-cov" },
     { name = "pytest-html" },
+    { name = "python-dotenv" },
     { name = "requests-mock" },
 ]
 
@@ -1320,7 +1321,6 @@ test = [
 requires-dist = [
     { name = "colorlog", specifier = ">=6.8.2" },
     { name = "cryptography", specifier = ">=43.0.0" },
-    { name = "python-dotenv", specifier = ">=1.2.1,<2" },
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "requests", specifier = ">=2.32.3" },
     { name = "typing-extensions", specifier = ">=4.12" },
@@ -1337,6 +1337,7 @@ dev = [
     { name = "pytest-benchmark", specifier = ">=4.0.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-html", specifier = ">=4.1.1" },
+    { name = "python-dotenv", specifier = ">=1.2.1,<2" },
     { name = "requests-mock", specifier = ">=1.12.1" },
     { name = "ruff", specifier = ">=0.16.4,<0.17" },
 ]
@@ -1352,6 +1353,7 @@ test = [
     { name = "pytest-benchmark", specifier = ">=4.0.0" },
     { name = "pytest-cov", specifier = ">=7.0.0" },
     { name = "pytest-html", specifier = ">=4.1.1" },
+    { name = "python-dotenv", specifier = ">=1.2.1,<2" },
     { name = "requests-mock", specifier = ">=1.12.1" },
 ]
 

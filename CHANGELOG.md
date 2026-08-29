@@ -47,6 +47,24 @@
 - [`docs/user/EXTENDING_API.md`](./docs/user/EXTENDING_API.md) — 미지원 TR 을
   `fetch()` 로 호출하는 방법 (Level 0~3 + 함정 체크리스트)
 
+### 제거
+
+- **런타임 의존성에서 `python-dotenv` 를 뺐습니다.** `src/` 가 한 줄도 쓰지
+  않았습니다 — 테스트용으로 넣은 것이 Poetry → uv 이전 때 런타임 쪽만
+  살아남은 것입니다. `load_dotenv()` 는 프로세스 전역 `os.environ` 을
+  변형하므로, `import vmkis` 만으로 환경이 바뀔지는 라이브러리가 아니라
+  애플리케이션이 정할 일입니다.
+
+  **`.env` 파일을 쓰고 있었다면 직접 설치해야 합니다.**
+
+  ```console
+  $ pip install python-dotenv
+  ```
+
+  지금까지는 vm-stock-kis 가 딸려서 설치해 주고 있었습니다.
+  [USER_GUIDE](./docs/user/USER_GUIDE.md) 의 환경 변수 절이 안내하는
+  코드가 여기 해당합니다.
+
 ---
 
 ## [0.0.1] — 2026-08-28
