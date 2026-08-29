@@ -25,7 +25,17 @@ APP = {
     "app_secret": "s" * 180,
 }
 
+#: 실전 앱. **모의 계좌만 쓸 때도 설정에 있어야 합니다** — 시세 TR 이
+#: 모의도메인에 없어서 모의 계좌도 실전 도메인으로 나갑니다. (이슈 #87)
+LIVE_APP = {
+    "mode": "live",
+    "hts_id": "testid",
+    "app_key": "b" * 36,
+    "app_secret": "t" * 180,
+}
+
 ACCOUNT = {"app": "app_paper1", "account_no": "00000000", "product_code": "01"}
+LIVE_ACCOUNT = {"app": "app_live1", "account_no": "11111111", "product_code": "01"}
 
 
 @pytest.fixture(autouse=True)
@@ -38,8 +48,8 @@ def clean_env(monkeypatch):
 def write_config(tmp_path, **overrides):
     data = {
         "version": 1,
-        "apps": {"app_paper1": dict(APP)},
-        "accounts": {"acc_paper1": dict(ACCOUNT)},
+        "apps": {"app_paper1": dict(APP), "app_live1": dict(LIVE_APP)},
+        "accounts": {"acc_paper1": dict(ACCOUNT), "acc_live1": dict(LIVE_ACCOUNT)},
         "default_account": "acc_paper1",
     }
     data.update(overrides)
@@ -63,21 +73,50 @@ class TestCreateClient:
         monkeypatch.setattr(helpers, "VmKis", DummyVmKis)
         return calls
 
-    def test_paper_account_passed_as_virtual_auth(self, tmp_path, dummy_vmkis):
-        """모의 자격증명은 첫 인자가 None이고 두 번째로 전달되어야 한다.
+    def test_paper_account_passed_as_second_auth(self, tmp_path, dummy_vmkis):
+        """모의 자격증명은 **두 번째** 인자로 가고, 첫 번째는 실전이어야 한다.
 
-        모의도메인 전용 인증 정보를 실전 인증 정보로 잘못 다루지 않기 위함입니다.
+        #87 이전에는 이 테스트가 `args[0] is None` 을 단언했습니다. 그런데
+        `VmKis` 가 그 형태를 받지 않아 **실제로는 항상 ValueError 였습니다.**
+        `dummy_vmkis` 가 생성자를 통째로 대체하고 있어서 테스트가 그 사실을
+        보지 못하고 **버그를 박제하고 있었습니다.**
+
+        모의도메인 전용 인증 정보를 실전 인증 정보로 잘못 다루지 않는다는
+        원래 의도는 두 번째 인자 검사로 그대로 지켜집니다.
         """
         helpers.create_client(write_config(tmp_path))
 
         (args, _) = dummy_vmkis[0]
-        assert args[0] is None
+        assert args[0].paper is False, "첫 인자는 실전 인증이어야 합니다"
         assert args[1].paper is True
         assert args[1].account == "00000000-01"
 
+    def test_paper_only_config_says_what_to_add(self, tmp_path, dummy_vmkis):
+        """실전 앱이 없는 설정은 **무엇을 추가해야 하는지** 말하고 멈춰야 한다.
+
+        #87 이전 메시지는 `id를 입력해야 합니다` 였습니다. 사용자는 id 를
+        빠뜨린 적이 없으므로 그 메시지로는 원인에 닿을 수 없었습니다.
+        """
+        path = write_config(
+            tmp_path,
+            apps={"app_paper1": dict(APP)},
+            accounts={"acc_paper1": dict(ACCOUNT)},
+        )
+
+        with pytest.raises(ValueError) as exc:
+            helpers.create_client(path)
+
+        message = str(exc.value)
+        assert "실전 계좌가 하나도 없습니다" in message
+        assert 'mode: "live"' in message, "무엇을 추가해야 하는지 말해야 합니다"
+
     def test_live_account_passed_as_positional_auth(self, tmp_path, dummy_vmkis):
         """실전 자격증명은 첫 인자로 전달된다."""
-        path = write_config(tmp_path, apps={"app_paper1": dict(APP, mode="live")})
+        path = write_config(
+            tmp_path,
+            apps={"app_paper1": dict(APP, mode="live")},
+            accounts={"acc_paper1": dict(ACCOUNT)},
+        )
 
         helpers.create_client(path)
 
@@ -90,6 +129,7 @@ class TestCreateClient:
             accounts={
                 "acc_paper1": dict(ACCOUNT),
                 "acc_paper2": dict(ACCOUNT, account_no="11111111", product_code="02"),
+                "acc_live1": dict(LIVE_ACCOUNT),
             },
         )
 
@@ -97,6 +137,32 @@ class TestCreateClient:
 
         (args, _) = dummy_vmkis[0]
         assert args[1].account == "11111111-02"
+
+    def test_real_vmkis_is_actually_constructed(self, tmp_path):
+        """**`VmKis` 를 모킹하지 않고** 끝까지 만듭니다. (이슈 #87)
+
+        이 클래스의 다른 테스트는 `dummy_vmkis` 로 생성자를 대체합니다. 호출
+        형태를 보기에는 그게 맞지만, **그래서 #87 을 놓쳤습니다** — `create_client`
+        가 `VmKis(None, auth)` 를 부르고 있었고 진짜 생성자는 그것을 거부하는데,
+        대역은 무엇이든 받았습니다. 테스트는 초록이고 사용자는 `ValueError` 를
+        받는 상태가 8개월 갔습니다.
+
+        자격증명은 **형식만** 맞으면 되고 네트워크는 타지 않습니다. 토큰 발급이
+        지연되기 때문입니다(`VmKis.token` 은 프로퍼티입니다).
+        """
+        path = write_config(
+            tmp_path,
+            apps={
+                "app_paper1": dict(APP, app_key="P" + "A" * 35, app_secret="S" * 180),
+                "app_live1": dict(LIVE_APP, app_key="P" + "B" * 35, app_secret="T" * 180),
+            },
+        )
+
+        kis = helpers.create_client(path, keep_token=False)
+
+        assert kis.paper is True, "모의 계좌를 골랐으므로 모의 클라이언트여야 합니다"
+        assert kis.appkey.appkey.endswith("B" * 35), "실전 앱키가 실려야 합니다"
+        assert kis.paper_appkey.appkey.endswith("A" * 35), "모의 앱키가 실려야 합니다"
 
     def test_token_path_comes_from_config(self, tmp_path, dummy_vmkis):
         """토큰 경로는 설정이 정합니다 — 앱 이름에서 파생됩니다."""

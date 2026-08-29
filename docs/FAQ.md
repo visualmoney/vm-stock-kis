@@ -46,13 +46,21 @@ A: 네, 가능합니다. 두 가지 방법이 있습니다:
 ```yaml
 # configs/account_profiles.yaml
 apps:
+  app_live1:
+    mode: "live"         # 실전 앱은 모의투자만 할 때도 필요합니다 (아래 참고)
+    ...
   app_paper1:
     mode: "paper"        # live | paper
     ...
 accounts:
+  acc_live1:  { app: "app_live1",  account_no: "00000000", product_code: "01" }
   acc_paper1: { app: "app_paper1", account_no: "00000000", product_code: "01" }
 default_account: "acc_paper1"
 ```
+
+> 시세 TR 이 모의도메인에 없어서 모의 계좌도 시세는 실전 도메인으로 나갑니다.
+> 그래서 실전 앱이 설정에 있어야 합니다.
+> ([#87](https://github.com/visualmoney/vm-stock-kis/issues/87))
 
 ```bash
 export VMKIS_ACCOUNT=acc_paper1   # 생략하면 default_account

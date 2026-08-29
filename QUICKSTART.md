@@ -19,18 +19,33 @@ cp configs/template_account_profiles.yaml configs/account_profiles.yaml
 ```yaml
 version: 1
 apps:
-  app_paper1:
-    mode: "paper"              # live | paper — 생략할 수 없습니다
+  # 실전 앱은 모의투자만 할 때도 필요합니다 — 아래 설명 참고.
+  app_live1:
+    mode: "live"               # live | paper — 생략할 수 없습니다
     hts_id: "YOUR_HTS_ID"
-    app_key: "YOUR_APP_KEY"
-    app_secret: "YOUR_SECRET"
+    app_key: "YOUR_LIVE_KEY"
+    app_secret: "YOUR_LIVE_SECRET"
+  app_paper1:
+    mode: "paper"
+    hts_id: "YOUR_HTS_ID"
+    app_key: "YOUR_PAPER_KEY"
+    app_secret: "YOUR_PAPER_SECRET"
 accounts:
+  acc_live1:
+    app: "app_live1"
+    account_no: "00000000"
+    product_code: "01"
   acc_paper1:
     app: "app_paper1"
     account_no: "00000000"
     product_code: "01"
-default_account: "acc_paper1"
+default_account: "acc_paper1"   # 실수로 실전에 붙지 않도록 모의를 기본으로
 ```
+
+> **실전 앱이 왜 필요한가**: 시세 TR 이 모의도메인에 없습니다. 모의 계좌로
+> 시세를 조회해도 요청은 실전 도메인으로 나가고, 그때 실전 앱키를 씁니다.
+> 모의 앱만 적으면 `create_client()` 가 무엇을 추가해야 하는지 알려주며
+> 멈춥니다. ([#87](https://github.com/visualmoney/vm-stock-kis/issues/87))
 
 **문자열은 전부 따옴표로 감싸세요.** 따옴표가 없으면 YAML 이 `account_no: 00000000`
 을 정수 `0` 으로 바꿉니다.

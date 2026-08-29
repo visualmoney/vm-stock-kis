@@ -436,6 +436,23 @@ class VmKis:
 
         paper = paper_appkey is not None and paper_auth is not None
 
+        # 모의 인증만 주는 것은 **지원되지 않습니다.** 이 검사가 없으면 아래
+        # `id is None` 에 걸려 "id를 입력해야 합니다" 가 나오는데, 그 메시지는
+        # 원인을 가립니다 — 사용자는 id 를 주지 않은 적이 없고 모의 인증을
+        # 통째로 넘겼기 때문입니다. (이슈 #87)
+        #
+        # 왜 실전 인증이 필요한가: **시세 TR 은 모의도메인에 없습니다.**
+        # `KisEndpoint.tr_paper` 가 `None` 인 엔드포인트는 모의 계좌로 호출해도
+        # 실전 도메인으로 나가고, 그때 `self.appkey` 와 실전 토큰을 씁니다.
+        # 지금 21개 중 13개가 그렇습니다(시세·차트·상품정보 계열).
+        if auth is None and paper_auth is not None:
+            raise ValueError(
+                "모의 인증만으로는 클라이언트를 만들 수 없습니다. 실전 인증을 첫 번째 "
+                "인자로 함께 주세요 — VmKis(live_auth, paper_auth). "
+                "시세 TR 은 모의도메인에 없어서 모의 계좌도 실전 도메인으로 나가고, "
+                "그때 실전 앱키와 실전 토큰이 필요합니다."
+            )
+
         if id is None:
             raise ValueError("id를 입력해야 합니다.")
 

@@ -38,11 +38,19 @@ def test_template_passes_validation(tmp_path):
 
 
 def test_template_defaults_to_paper():
-    """실전이 기본인 템플릿은 사고의 시작입니다."""
-    text = TEMPLATE.read_text(encoding="utf-8")
-    active = [line for line in text.splitlines() if line.strip().startswith("mode:")]
+    """실전이 기본인 템플릿은 사고의 시작입니다.
 
-    assert active == ['    mode: "paper" # live | paper — 생략할 수 없습니다'], active
+    #87 이후 템플릿에는 앱이 **둘** 있습니다 — 모의 계좌도 시세 조회는 실전
+    도메인으로 나가므로 실전 앱이 필요하기 때문입니다. 그래서 "mode 가 paper
+    하나뿐"이 아니라 **`default_account` 가 가리키는 계좌의 앱이 모의인가**를
+    봅니다. 그것이 원래 지키려던 성질입니다.
+    """
+    config = load_kis_config(TEMPLATE)
+
+    assert config.account().is_paper, (
+        f"템플릿의 default_account '{config.default_account}' 가 실전입니다. "
+        "실수로 실전에 붙는 것이 기본값이 되면 안 됩니다."
+    )
 
 
 def test_template_token_path_stays_inside_configs(tmp_path):

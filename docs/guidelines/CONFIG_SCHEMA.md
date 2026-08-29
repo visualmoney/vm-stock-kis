@@ -35,21 +35,39 @@ version: 1
 # 토큰 발급 단위. KIS 토큰은 app_key 단위로 발급되므로,
 # 같은 앱키를 쓰는 계좌 N개가 토큰 1개를 공유합니다.
 apps:
-  app_paper1:
-    mode: "paper"                # live | paper — 생략 불가
+  app_live1:
+    mode: "live"                 # live | paper — 생략 불가
     hts_id: "YOUR_HTS_ID"
-    app_key: "YOUR_APP_KEY"      # 36자
-    app_secret: "YOUR_SECRET"    # 180자
+    app_key: "YOUR_LIVE_KEY"     # 36자
+    app_secret: "YOUR_LIVE_SECRET"  # 180자
+  app_paper1:
+    mode: "paper"
+    hts_id: "YOUR_HTS_ID"
+    app_key: "YOUR_PAPER_KEY"
+    app_secret: "YOUR_PAPER_SECRET"
 
 # 계좌. 어느 앱으로 접속할지만 가리킵니다.
 accounts:
-  acc_paper1:
-    app: "app_paper1"
+  acc_live1:
+    app: "app_live1"
     account_no: "00000000"       # 종합계좌번호 8자리
     product_code: "01"           # 01 종합 / 22 개인연금 / 29 IRP
+  acc_paper1:
+    app: "app_paper1"
+    account_no: "00000000"
+    product_code: "01"
 
 default_account: "acc_paper1"
 ```
+
+> ### R10 — 실전 계좌가 최소 하나 있어야 합니다
+>
+> **모의투자만 할 때도 그렇습니다.** 시세 TR 이 모의도메인에 없어서, 모의
+> 계좌로 시세를 조회해도 요청은 실전 도메인으로 나가고 그때 실전 앱키와 실전
+> 토큰을 씁니다 (`src/vmkis/client/endpoint.py` 의 `tr_paper` 설명).
+>
+> 모의 앱만 적은 설정으로 `create_client()` 를 부르면 무엇을 추가해야 하는지
+> 알려주며 멈춥니다. ([#87](https://github.com/visualmoney/vm-stock-kis/issues/87))
 
 > **문자열은 전부 따옴표로 감쌉니다.** `version` 만 따옴표가 없습니다 — 그것만
 > 실제로 정수입니다. 아래 [따옴표](#따옴표) 참고.

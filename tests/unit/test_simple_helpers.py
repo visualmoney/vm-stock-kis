@@ -11,9 +11,19 @@ def test_create_client_and_simple(monkeypatch, tmp_path):
                 "hts_id": "testid",
                 "app_key": "appkey",
                 "app_secret": "secret",
-            }
+            },
+            # 모의 계좌도 시세는 실전 도메인으로 나가므로 실전 앱이 필요합니다. (#87)
+            "app_live1": {
+                "mode": "live",
+                "hts_id": "testid",
+                "app_key": "liveappkey",
+                "app_secret": "livesecret",
+            },
         },
-        "accounts": {"acc_paper1": {"app": "app_paper1", "account_no": "00000000", "product_code": "01"}},
+        "accounts": {
+            "acc_paper1": {"app": "app_paper1", "account_no": "00000000", "product_code": "01"},
+            "acc_live1": {"app": "app_live1", "account_no": "11111111", "product_code": "01"},
+        },
         "default_account": "acc_paper1",
     }
     p = tmp_path / "account_profiles.yaml"
