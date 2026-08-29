@@ -56,6 +56,7 @@
 | 문서 | 내용 |
 |---|---|
 | [API_STABILITY_POLICY](guidelines/API_STABILITY_POLICY.md) | 버전 정책, 호환성 보장 범위, Deprecation 절차 |
+| [CONFIG_SCHEMA](guidelines/CONFIG_SCHEMA.md) | 설정 파일 구조와 검증 규칙 |
 | [PYPI_RELEASE](guidelines/PYPI_RELEASE.md) | 배포 준비와 절차 |
 | [DEVELOPER_SETUP](guidelines/DEVELOPER_SETUP.md) | 개발 환경 구축 |
 | [GUIDELINES_001_TEST_WRITING](guidelines/GUIDELINES_001_TEST_WRITING.md) | 테스트 작성 표준 |
