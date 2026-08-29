@@ -3,26 +3,7 @@
 config.yaml의 인증 정보를 사용해 계좌 잔고를 조회합니다.
 """
 
-import yaml
-
-from vmkis import KisAuth, VmKis
-
-
-def load_config(path: str = "config.yaml", profile: str | None = None) -> dict:
-    import os
-
-    profile = profile or os.environ.get("VMKIS_PROFILE")
-    with open(path, encoding="utf-8") as f:
-        cfg = yaml.safe_load(f)
-
-    if isinstance(cfg, dict) and "configs" in cfg:
-        sel = profile or cfg.get("default") or "virtual"
-        selected = cfg["configs"].get(sel)
-        if not selected:
-            raise ValueError(f"Profile '{sel}' not found in {path}")
-        return selected
-
-    return cfg
+from vmkis import KisAuth, VmKis, load_config
 
 
 def main() -> None:
@@ -40,7 +21,7 @@ def main() -> None:
         account=cfg["account"],
         appkey=cfg["appkey"],
         secretkey=cfg["secretkey"],
-        virtual=cfg.get("virtual", False),
+        virtual=cfg["virtual"],
     )
 
     kis = VmKis(auth, keep_token=True)

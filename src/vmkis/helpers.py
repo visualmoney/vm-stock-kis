@@ -37,6 +37,61 @@ def _env(name: str) -> str | None:
     return None
 
 
+#: 자격증명 키. `KisAuth` 의 필드와 1:1 입니다.
+_CREDENTIAL_KEYS = ("id", "account", "appkey", "secretkey")
+
+#: 실전/모의를 가르는 키.
+#:
+#: 별도 상수인 이유는 읽기(`load_config`)와 쓰기(`save_config_interactive`)가
+#: 같은 문자열을 따로 적고 있었기 때문입니다. 한쪽만 고치면 조용히 어긋납니다.
+#: #70 이 이 값을 `mode` 로 바꾸면서 불리언을 `live|paper` enum 으로 대체합니다.
+_MODE_KEY = "virtual"
+
+#: 프로필에 허용되는 키 전체. 이 밖의 키는 오타로 봅니다.
+_PROFILE_KEYS = frozenset(_CREDENTIAL_KEYS) | {_MODE_KEY}
+
+
+def _validate_profile(profile: Any, *, path: str, name: str | None = None) -> dict[str, Any]:
+    """설정 프로필이 쓸 수 있는 모양인지 확인합니다.
+
+    조용히 넘어가지 않는 것이 이 함수의 존재 이유입니다. `create_client` 는 키를
+    하나씩 뽑아 쓰기 때문에 여분·오타 키가 아무 소리 없이 무시됐고, 판정 키가
+    빠지면 기본값 `False`(실전)로 떨어졌습니다. `virtaul: true` 오타 하나로
+    모의투자 의도가 실전 주문이 됩니다.
+
+    Args:
+        profile: 검사할 프로필. `dict` 가 아니면 예외
+        path: 오류 메시지에 넣을 설정 파일 경로
+        name: 다중 프로필일 때 프로필 이름. 단일 설정이면 `None`
+
+    Returns:
+        검증을 통과한 프로필
+
+    Raises:
+        ValueError: 모양이 아니거나, 모르는 키가 있거나, 필수 키가 빠진 경우
+    """
+    where = path if name is None else f"{path} 의 프로필 '{name}'"
+
+    if not isinstance(profile, dict):
+        raise ValueError(f"{where} 이(가) 매핑이 아닙니다: {type(profile).__name__}")
+
+    if unknown := sorted(set(profile) - _PROFILE_KEYS):
+        raise ValueError(
+            f"{where} 에 모르는 키가 있습니다: {', '.join(unknown)}. 쓸 수 있는 키: {', '.join(sorted(_PROFILE_KEYS))}"
+        )
+
+    if missing := [key for key in _CREDENTIAL_KEYS if key not in profile]:
+        raise ValueError(f"{where} 에 필수 키가 없습니다: {', '.join(missing)}")
+
+    if _MODE_KEY not in profile:
+        raise ValueError(
+            f"{where} 에 `{_MODE_KEY}` 가 없습니다. 생략을 실전으로 해석하지 않습니다 — "
+            f"모의는 `{_MODE_KEY}: true`, 실전은 `{_MODE_KEY}: false` 를 명시하세요."
+        )
+
+    return profile
+
+
 def load_config(path: str = "config.yaml", profile: str | None = None) -> dict[str, Any]:
     """YAML 설정 파일을 읽습니다.
 
@@ -70,7 +125,8 @@ def load_config(path: str = "config.yaml", profile: str | None = None) -> dict[s
         선택된 프로필의 설정 딕셔너리
 
     Raises:
-        ValueError: 지정한 프로필이 설정 파일에 없는 경우
+        ValueError: 지정한 프로필이 설정 파일에 없는 경우, 또는 프로필에 모르는
+            키가 있거나 필수 키(`virtual` 포함)가 빠진 경우
     """
     profile = profile or _env("PROFILE")
 
@@ -84,9 +140,9 @@ def load_config(path: str = "config.yaml", profile: str | None = None) -> dict[s
         if not selected:
             raise ValueError(f"Profile '{sel}' not found in {path}")
 
-        return selected
+        return _validate_profile(selected, path=path, name=sel)
 
-    return cfg
+    return _validate_profile(cfg, path=path)
 
 
 def create_client(config_path: str = "config.yaml", keep_token: bool = True, profile: str | None = None) -> VmKis:
@@ -111,7 +167,10 @@ def create_client(config_path: str = "config.yaml", keep_token: bool = True, pro
         appkey=cfg["appkey"],
         secretkey=cfg["secretkey"],
         account=cfg["account"],
-        virtual=cfg.get("virtual", False),
+        # `.get(_MODE_KEY, False)` 가 아닙니다. 기본값을 두면 키가 빠지거나
+        # 오타일 때 조용히 실전으로 붙습니다. `load_config` 가 이미 존재를
+        # 보장하므로 여기서는 그냥 꺼냅니다.
+        virtual=cfg[_MODE_KEY],
     )
 
     if auth.virtual:
@@ -143,7 +202,7 @@ def save_config_interactive(path: str = "config.yaml") -> dict[str, Any]:
     data["appkey"] = input("AppKey: ")
     data["secretkey"] = getpass.getpass("SecretKey (input hidden): ")
     v = input("Virtual (y/n): ").strip().lower()
-    data["virtual"] = v in ("y", "yes", "true", "1")
+    data[_MODE_KEY] = v in ("y", "yes", "true", "1")
 
     # 미리보기 (비밀키는 가린다)
     masked = (data["secretkey"][:4] + "...") if data.get("secretkey") else ""
@@ -152,7 +211,7 @@ def save_config_interactive(path: str = "config.yaml") -> dict[str, Any]:
     print(f"  account: {data['account']}")
     print(f"  appkey: {data['appkey']}")
     print(f"  secretkey: {masked}")
-    print(f"  virtual: {data['virtual']}\n")
+    print(f"  {_MODE_KEY}: {data[_MODE_KEY]}\n")
 
     confirm = _env("CONFIRM_SKIP") == "1"
 
