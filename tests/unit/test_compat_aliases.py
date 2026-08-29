@@ -96,11 +96,20 @@ class TestEnvironmentVariableFallback:
                     "hts_id": "x",
                     "app_key": "k",
                     "app_secret": "s",
-                }
+                },
+                # 모의 계좌도 시세는 실전 도메인으로 나가므로 실전 앱이
+                # 설정에 있어야 `create_client` 가 클라이언트를 만듭니다. (#87)
+                "app_live1": {
+                    "mode": "live",
+                    "hts_id": "x",
+                    "app_key": "K",
+                    "app_secret": "S",
+                },
             },
             "accounts": {
                 "acc_a": {"app": "app_paper1", "account_no": "00000000", "product_code": "01"},
                 "acc_b": {"app": "app_paper1", "account_no": "11111111", "product_code": "02"},
+                "acc_live": {"app": "app_live1", "account_no": "22222222", "product_code": "01"},
             },
             "default_account": "acc_a",
         }

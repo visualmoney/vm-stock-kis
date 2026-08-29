@@ -16,7 +16,7 @@ from typing import Any
 import yaml
 
 from vmkis.client.auth import KisAuth
-from vmkis.config import AccountConfig, load_kis_config
+from vmkis.config import AccountConfig, KisConfig, load_kis_config
 from vmkis.kis import VmKis
 
 __all__ = ["create_client", "save_config_interactive"]
@@ -97,10 +97,42 @@ def create_client(
         "endpoints": dict(config.endpoints or {}),
     }
 
-    if selected.is_paper:
-        return VmKis(None, auth, **shared)
+    if not selected.is_paper:
+        return VmKis(auth, **shared)
 
-    return VmKis(auth, **shared)
+    # 모의 계좌에는 **실전 인증도 필요합니다.** 시세 TR 이 모의도메인에 없어서
+    # `KisEndpoint.tr_paper` 가 `None` 인 엔드포인트는 모의 계좌로 호출해도
+    # 실전 도메인으로 나가기 때문입니다 (`client/endpoint.py` 참고).
+    #
+    # #87 이전에는 여기가 `VmKis(None, auth, **shared)` 였고 **항상**
+    # `ValueError: id를 입력해야 합니다` 로 죽었습니다. 템플릿 설정의 기본
+    # 계좌가 모의라, 문서가 안내하는 정규 경로가 끝까지 가지 않았습니다.
+    return VmKis(_live_auth_for(config, selected), auth, **shared)
+
+
+def _live_auth_for(config: KisConfig, paper: AccountConfig) -> KisAuth:
+    """모의 계좌와 함께 쓸 실전 인증을 설정에서 찾습니다.
+
+    `apps` 에 `mode: "live"` 인 앱이 있고 그 앱을 쓰는 계좌가 있으면 그것을
+    씁니다. 없으면 **무엇을 설정에 추가해야 하는지** 말하고 멈춥니다.
+
+    Raises:
+        ValueError: 실전 계좌가 설정에 없는 경우
+    """
+    live = [a for a in config.accounts.values() if not a.is_paper]
+
+    if not live:
+        raise ValueError(
+            f"{config.path} 의 계좌 '{paper.name}' 은 모의({paper.mode})인데 "
+            f"실전 계좌가 하나도 없습니다.\n"
+            f"모의 계좌도 시세 조회는 실전 도메인으로 나가므로 실전 앱이 필요합니다. "
+            f'apps 에 mode: "live" 앱을, accounts 에 그 앱을 쓰는 계좌를 추가하세요.\n'
+            f"사양: docs/guidelines/CONFIG_SCHEMA.md"
+        )
+
+    # 여럿이면 첫 번째를 씁니다. 실전 계좌 선택이 필요해지면 그때 설정 키를
+    # 만드는 편이 낫습니다 — 지금 만들면 아무도 안 쓰는 키가 하나 늡니다.
+    return _to_auth(sorted(live, key=lambda a: a.name)[0])
 
 
 def save_config_interactive(path: str | Path = DEFAULT_CONFIG_PATH) -> dict[str, Any]:
