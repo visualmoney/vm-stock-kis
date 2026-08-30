@@ -8,7 +8,7 @@ VM-Stock-KIS 사용 예제
   - 상승/하락 종목 필터링
 
 실행 조건:
-  - config.yaml이 루트에 있어야 함
+  - configs/account_profiles.yaml 이 있어야 함 (configs/template_account_profiles.yaml 을 복사해 채우세요)
   - 모의투자 모드 권장 (paper=true)
 
 사용 모듈:
@@ -26,11 +26,13 @@ from vmkis.simple import SimpleKIS
 def analyze_multiple_stocks(config_path: str | None = None, account: str | None = None) -> None:
     """여러 종목을 조회하고 성과를 분석합니다."""
 
-    # config.yaml에서 설정 로드 및 클라이언트 생성
-    config_path = config_path or os.path.join(os.getcwd(), "config.yaml")
+    # configs/account_profiles.yaml 에서 설정 로드 및 클라이언트 생성
+    config_path = config_path or os.path.join(os.getcwd(), "configs", "account_profiles.yaml")
     if not os.path.exists(config_path):
         print(f"❌ {config_path}를 찾을 수 없습니다.")
-        print("   루트 디렉터리에서 실행하거나 config.yaml을 생성하세요.")
+        print(
+            "   저장소 루트에서 실행하거나 configs/template_account_profiles.yaml 을 configs/account_profiles.yaml 로 복사해 채우세요."
+        )
         return
 
     kis = create_client(config_path, account=account)
@@ -131,7 +133,7 @@ def analyze_multiple_stocks(config_path: str | None = None, account: str | None 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="config.yaml", help="path to config file")
+    parser.add_argument("--config", default="configs/account_profiles.yaml", help="path to config file")
     parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 

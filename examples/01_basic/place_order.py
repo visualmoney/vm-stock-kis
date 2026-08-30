@@ -1,7 +1,7 @@
 """기본 주문 예제 (안전 장치 포함).
 
 - 실계좌 주문 시 ALLOW_LIVE_TRADES=1 환경 변수를 설정해야 합니다.
-- 모의투자 계정으로 먼저 검증하고, config.yaml 설정 후 주문을 수행합니다.
+- 모의투자 계정으로 먼저 검증하고, configs/account_profiles.yaml 설정 후 주문을 수행합니다.
 """
 
 import os

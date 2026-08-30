@@ -38,6 +38,11 @@ virtual_secret.json
 poetry.toml
 config.yaml
 
+# 예제가 만드는 로그. examples/03_advanced/03_error_handling.py 가 모듈 수준의
+# logging.basicConfig 에서 FileHandler("trading.log") 를 걸기 때문에, --help 로
+# 돌리기만 해도 저장소 루트에 생깁니다. #95 작업 중 실제로 스테이징될 뻔했습니다.
+*.log
+
 # 채운 설정과 토큰. 템플릿만 추적합니다.
 #
 # `configs/` 가 아니라 `configs/*` 인 이유: 디렉터리째 제외하면 git 이 그 안으로

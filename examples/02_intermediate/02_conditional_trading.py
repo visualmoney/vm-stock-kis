@@ -8,7 +8,7 @@ VM-Stock-KIS 사용 예제
   - 거래 조건 및 제약사항 관리
 
 실행 조건:
-  - config.yaml이 루트에 있어야 함
+  - configs/account_profiles.yaml 이 있어야 함 (configs/template_account_profiles.yaml 을 복사해 채우세요)
   - 모의투자 모드 권장 (paper=true)
   - 실계좌 주문 시: ALLOW_LIVE_TRADES=1 환경변수 필수
 
@@ -30,7 +30,7 @@ def monitor_and_trade(config_path: str | None = None, account: str | None = None
     """목표가 도달 시 자동 거래를 수행합니다."""
 
     # 설정
-    config_path = config_path or os.path.join(os.getcwd(), "config.yaml")
+    config_path = config_path or os.path.join(os.getcwd(), "configs", "account_profiles.yaml")
     if not os.path.exists(config_path):
         print(f"❌ {config_path}를 찾을 수 없습니다.")
         return
@@ -143,7 +143,7 @@ if __name__ == "__main__":
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="config.yaml", help="path to config file")
+    parser.add_argument("--config", default="configs/account_profiles.yaml", help="path to config file")
     parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 

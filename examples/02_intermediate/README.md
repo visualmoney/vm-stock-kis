@@ -247,7 +247,7 @@ with ThreadPoolExecutor(max_workers=3) as executor:
 try:
     price = simple.get_price("005930")
 except FileNotFoundError:
-    print("❌ config.yaml이 없습니다.")
+    print("❌ configs/account_profiles.yaml 이 없습니다.")
 except Exception as e:
     print(f"❌ 오류: {e}")
 ```
