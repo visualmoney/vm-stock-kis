@@ -1,3 +1,19 @@
+> **동결 — 2025-12 에 쓴 다국어 지원 정책입니다.** 원래 자리는
+> `docs/guidelines/MULTILINGUAL_SUPPORT.md` 였습니다.
+>
+> **이 문서가 있는 동안 드리프트가 났습니다.** 356줄로 번역 유지 절차를 적어
+> 두었지만 `#87` 은 영문에 들어가지 않았고, `#70` 의 개명도 영문 FAQ 에
+> 오지 않았습니다. **정책 문서는 검사가 아닙니다.**
+>
+> `#104` 에서 영문을 `docs/user/en/README.md` 한 장으로 줄이기로 정했습니다.
+> 유지 대상이 1개면 이 정책이 규율할 것이 없습니다. 영문을 다시 늘릴 때는
+> 이 문서를 되살리지 말고 **그때의 단계에 맞는 규칙을 새로 정하세요.**
+>
+> 지금 무엇을 볼 것인가 —
+> [`docs/user/en/README.md`](../../../docs/user/en/README.md) 와 `#104` 의 결정.
+> 보관 기준은 [`archive/README.md`](../../README.md) 를 보세요.
+> 근거: [`#104`](https://github.com/visualmoney/vm-stock-kis/issues/104)
+
 # 다국어 지원 가이드라인 (MULTILINGUAL_SUPPORT.md)
 
 **작성일**: 2025-12-20

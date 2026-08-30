@@ -1,346 +1,68 @@
-# VM-Stock-KIS: Korea Investment & Securities API Library
+# vm-stock-kis (English)
 
-**Language**: [한국어](../../README.md) | [English](README.md)
+A Python client for the **Korea Investment & Securities (한국투자증권) Open Trading
+API**. Domestic and overseas **cash equities only** — no futures, options, bonds,
+or ELW.
 
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue)](https://www.python.org/)
-[![License](https://img.shields.io/badge/license-MIT-green)](../../../LICENCE)
-[![PyPI Version](https://img.shields.io/pypi/v/vmkis)](https://pypi.org/project/vmkis/)
-[![Test Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen)](../../../README.md)
+> **The documentation for this project is written in Korean.** This page is the
+> only English document, and it is deliberately kept short. See
+> [Why only this page](#why-only-this-page).
 
----
-
-## Overview
-
-**VM-Stock-KIS** is a Python library for the Korea Investment & Securities (KIS) REST API and WebSocket API. It provides a simple and intuitive interface for:
-
-- 📊 **Real-time stock quotes** (Korea Stock Exchange)
-- 💼 **Account management** (balance, holdings, profit/loss)
-- 📈 **Order management** (buy, sell, cancel)
-- 🔔 **Real-time price updates** (WebSocket)
-- 🔐 **Secure authentication** (OAuth 2.0)
-- 🛡️ **Error handling** (13 exception types with auto-retry)
-- 📝 **Structured logging** (JSON format, ELK compatible)
-
----
-
-## Key Features
-
-### ✨ Developer-Friendly
-
-```python
-# Simple and intuitive API
-from vmkis import create_client
-
-kis = create_client()          # reads configs/account_profiles.yaml
-quote = kis.stock("005930").quote()  # Samsung Electronics
-print(f"Current price: {quote.price:,} KRW")
-```
-
-### 🔄 Auto-Retry with Exponential Backoff
-
-```python
-from vmkis.utils.retry import with_retry
-
-@with_retry(max_retries=5, initial_delay=2.0)
-def fetch_quote(symbol):
-    return kis.stock(symbol).quote()
-
-# Automatically retries on network errors
-quote = fetch_quote("005930")
-```
-
-### 📋 Structured Logging (ELK Compatible)
-
-```python
-from vmkis.logging import enable_json_logging
-
-enable_json_logging()  # Enable JSON format
-
-# Logs:
-# {"timestamp": "2025-12-20T14:30:45Z", "level": "INFO", "message": "Order executed", ...}
-```
-
-### 🎯 13 Exception Types
-
-```python
-from vmkis.exceptions import (
-    KisConnectionError,      # Network issues (retryable)
-    KisAuthenticationError,  # Invalid credentials
-    KisRateLimitError,       # Too many requests (retryable)
-    KisServerError,          # 5xx errors (retryable)
-    # ... 9 more exception types
-)
-
-try:
-    quote = kis.stock("005930").quote()
-except KisConnectionError:
-    print("Network error - will retry automatically")
-except KisAuthenticationError:
-    print("Check your API credentials")
-```
-
----
-
-## Quick Start
-
-### 1. Installation
+## Install
 
 ```bash
-# Install from PyPI
 pip install vm-stock-kis
-
-# Or from source
-git clone https://github.com/visualmoney/vm-stock-kis.git
-cd vm-stock-kis
-pip install -e .
 ```
 
-### 2. Authentication
+## Before you write any code
 
-#### Method 1: Environment Variables
-
-```bash
-export VMKIS_APP_KEY="YOUR_APP_KEY"
-export VMKIS_APP_SECRET="YOUR_APP_SECRET"
-export VMKIS_ACCOUNT_NUMBER="YOUR_ACCOUNT_NUMBER"
-```
-
-```python
-from vmkis import VmKis
-
-kis = VmKis()  # Loads from environment
-```
-
-#### Method 2: Configuration File
-
-Copy the template, then fill it in:
+Copy the template and fill it in — do not edit the template in place.
 
 ```bash
 cp configs/template_account_profiles.yaml configs/account_profiles.yaml
 ```
 
-**configs/account_profiles.yaml**:
-
-```yaml
-version: 1
-
-apps:
-  app_paper1:
-    mode: "paper"              # "live" for real trading
-    hts_id: "YOUR_HTS_ID"
-    app_key: "YOUR_APP_KEY"
-    app_secret: "YOUR_APP_SECRET"
-
-accounts:
-  acc_paper1:
-    app: "app_paper1"
-    account_no: "00000000"
-    product_code: "01"
-
-default_account: "acc_paper1"
-```
-
-Quote every string. Without quotes YAML turns `account_no: 00000000` into the
-integer `0`.
+**A live app registration is required even if you only trade on paper.** Quote
+TRs do not exist on the paper domain, so a quote request from a paper account
+still goes to the live domain and uses the live app key. If your config lists
+only a paper app, `create_client()` stops and tells you what to add.
+([#87](https://github.com/visualmoney/vm-stock-kis/issues/87))
 
 ```python
 from vmkis import create_client
 
-kis = create_client()          # defaults to configs/account_profiles.yaml
+kis = create_client()          # reads configs/account_profiles.yaml
+print(kis.stock("005930").quote())
 ```
 
-#### Method 3: Direct Parameters
+## Where to go next
 
-```python
-from vmkis import KisAuth, VmKis
+Korean, but the code blocks read the same in any language:
 
-auth = KisAuth(
-    id="YOUR_HTS_ID",
-    appkey="YOUR_APP_KEY",
-    secretkey="YOUR_APP_SECRET",
-    account="00000000-01",
-    paper=True,                # paper trading
-)
-kis = VmKis(None, auth)        # paper credentials go in the second slot
-```
+| Document | What it covers |
+|---|---|
+| [QUICKSTART](../../../QUICKSTART.md) | Install to first quote, with a full config example |
+| [docs/INDEX](../../INDEX.md) | Index of every document in this repository |
+| [docs/FAQ](../../FAQ.md) | Frequently asked questions |
+| [docs/user/EXTENDING_API](../EXTENDING_API.md) | Calling unsupported TRs through `fetch()` |
+| [SECURITY](../../../SECURITY.en.md) | **English.** How credentials are handled, how to report a vulnerability |
+| [CHANGELOG](../../../CHANGELOG.md) | Version history |
 
-### 3. Basic Usage
+Runnable code needs no translation: [`examples/`](../../../examples/).
 
-#### Get Stock Quote
+## Why only this page
 
-```python
-# Fetch real-time price
-samsung = kis.stock("005930")  # Samsung Electronics (ISIN code)
-quote = samsung.quote()
+English versions of QUICKSTART and FAQ used to live here. They fell behind the
+Korean originals and started giving wrong instructions — the English QUICKSTART
+never received the live-app requirement above, and the English FAQ still taught
+argument names that had been removed. A translation nobody updates is worse than
+no translation, because a reader cannot tell it is stale.
 
-print(f"Price: {quote.price:,} KRW")
-print(f"High: {quote.high:,} KRW")
-print(f"Low: {quote.low:,} KRW")
-print(f"Volume: {quote.volume:,}")
-```
+They are frozen at [`archive/docs/user/en/`](../../../archive/docs/user/en/).
 
-#### Check Account Balance
+English coverage may grow again later. What each level would contain is written
+down in advance so the scope is not re-invented under pressure — see
+[#104](https://github.com/visualmoney/vm-stock-kis/issues/104). **When to move is
+a decision, not a rule**, and no condition triggers it automatically.
 
-```python
-account = kis.account()
-balance = account.balance()
-
-print(f"Cash: {balance.cash:,} KRW")
-print(f"Evaluated Amount: {balance.evaluated_amount:,} KRW")
-print(f"Profit/Loss: {balance.profit_loss:,} KRW ({balance.profit_rate}%)")
-```
-
-#### Place a Buy Order
-
-```python
-# Buy 10 shares of Samsung at 60,000 KRW each
-order = kis.stock("005930").buy(quantity=10, price=60000)
-
-print(f"Order ID: {order.order_id}")
-print(f"Status: {order.status}")
-```
-
-#### Cancel an Order
-
-```python
-# Cancel the order
-kis.stock("005930").cancel(order_id="12345")
-```
-
-### 4. Next Steps
-
-- 📚 **Full Documentation**: [docs/user/en/](./README.md)
-- 🚀 **Quick Start Guide**: [QUICKSTART.md](./QUICKSTART.md)
-- ❓ **FAQ**: [FAQ.md](./FAQ.md)
-- 🛠️ **Examples**: [examples/](../../../examples/)
-- 🔧 **Configuration**: [CONFIGURATION.md](./CONFIGURATION.md)
-
----
-
-## Common Tasks
-
-### Real-Time Price Updates (WebSocket)
-
-```python
-async def on_price_update(quote):
-    print(f"New price: {quote.price:,} KRW")
-
-# Subscribe to real-time updates
-samsung = kis.stock("005930")
-samsung.subscribe(callback=on_price_update)
-```
-
-### Get Multiple Stock Quotes
-
-```python
-import pandas as pd
-
-symbols = ["005930", "000660", "051910"]  # Samsung, SK Hynix, LG Chemical
-quotes = [kis.stock(sym).quote() for sym in symbols]
-
-# Convert to DataFrame
-df = pd.DataFrame([
-    {"Symbol": sym, "Price": q.price, "Volume": q.volume}
-    for sym, q in zip(symbols, quotes)
-])
-print(df)
-```
-
-### Order History
-
-```python
-account = kis.account()
-orders = account.orders()  # Get all orders
-
-for order in orders:
-    print(f"{order.symbol}: {order.quantity} @ {order.price:,} KRW")
-```
-
----
-
-## System Requirements
-
-- **Python**: 3.8+
-- **OS**: Linux, macOS, Windows
-- **Dependencies**:
-  - requests >= 2.25.0
-  - pyyaml >= 5.4
-  - websockets >= 10.0 (optional, for real-time updates)
-
----
-
-## Community & Support
-
-- 📝 **Issues**: [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
-- 💬 **Questions**: [GitHub Issues](https://github.com/visualmoney/vm-stock-kis/issues)
-- 📧 **Email**: <support@vm-stock-kis.org>
-- 🌐 **Website**: [https://vm-stock-kis.org](https://vm-stock-kis.org)
-
----
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md) for guidelines.
-
-**Getting Started with Development**:
-
-```bash
-# Clone the repository
-git clone https://github.com/visualmoney/vm-stock-kis.git
-cd vm-stock-kis
-
-# Install development dependencies
-pip install -e ".[dev]"
-
-# Run tests
-pytest tests/
-
-# Run linter
-pylint src/vmkis/
-```
-
----
-
-## License
-
-This project is licensed under the MIT License - see [LICENCE](../../../LICENCE) file for details.
-
----
-
-## Disclaimer
-
-**IMPORTANT**: This library is provided "as-is" for educational and development purposes. The developers are not responsible for:
-
-- 💸 **Financial losses** from incorrect trading
-- 🔐 **Security issues** from misuse of API credentials
-- 📊 **Data accuracy** issues from the Korea Investment & Securities API
-- ⚖️ **Legal compliance** with financial regulations
-
-**Please use responsibly and thoroughly test in sandbox environments before live trading.**
-
----
-
-## Acknowledgments
-
-- 🙏 Korea Investment & Securities for the API
-- 👥 Community contributors for bug reports and improvements
-- 📚 Documentation contributors for translations
-
----
-
-## Changelog
-
-See [CHANGELOG.md](../../../CHANGELOG.md) for version history and updates.
-
----
-
-**Version**: 2.2.0
-**Last Updated**: 2025-12-20
-**Status**: 🟢 Stable
-
----
-
-### Language Selection
-
-- 🇰🇷 [한국어](../ko/README.md)
-- 🇬🇧 [English](README.md)
+**Issues and pull requests in English are welcome.**

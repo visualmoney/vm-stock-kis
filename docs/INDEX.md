@@ -33,13 +33,17 @@
 
 ### English
 
-| 문서 |
-|---|
-| [user/en/README](user/en/README.md) |
-| [user/en/QUICKSTART](user/en/QUICKSTART.md) |
-| [user/en/FAQ](user/en/FAQ.md) |
+| 문서 | 내용 |
+|---|---|
+| [user/en/README](user/en/README.md) | 영문 문서는 **이 한 장뿐**입니다 |
+| [../SECURITY.en](../SECURITY.en.md) | 자격증명 취급 방식, 취약점 신고 |
 
-> 한국어 문서가 원본이고 영문은 일부만 있습니다. 어긋나면 한국어가 맞습니다.
+> **영문 user guide 분기는 닫혀 있습니다**([#104](https://github.com/visualmoney/vm-stock-kis/issues/104)).
+> 번역본이 원본을 못 따라와 틀린 안내를 하고 있었기 때문입니다 — 옛 영문
+> QUICKSTART 는 `#87` 의 실전 앱 요건이 없었고, 옛 영문 FAQ 는 `#70` 이 없앤
+> 이름을 가르쳤습니다. **아무도 갱신하지 않는 번역은 번역이 없는 것보다
+> 나쁩니다.** 다시 늘릴 때의 **범위**는 `#104` 에 단계로 적어 두었습니다 —
+> **조건은 없습니다. 옮길지는 그때 판단합니다.**
 
 ## 개발자 문서
 
@@ -61,7 +65,6 @@
 | [DEVELOPER_SETUP](guidelines/DEVELOPER_SETUP.md) | 개발 환경 구축 |
 | [GUIDELINES_001_TEST_WRITING](guidelines/GUIDELINES_001_TEST_WRITING.md) | 테스트 작성 표준 |
 | [AGENT_WORKFLOW_RULES](guidelines/AGENT_WORKFLOW_RULES.md) | AI 에이전트 작업 규칙 |
-| [MULTILINGUAL_SUPPORT](guidelines/MULTILINGUAL_SUPPORT.md) | 다국어 지원 정책 |
 | [REGIONAL_GUIDES](guidelines/REGIONAL_GUIDES.md) | 지역별 설정 |
 | [PLANTUML_SETUP](guidelines/PLANTUML_SETUP.md) | 다이어그램 도구 |
 
@@ -90,6 +93,7 @@
 |---|---|
 | [reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR](reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md) | 공식 샘플과의 비교. API 커버리지 격차, 확장 전략 |
 | [reports/2026-08-30_DOCS_AUDIT](reports/2026-08-30_DOCS_AUDIT.md) | 마크다운 전수 조사. `#108` 문서 정리군의 근거 |
+| [reports/2026-08-30_EN_DOCS_STAGES](reports/2026-08-30_EN_DOCS_STAGES.md) | 영문 문서를 다시 늘릴 때의 **단계별 범위**. 조건은 없습니다 |
 
 ## 그 밖에
 
