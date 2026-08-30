@@ -1,6 +1,6 @@
 """기본 잔고 조회 예제.
 
-config.yaml의 인증 정보를 사용해 계좌 잔고를 조회합니다.
+configs/account_profiles.yaml 의 인증 정보를 사용해 계좌 잔고를 조회합니다.
 """
 
 from vmkis import create_client

@@ -94,7 +94,7 @@ def analyze_quote(quote: Quote) -> None:
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("config.yaml")
+kis = create_client("configs/account_profiles.yaml")
 simple = SimpleKIS(kis)
 price = simple.get_price("005930")
 

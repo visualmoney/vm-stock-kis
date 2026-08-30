@@ -9,7 +9,7 @@ VM-Stock-KIS 사용 예제
   - 로깅 및 모니터링
 
 실행 조건:
-  - config.yaml이 루트에 있어야 함
+  - configs/account_profiles.yaml 이 있어야 함 (configs/template_account_profiles.yaml 을 복사해 채우세요)
 
 사용 모듈:
   - VmKis: 한국투자증권 API
@@ -225,7 +225,7 @@ class ResilientTradingClient:
 def main(config_path: str | None = None, account: str | None = None) -> None:
     """메인 함수"""
 
-    config_path = config_path or os.path.join(os.getcwd(), "config.yaml")
+    config_path = config_path or os.path.join(os.getcwd(), "configs", "account_profiles.yaml")
     if not os.path.exists(config_path):
         logger.error(f"{config_path}를 찾을 수 없습니다.")
         return
@@ -296,7 +296,7 @@ def main(config_path: str | None = None, account: str | None = None) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="config.yaml", help="path to config file")
+    parser.add_argument("--config", default="configs/account_profiles.yaml", help="path to config file")
     parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 

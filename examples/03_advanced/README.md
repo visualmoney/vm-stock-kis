@@ -278,7 +278,7 @@ def fetch_data():
 ping api.server.com
 
 # 2. 인증 정보 확인
-cat config.yaml
+cat configs/account_profiles.yaml
 
 # 3. 로그 확인
 tail -f trading.log

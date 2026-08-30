@@ -9,7 +9,7 @@ VM-Stock-KIS 사용 예제
   - CSV/JSON 리포트 생성
 
 실행 조건:
-  - config.yaml이 루트에 있어야 함
+  - configs/account_profiles.yaml 이 있어야 함 (configs/template_account_profiles.yaml 을 복사해 채우세요)
 
 사용 모듈:
   - VmKis: 한국투자증권 API
