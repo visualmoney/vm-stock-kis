@@ -64,7 +64,6 @@
 | [MULTILINGUAL_SUPPORT](guidelines/MULTILINGUAL_SUPPORT.md) | 다국어 지원 정책 |
 | [REGIONAL_GUIDES](guidelines/REGIONAL_GUIDES.md) | 지역별 설정 |
 | [PLANTUML_SETUP](guidelines/PLANTUML_SETUP.md) | 다이어그램 도구 |
-| [VIDEO_SCRIPT](guidelines/VIDEO_SCRIPT.md) | 튜토리얼 영상 대본 |
 
 ## 기록물 — 당시 상태로 동결
 
@@ -78,7 +77,6 @@
 | [`reports/`](reports/) | 분석·완료 보고서 |
 | [`reports/archive/`](reports/archive/) | 대체된 옛 보고서 |
 | [`generated/`](generated/) | 자동 생성물 (API 레퍼런스 등) |
-| [`rules/`](rules/) | 옛 테스트 규칙 |
 | [`../archive/`](../archive/README.md) | 저장소 루트의 동결 보관소 — 보관 기준은 여기 |
 
 **Discussions 는 쓰지 않습니다.** 2025-12-20 에 켠 뒤 8개월간 게시물이 자동
@@ -86,21 +84,17 @@
 [`../archive/docs/guidelines/2025-12-20_GITHUB_DISCUSSIONS_SETUP.md`](../archive/docs/guidelines/2025-12-20_GITHUB_DISCUSSIONS_SETUP.md)
 에 있습니다. **창구는 GitHub Issues 하나입니다.**
 
-> ⚠️ [`reports/ARCHITECTURE_QUALITY_KR.md`](reports/ARCHITECTURE_QUALITY_KR.md)
-> 의 **수치를 인용하지 마세요.** 포크 이전 트리에서 측정한 값입니다.
-> 문서 상단의 경고를 먼저 읽으세요.
-
 ### 읽을 만한 최신 보고서
 
 | 문서 | 내용 |
 |---|---|
 | [reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR](reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md) | 공식 샘플과의 비교. API 커버리지 격차, 확장 전략 |
+| [reports/2026-08-30_DOCS_AUDIT](reports/2026-08-30_DOCS_AUDIT.md) | 마크다운 전수 조사. `#108` 문서 정리군의 근거 |
 
 ## 그 밖에
 
 | 문서 | 내용 |
 |---|---|
-| [README](README.md) | `docs/` 자체 소개 |
 | [NEWSLETTER_TEMPLATE](NEWSLETTER_TEMPLATE.md) | 뉴스레터 서식 (빈 양식) |
 | [`diagrams/`](diagrams/) | PlantUML 원본과 렌더 결과 |
 
