@@ -1,6 +1,9 @@
 ![header](https://capsule-render.vercel.app/api?type=waving&color=gradient&height=260&section=header&text=%ED%8C%8C%EC%9D%B4%EC%8D%AC%20%ED%95%9C%EA%B5%AD%ED%88%AC%EC%9E%90%EC%A6%9D%EA%B6%8C%20API&fontSize=50&animation=fadeIn&fontAlignY=38&desc=KIS%20Open%20Trading%20API%20Client&descAlignY=51&descAlign=62&customColorList=24)
 
 [![CI](https://github.com/visualmoney/vm-stock-kis/actions/workflows/ci.yml/badge.svg)](https://github.com/visualmoney/vm-stock-kis/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/vm-stock-kis)](https://pypi.org/project/vm-stock-kis/)
+[![Python](https://img.shields.io/pypi/pyversions/vm-stock-kis)](https://pypi.org/project/vm-stock-kis/)
+[![License](https://img.shields.io/pypi/l/vm-stock-kis)](./LICENCE)
 
 ## 1. 파이썬용 한국투자증권 API 소개 ✨
 
