@@ -64,7 +64,6 @@
 | [MULTILINGUAL_SUPPORT](guidelines/MULTILINGUAL_SUPPORT.md) | 다국어 지원 정책 |
 | [REGIONAL_GUIDES](guidelines/REGIONAL_GUIDES.md) | 지역별 설정 |
 | [PLANTUML_SETUP](guidelines/PLANTUML_SETUP.md) | 다이어그램 도구 |
-| [VIDEO_SCRIPT](guidelines/VIDEO_SCRIPT.md) | 튜토리얼 영상 대본 |
 
 ## 기록물 — 당시 상태로 동결
 
