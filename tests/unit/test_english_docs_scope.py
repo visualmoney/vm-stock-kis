@@ -17,9 +17,10 @@
 `docs/guidelines/MULTILINGUAL_SUPPORT.md` 가 356줄로 번역 유지 절차를 적어
 두었는데도 위 드리프트가 났습니다. **정책 문서는 검사가 아닙니다.**
 
-영문을 다시 늘리는 것 자체는 막지 않습니다 — `#104` 가 단계와 조건을 적어
-두었습니다. 이 검사가 막는 것은 **아무도 모르게 늘어나는 것**입니다. 파일을
-추가하면 여기가 빨개지고, 그때 `#104` 의 조건을 다시 읽게 됩니다.
+영문을 다시 늘리는 것 자체는 막지 않습니다 — `#104` 가 **단계별 범위**를 적어
+두었습니다. **조건은 없습니다. 옮길지는 그때 판단합니다.** 이 검사가 막는 것은
+**아무도 모르게 늘어나는 것**입니다. 파일을 추가하면 여기가 빨개지고, 그때
+`#104` 의 단계를 다시 읽게 됩니다.
 """
 
 from __future__ import annotations
@@ -32,7 +33,7 @@ import pytest
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 EN = REPO_ROOT / "docs" / "user" / "en"
 
-#: 이 디렉터리에서 유지하기로 한 것. 늘리려면 `#104` 의 단계 조건을 먼저 보세요.
+#: 이 디렉터리에서 유지하기로 한 것. 늘리려면 `#104` 의 단계 범위를 먼저 보세요.
 KEPT = {"README.md"}
 
 
@@ -47,8 +48,8 @@ def test_the_english_branch_stays_closed() -> None:
     extra = sorted(found - KEPT)
 
     assert not extra, (
-        "영문 문서가 늘었습니다. #104 가 단계와 조건을 적어 뒀습니다 — "
-        f"조건을 채웠으면 이 목록(KEPT)에 넣고 근거를 남기세요:\n  {extra}"
+        "영문 문서가 늘었습니다. #104 가 단계별 범위를 적어 뒀습니다 — "
+        f"단계를 옮기기로 정했으면 이 목록(KEPT)에 넣고 근거를 남기세요:\n  {extra}"
     )
     assert KEPT <= found, f"유지하기로 한 것이 사라졌습니다: {sorted(KEPT - found)}"
 

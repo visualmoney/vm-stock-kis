@@ -60,8 +60,9 @@ no translation, because a reader cannot tell it is stale.
 
 They are frozen at [`archive/docs/user/en/`](../../../archive/docs/user/en/).
 
-English coverage will grow again when there is a reason to grow it. The trigger
-is written down rather than left to judgement — see
-[#104](https://github.com/visualmoney/vm-stock-kis/issues/104).
+English coverage may grow again later. What each level would contain is written
+down in advance so the scope is not re-invented under pressure — see
+[#104](https://github.com/visualmoney/vm-stock-kis/issues/104). **When to move is
+a decision, not a rule**, and no condition triggers it automatically.
 
 **Issues and pull requests in English are welcome.**
