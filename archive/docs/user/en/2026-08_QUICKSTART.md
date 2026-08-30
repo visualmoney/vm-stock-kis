@@ -1,3 +1,20 @@
+> **동결 — 2026-08 시점의 영문 빠른 시작 문서입니다.** 원래 자리는
+> `docs/user/en/QUICKSTART.md` 였습니다.
+>
+> **한국어 원본을 따라오지 못했습니다.** 동결 시점에 한국어 `QUICKSTART.md` 는
+> 89줄에 제목 하나였고 이 문서는 333줄에 8개 절이었습니다 — 오래전에 사라진
+> 판본의 번역입니다. `#87`("모의 계좌도 실전 앱이 필요하다")이 한국어 3곳에
+> 들어갔지만 여기에는 **0곳**이라, 이 문서를 따라간 사용자는 모의 앱만 적힌
+> 설정을 만들고 `create_client()` 에서 막혔습니다.
+>
+> `#104` 에서 **영문 user guide 분기를 닫기로** 정했습니다. 근거는 그 이슈에
+> 적었습니다. 영문을 다시 열 때는 여기서 옮겨 오지 말고 **현재 한국어 문서를
+> 보고 새로 쓰세요** — 이 문서의 전제가 이미 여러 번 바뀌었습니다.
+>
+> 지금 무엇을 볼 것인가 — [`QUICKSTART.md`](../../../../QUICKSTART.md) (한국어).
+> 보관 기준은 [`archive/README.md`](../../../README.md) 를 보세요.
+> 근거: [`#104`](https://github.com/visualmoney/vm-stock-kis/issues/104)
+
 # Quick Start Guide (English)
 
 **Language**: [한국어](../../QUICKSTART.md) | [English](QUICKSTART.md)
