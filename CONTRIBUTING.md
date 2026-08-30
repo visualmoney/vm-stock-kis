@@ -476,8 +476,8 @@ docs/
 │   └── USER_GUIDE.md
 │
 └── reports/                  # 보고서
-    ├── ARCHITECTURE_REPORT_V3_KR.md
-    └── CODE_REVIEW.md
+    ├── CODE_REVIEW.md
+    └── archive/              # 대체된 옛 보고서 (동결)
 ```
 
 ### 2. 문서 작성 규칙

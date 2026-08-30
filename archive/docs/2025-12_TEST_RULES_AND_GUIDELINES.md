@@ -1,3 +1,24 @@
+> **동결 — 2025-12-17 에 쓴 테스트 규칙입니다.** 원래 자리는
+> `docs/rules/TEST_RULES_AND_GUIDELINES.md` 였고, `docs/INDEX.md` 는 이것을
+> **"옛 테스트 규칙"** 이라고 적으면서도 살아 있는 자리에 두고 있었습니다.
+>
+> **`docs/` 안에 "옛 것"이 있으면 스윕 대상인지 매번 판단해야 하고, 그 판단은
+> 언젠가 틀립니다.** 실제로 `#70`(`real`/`virtual` → `live`/`paper`)이 대상
+> 목록을 손으로 적으면서 이 디렉터리를 빠뜨렸습니다.
+>
+> 그 결과가 이 문서 안에 그대로 남아 있습니다 — `#78` 의 검사기가 **코드펜스만**
+> 고쳐서, 3행의 `paper=True` 와 19행의 *"`virtual=True`: 실제 서버 접근 없이"*
+> 가 **같은 절 안에서 서로 어긋납니다.** 181행은 아직 포크 이전 패키지명
+> (`from pykis import PyKis`)을 씁니다.
+>
+> 지금 무엇을 볼 것인가 —
+> [`docs/guidelines/GUIDELINES_001_TEST_WRITING.md`](../../docs/guidelines/GUIDELINES_001_TEST_WRITING.md)
+> 가 정본입니다. 다만 **이 문서에만 있던 성능 테스트 작성 규칙(벤치마크·메모리
+> 프로파일링)은 정본에 없습니다.** 그 자리를 채울지는 별도로 정합니다.
+>
+> 보관 기준은 [`archive/README.md`](../README.md) 를 보세요.
+> 근거: [`#106`](https://github.com/visualmoney/vm-stock-kis/issues/106)
+
 # PyKIS 테스트 개발 규칙 및 가이드
 
 ## 1. KisAuth 사용 규칙

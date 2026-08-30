@@ -318,10 +318,12 @@ issue25_...  issue27_...  issue2_...   issue43_...     label_...
 ## Phase 개념은 폐기했습니다
 
 Phase 1~4 는 **2025-12 에 전부 완료**됐고, 그 이후의 작업은 어떤 Phase 에도
-속하지 않습니다(`git log` 에 Phase 표기가 없습니다). 그런데 "Phase 완료 시
-완료 보고서" 규칙이 만든 산출물은 `docs/reports/` 에 동결된 채 남아 있습니다
+속하지 않습니다(`git log` 에 Phase 표기가 없습니다). "Phase 완료 시 완료
+보고서" 규칙이 만든 산출물은 `docs/reports/archive/` 에 동결돼 있습니다
 — `PHASE2_WEEK3-4_STATUS.md`, `PHASE4_WEEK1_COMPLETION_REPORT.md`,
-`PHASE4_WEEK3_COMPLETION_REPORT.md`, `TASK_PROGRESS.md`.
+`PHASE4_WEEK3_COMPLETION_REPORT.md`, `TASK_PROGRESS.md`,
+`2025-12-18_phase1_week1_complete_report.md`. 2026-08-30 까지는 살아 있는
+자리(`docs/reports/`)에 있었습니다 (#105).
 
 Phase 가 하던 일은 **여러 작업의 묶음 + 완료 판정**이었습니다. 그 일은
 네이티브 서브이슈가 합니다. 마일스톤은 도입하지 않습니다(위 참고).
