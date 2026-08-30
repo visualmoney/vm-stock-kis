@@ -2,6 +2,11 @@
 통합 테스트 - Rate Limit 준수 확인
 
 대량 요청 시 Rate Limiting이 올바르게 작동하는지 확인합니다.
+
+타이밍 단언의 여유는 `tests/timing.py` 를 따릅니다. **하한은 유량 제한기의
+성질이라 엄격하게, 상한은 스케줄러의 성질이라 여유를 두고** 봅니다. 다만
+"기다리지 않았는가"를 묻는 상한에는 `SCHEDULING_SLACK` 을 쓰면 안 됩니다 —
+이유는 그 파일에 적었습니다(이슈 #92).
 """
 
 import time
@@ -9,6 +14,7 @@ from datetime import datetime, timedelta
 
 import pytest
 import requests_mock
+from tests.timing import SCHEDULING_SLACK, assert_band
 
 from vmkis import KisAuth, VmKis
 from vmkis.__env__ import PAPER_API_REQUEST_PER_SECOND
@@ -106,6 +112,10 @@ class TestRateLimitCompliance:
             live_limiter.acquire()
         live_elapsed = time.time() - start
 
+        # "기다리지 않았는가"를 묻는 상한이다. 한 주기(1.0초)보다 작아야 의미가
+        # 있으므로 SCHEDULING_SLACK(2.0)을 얹을 수 없다 — 얹으면 유량 제한이
+        # 사라져도 통과한다. #92 에서 재 봤더니 CPU 16배 과부하에서도 0.0002초라
+        # 여유가 5000배다. 플레이크의 후보가 아니라 그대로 둔다.
         assert live_elapsed < 1.0
 
         # 모의는 느림
@@ -178,6 +188,11 @@ class TestRateLimitCompliance:
 
             # 상한은 느린 머신을 감안해 넉넉히 둔다. 쿼터가 새는 회귀는 위의
             # acquisitions 단언이 시간과 무관하게 잡아낸다.
+            #
+            # 여기만 SCHEDULING_SLACK(2.0)이 아니라 5.0 이다. 스레드 10개를
+            # 동시에 돌려 이 파일에서 스케줄링에 가장 민감하고, #59 가 같은
+            # 이유로 다른 스레드 테스트에서 실패를 봤다. 낮추면 플레이크를
+            # 새로 만든다.
             assert elapsed <= minimum_elapsed + 5.0, f"과도하게 오래 걸렸습니다: {elapsed:.2f}초"
 
     def test_rate_limit_error_handling(self):
@@ -209,15 +224,40 @@ class TestRateLimitCompliance:
             limiter.acquire()
             request_times.append(time.time() - start_time)
 
-        # 처음 10개는 빠름 (<0.5초)
-        assert all(t < 0.5 for t in request_times[:10])
+        # 처음 10개(rate=10)는 대기 없이 통과해야 한다.
+        #
+        # "기다리지 않았는가"를 묻는 상한이라 한 주기보다 작아야 하고, 따라서
+        # SCHEDULING_SLACK 을 얹을 수 없다. 0.5 를 그대로 둔다 — #92 에서 재
+        # 봤더니 CPU 16배 과부하에서도 최대 0.0001초로 여유가 5000배였다.
+        assert_band(
+            request_times[:10],
+            lo=0.0,
+            hi=0.5,
+            label="버스트 1-10번째(대기 없어야 함)",
+        )
 
-        # 그 다음부터는 throttle
-        # 11-20번째: 1초 ~ 2초 사이
-        assert all(1.0 <= t < 2.5 for t in request_times[10:20])
-
-        # 21-30번째: 2초 ~ 3초 사이
-        assert all(2.0 <= t < 3.5 for t in request_times[20:30])
+        # 11번째부터는 throttle 된다.
+        #
+        # **하한이 이 테스트의 본체다.** 유량 제한이 걸리지 않으면 값이 0 근처로
+        # 내려앉아 하한이 잡는다. 상한은 스케줄러의 성질이라 SCHEDULING_SLACK 을
+        # 얹는다 — 원래 2.5 / 3.5 였고 붐비는 러너에서 ~20% 확률로 터졌다(#92).
+        #
+        # 실측(CPU 16배 과부하): 11-20번째 최대 1.062초, 21-30번째 최대 2.113초.
+        # 옛 상한은 1.4초 지연에서 터졌고, 새 상한은 1.9초까지 견딘다.
+        assert_band(
+            request_times[10:20],
+            lo=1.0,
+            hi=1.0 + SCHEDULING_SLACK,
+            offset=10,
+            label="11-20번째(한 주기 대기)",
+        )
+        assert_band(
+            request_times[20:30],
+            lo=2.0,
+            hi=2.0 + SCHEDULING_SLACK,
+            offset=20,
+            label="21-30번째(두 주기 대기)",
+        )
 
     def test_rate_limit_with_variable_intervals(self):
         """가변 간격으로 요청."""
@@ -236,9 +276,13 @@ class TestRateLimitCompliance:
         # 전체 시간 계산
         total_time = timestamps[-1] - timestamps[0]
 
-        # 10개 요청, 초당 5개 = 2초 + 대기시간(0.3 * 9 = 2.7초) = 약 4.7초
-        # 하지만 대기 중에 시간이 지나가므로 실제로는 더 짧을 수 있음
-        assert 2.5 <= total_time <= 5.0
+        # 10개 요청, 초당 5개. 요청 사이 sleep(0.3) 중에 주기가 지나가므로
+        # 실측은 계산값보다 짧다. 하한 2.5초가 "유량 제한이 걸렸는가"를 본다.
+        #
+        # 상한 5.0 은 그대로 둔다. 이 파일의 규칙(기대값 + SCHEDULING_SLACK)을
+        # 적용하면 2.7 + 2.0 = 4.7 로 **지금보다 좁아진다.** #92 에서 재 봤더니
+        # CPU 16배 과부하에서 2.70~3.65초(중앙값 2.71)라 여유가 1.35초다.
+        assert 2.5 <= total_time <= 5.0, f"총 {total_time:.2f}초"
 
 
 class TestRateLimitMonitoring:
@@ -270,7 +314,9 @@ class TestRateLimitMonitoring:
             limiter.acquire()
         elapsed = time.time() - start
 
-        assert elapsed < 0.1  # 거의 즉시
+        # "기다리지 않았는가"를 묻는 상한. 여기에도 SCHEDULING_SLACK 을 얹으면
+        # 안 된다. #92 실측에서 CPU 16배 과부하에서도 0.0000초라 그대로 둔다.
+        assert elapsed < 0.1, f"즉시 통과해야 하는데 {elapsed:.3f}초"
 
     def test_rate_limit_blocking_callback(self):
         """블로킹 콜백 호출 확인."""

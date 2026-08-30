@@ -7,27 +7,24 @@ RateLimiter 정확성 테스트 (현행 API 기준)
 - 비블로킹 요청 실패가 카운터에 반영되지 않는지
 - 다중 스레드 환경에서의 안전성
 
-타이밍 단언의 상한 여유에 대해서는 아래 SCHEDULING_SLACK 주석을 참고하세요.
+타이밍 단언의 상한 여유는 `tests/timing.py` 를 따릅니다.
 """
 
 import time
 from threading import Thread
 
 import pytest
+from tests.timing import SCHEDULING_SLACK
 
 from vmkis.utils.rate_limit import RateLimiter
 
-# 타이밍 단언의 상한 여유(초).
+# SCHEDULING_SLACK 은 `tests/timing.py` 로 옮겼습니다. 여기에만 있던 탓에
+# tests/integration/test_rate_limit_compliance.py 가 같은 처방을 받지 못했고,
+# 그것이 이슈 #92 입니다. 근거와 한계는 그 파일에 적혀 있습니다.
 #
-# 하한은 "유량 제한이 실제로 걸렸는가"를 검증하므로 엄격하게 둔다. 반면 상한은
-# 머신 속도와 스케줄링에만 좌우된다. 전체 스위트는 CPU를 포화시키는 벤치마크와
-# 함께 돌기 때문에, 기대값에 0.3~0.4초만 얹은 상한은 부하가 걸릴 때 터진다.
-# 실제로 test_rate_limiter_with_very_low_limit이 단독 실행에서는 5/5 통과하면서
-# 전체 실행에서만 실패했다.
-#
-# 유량 제한이 사라지는 회귀는 하한이 잡고, 대기가 한 주기 더 늘어나는 회귀는
-# 이 여유(2초)보다 크므로 상한이 여전히 잡는다.
-SCHEDULING_SLACK = 2.0
+# 옮기면서 한 문장을 고쳤습니다. 여기에는 "대기가 한 주기 더 늘어나는 회귀는
+# 이 여유(2초)보다 크므로 상한이 여전히 잡는다"고 적혀 있었는데, 1.0 < 2.0 이라
+# **틀린 문장**이었습니다. 상한이 잡는 것은 세 주기 이상 늘어나는 회귀입니다.
 
 
 class TestRateLimiterAccuracy:
@@ -174,6 +171,9 @@ class TestRateLimiterAccuracy:
         # 상한에 SCHEDULING_SLACK 을 쓴다. 614b68e 가 같은 이유로 6곳을 고치면서
         # 이 한 곳을 빠뜨렸는데, 하필 스레드 4개를 동시에 돌려 스케줄링에 가장
         # 민감한 테스트다. 커버리지를 켜면 10회 중 1회꼴로 터졌다(이슈 #59).
+        #
+        # 같은 빠뜨림이 파일 단위로 한 번 더 났다 — 이 처방이 integration 쪽
+        # 레이트리밋 테스트에는 오지 않았다(이슈 #92).
         assert 0.9 <= elapsed <= 1.0 + SCHEDULING_SLACK
         assert len(results) == 20
 
