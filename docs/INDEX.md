@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-**최종 업데이트**: 2026-08-28
+**최종 업데이트**: 2026-08-31
 
 이 저장소의 문서 목록입니다. **여기 적힌 경로는 전부 실재합니다** —
 새 문서를 만들거나 옮기면 이 파일도 함께 고쳐 주세요.
@@ -53,7 +53,7 @@
 | [developer/DEVELOPER_GUIDE](developer/DEVELOPER_GUIDE.md) | 개발 환경, 코드 구조 |
 | [developer/VERSIONING](developer/VERSIONING.md) | git 태그 기반 버저닝, **태그 표기 규칙** |
 | [../CONTRIBUTING](../CONTRIBUTING.md) | 기여 절차, 브랜치·커밋 관례 |
-| [../CLAUDE](../CLAUDE.md) | AI 보조 개발 프로세스 |
+| [../AGENTS](../AGENTS.md) | 에이전트 불변식 (Cursor). 세부는 `.cursor/rules/`, `.cursor/skills/` |
 
 ## 규칙 및 가이드라인 (`guidelines/`)
 

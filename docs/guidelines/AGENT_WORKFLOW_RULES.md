@@ -1,7 +1,8 @@
 # 에이전트 작업 규칙 (Agent Workflow Rules)
 
-> **작업 상태 관리는 [CLAUDE.md](../../CLAUDE.md#작업-상태는-어디에-사는가)
-> 가 정본입니다.** 이 문서는 코딩·테스트·커밋 관행만 다룹니다.
+> **작업 상태 관리는 [AGENTS.md](../../AGENTS.md) 가 정본입니다.**
+> 이 문서는 코딩·테스트·커밋 관행만 다룹니다. 파일명·세션 종료 절차는
+> `.cursor/rules/docs-workflow.mdc` 와 `.cursor/skills/session-close/` 입니다.
 
 ## 원칙
 
