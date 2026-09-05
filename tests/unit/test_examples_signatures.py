@@ -75,13 +75,25 @@ def _example_files() -> list[pathlib.Path]:
 
 
 def _example_docs() -> list[pathlib.Path]:
-    """예제가 딸고 있는 README.
+    """예제가 딸고 있는 README 와 노트북.
 
-    `.ipynb` 는 뺐습니다. `tutorial_basic.ipynb` 는 경로만 틀린 것이 아니라
-    **폐기된 평면 스키마**(`id`/`account`/`appkey`/`secretkey`)를 가르치고
-    있어서, 경로만 고치면 틀린 것을 최신처럼 보이게 만듭니다. 별도 이슈입니다.
+    `#111` 이전에는 `.ipynb` 를 뺐습니다. 노트북이 폐기된 평면 스키마를
+    가르치고 있어서, 경로 검사만 넣으면 틀린 것을 최신처럼 보이게 만들었기
+    때문입니다. 스키마를 고친 뒤에는 빼면 안 됩니다 — 빼는 순간 같은 결함이
+    검사 밖으로 나갑니다.
     """
-    return sorted(EXAMPLES.rglob("README.md"))
+    return sorted(
+        p for p in (*EXAMPLES.rglob("README.md"), *EXAMPLES.rglob("*.ipynb")) if ".ipynb_checkpoints" not in p.parts
+    )
+
+
+#: 폐기된 평면 설정 스키마. YAML 키 형태(`id: "…"`)만 봅니다.
+#: `KisAuth(id="…")` 생성자 인자와 구별됩니다. (#111)
+_FLAT_CONFIG_MARKERS = ('id: "YOUR_ID"', 'appkey: "YOUR_APPKEY"')
+
+
+def _flat_config_schema_hits(text: str, origin: str) -> list[str]:
+    return [f"{origin} — {marker}" for marker in _FLAT_CONFIG_MARKERS if marker in text]
 
 
 def _callee_name(node: ast.Call) -> str | None:
@@ -267,5 +279,35 @@ def test_the_name_check_also_reads_the_readmes() -> None:
     조용히 검사 밖으로 나갑니다.
     """
     docs = _example_docs()
+    readmes = [p for p in docs if p.name == "README.md"]
 
-    assert len(docs) >= 4, f"예제 README 를 {len(docs)}개만 찾았습니다: {EXAMPLES}"
+    assert len(readmes) >= 4, f"예제 README 를 {len(readmes)}개만 찾았습니다: {EXAMPLES}"
+
+
+def test_the_name_check_also_reads_the_tutorial_notebook() -> None:
+    """#111 의 닫힘 조건입니다. 노트북이 목록에서 빠지면 검사가 눈을 감습니다."""
+    notebooks = [p for p in _example_docs() if p.suffix == ".ipynb"]
+
+    assert any(p.name == "tutorial_basic.ipynb" for p in notebooks), (
+        f"tutorial_basic.ipynb 이 검사 밖으로 빠졌습니다: {notebooks}"
+    )
+
+
+def test_tutorial_notebook_does_not_teach_the_flat_config_schema() -> None:
+    """경로만 고치고 평면 스키마를 남기면 안 됩니다. (#111, #70 함정)"""
+    path = EXAMPLES / "tutorial_basic.ipynb"
+    hits = _flat_config_schema_hits(path.read_text(encoding="utf-8"), path.name)
+
+    assert not hits, (
+        "노트북이 폐기된 평면 설정 스키마를 가르칩니다. "
+        "스키마 정본은 configs/template_account_profiles.yaml 입니다:\n  " + "\n  ".join(hits)
+    )
+
+
+def test_flat_schema_checker_catches_the_original_defect() -> None:
+    """#111 의 결함을 그대로 먹여 실제로 잡히는지 봅니다."""
+    defect = 'id: "YOUR_ID"\naccount: "YOUR_ACCOUNT"\nappkey: "YOUR_APPKEY"\nsecretkey: "YOUR_SECRETKEY"\n'
+    hits = _flat_config_schema_hits(defect, "<결함 재현>")
+
+    assert hits, "검사기가 #111 의 원래 결함을 못 잡습니다"
+    assert 'id: "YOUR_ID"' in hits[0]
