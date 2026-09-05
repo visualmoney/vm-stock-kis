@@ -179,8 +179,8 @@ def analyze(quote: Quote, balance: Balance) -> None:
 ```python
 from vmkis import create_client, save_config_interactive
 
-kis = create_client("config.yaml")
-save_config_interactive("config.yaml")   # 대화형 설정 저장
+kis = create_client("configs/account_profiles.yaml")
+save_config_interactive("configs/account_profiles.yaml")   # 대화형 설정 저장
 ```
 
 `SimpleKIS`는 `VmKis` **인스턴스를 받는** 얇은 파사드입니다. 설정 경로를 직접
@@ -189,7 +189,7 @@ save_config_interactive("config.yaml")   # 대화형 설정 저장
 ```python
 from vmkis import SimpleKIS, create_client
 
-simple = SimpleKIS(create_client("config.yaml"))
+simple = SimpleKIS(create_client("configs/account_profiles.yaml"))
 
 quote = simple.get_price("005930")
 balance = simple.get_balance()

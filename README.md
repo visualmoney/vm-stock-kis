@@ -22,6 +22,11 @@
 > [`fetch()` 로 직접 호출](./docs/user/EXTENDING_API.md)할 수 있습니다 —
 > 토큰 갱신·도메인 라우팅·Rate Limiting·재시도가 그대로 적용됩니다.
 
+> **시세 재배포.** 받은 시세는 본인 업무 범위 안에서만 쓰세요. 제3자 제공·외부
+> 서비스화는 약관(고객) 제5조 ③으로 금지되며 이용 중지 사유입니다. 전문은
+> [KIS Developers](https://apiportal.koreainvestment.com/) 약관을 보세요.
+> ([USER_GUIDE](./docs/user/USER_GUIDE.md#시세-조회))
+
 ### 1.1. 라이브러리 특징
 
 <details>

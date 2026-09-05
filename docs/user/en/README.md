@@ -35,6 +35,13 @@ kis = create_client()          # reads configs/account_profiles.yaml
 print(kis.stock("005930").quote())
 ```
 
+Quotes you receive are for **your own use only**. Redistributing them to third
+parties or wrapping them in an external service is prohibited (customer terms
+art. 5③) and can get the API account suspended. Read the current terms on
+[KIS Developers](https://apiportal.koreainvestment.com/) — this page does not
+copy the full text. Korean detail:
+[USER_GUIDE](../USER_GUIDE.md#시세-조회).
+
 ## Where to go next
 
 Korean, but the code blocks read the same in any language:

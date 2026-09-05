@@ -11,8 +11,8 @@
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-# config.yaml에서 자동 로드하여 클라이언트 생성
-kis = create_client("config.yaml")
+# configs/account_profiles.yaml 에서 자동 로드하여 클라이언트 생성
+kis = create_client("configs/account_profiles.yaml")
 simple = SimpleKIS(kis)
 
 # 사용
@@ -48,10 +48,10 @@ from vmkis.simple import SimpleKIS
 
 # 처음 한 번만: 대화형으로 설정 저장
 # (입력 숨겨짐 + 마스킹 + 확인 단계)
-config = save_config_interactive("config.yaml")
+config = save_config_interactive("configs/account_profiles.yaml")
 
 # 이후 사용
-kis = create_client("config.yaml")
+kis = create_client("configs/account_profiles.yaml")
 simple = SimpleKIS(kis)
 ```
 
@@ -238,7 +238,7 @@ from vmkis import create_client
 from vmkis.simple import SimpleKIS
 import time
 
-kis = create_client("config.yaml")
+kis = create_client("configs/account_profiles.yaml")
 simple = SimpleKIS(kis)
 
 symbols = ["005930", "000660", "051910"]
@@ -262,7 +262,7 @@ while True:
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("config.yaml")
+kis = create_client("configs/account_profiles.yaml")
 simple = SimpleKIS(kis)
 
 # 삼성전자가 65,000원 이하면 매수
@@ -285,7 +285,7 @@ else:
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("config.yaml")
+kis = create_client("configs/account_profiles.yaml")
 simple = SimpleKIS(kis)
 
 balance = simple.get_balance()
@@ -346,11 +346,11 @@ auth = KisAuth(
 
 # ✅ 좋은 예: 파일에서 로드
 from vmkis.helpers import create_client
-kis = create_client("config.yaml")  # 설정 외부화
+kis = create_client("configs/account_profiles.yaml")  # 설정 외부화
 
 # ✅ 더 나은 예: 대화형 저장 (보안 강화)
 from vmkis.helpers import save_config_interactive
-config = save_config_interactive("config.yaml")
+config = save_config_interactive("configs/account_profiles.yaml")
 # - getpass로 비밀키 숨김
 # - 마스킹된 미리보기
 # - 사용자 확인
@@ -363,12 +363,12 @@ from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
 try:
-    kis = create_client("config.yaml")
+    kis = create_client("configs/account_profiles.yaml")
     simple = SimpleKIS(kis)
     price = simple.get_price("005930")
     print(f"현재가: {price.price:,}원")
 except FileNotFoundError:
-    print("❌ config.yaml이 없습니다.")
+    print("❌ configs/account_profiles.yaml 이 없습니다.")
 except Exception as e:
     print(f"❌ 오류: {e}")
 ```

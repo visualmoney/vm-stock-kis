@@ -32,7 +32,7 @@ A: 한국투자증권 공식 웹사이트에서 다음 단계를 따르세요:
 4. 발급받은 AppKey와 AppSecret 확인
 
 ⚠️ **보안 주의**: API 키를 GitHub에 올리지 않도록 주의하세요.
-환경 변수나 `.gitignore`로 관리되는 `config.yaml`에 저장하세요.
+환경 변수나 `.gitignore`로 막히는 `configs/account_profiles.yaml`에 저장하세요.
 
 ### Q3: 모의 계좌(Virtual Trading)에서 테스트할 수 있나요?
 
@@ -510,7 +510,7 @@ import os
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 # 파일 읽을 때 명시적으로 인코딩 지정
-with open('config.yaml', 'r', encoding='utf-8') as f:
+with open('configs/account_profiles.yaml', 'r', encoding='utf-8') as f:
     ...
 ```
 
