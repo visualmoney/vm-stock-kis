@@ -349,11 +349,3 @@ MIT License - 자유롭게 사용, 수정, 배포 가능
 3. 커밋 (`git commit -m 'Add new example'`)
 4. Push (`git push origin feature/new-example`)
 5. Pull Request
-
----
-
-**마지막 업데이트**: 2025-12-19
-
-**버전**: 1.0.0
-
-**상태**: ✅ 모든 예제 작동 확인 완료
