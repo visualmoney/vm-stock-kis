@@ -49,9 +49,13 @@ pip install vm-stock-kis
 from pykis import PyKis
 kis = PyKis("config.yaml")
 
-# vm-stock-kis 0.0.1
+# vm-stock-kis — YAML 은 create_client. VmKis 경로는 JSON
+from vmkis import create_client
+kis = create_client("configs/account_profiles.yaml")
+
+# JSON
 from vmkis import VmKis
-kis = VmKis("config.yaml")
+kis = VmKis("secret.json")
 ```
 
 일괄 치환:

@@ -363,7 +363,7 @@ from vmkis import VmKis
 kis = VmKis(...)
 
 # 차트 데이터를 DataFrame으로
-charts = kis.stock("005930").chart("D")  # 일봉
+charts = kis.stock("005930").chart(period="day")  # 일봉
 df = pd.DataFrame([
     {
         "date": chart.date,
@@ -393,7 +393,7 @@ from vmkis import VmKis
 kis = VmKis(...)
 
 # 데이터 준비
-charts = kis.stock("005930").chart("D")
+charts = kis.stock("005930").chart(period="day")
 df = pd.DataFrame([...])  # 위 예제 참고
 
 # 이동평균 계산

@@ -193,7 +193,7 @@ quote = kis.stock("005930").quote()  # Always works
 
 **보장 안 하는 범위**:
 
-- 내부 구현 (vmkis._internal)
+- 내부 구현 (`src/vmkis/` 의 비공개 모듈. 루트 `__all__` 밖)
 - 성능 특성
 - 에러 메시지 정확한 문구
 - 시간 초과 값
@@ -344,9 +344,13 @@ pytest tests/
 from pykis import PyKis
 kis = PyKis("config.yaml")
 
-# vm-stock-kis 0.0.1
+# vm-stock-kis — YAML 은 create_client. VmKis 경로는 JSON
+from vmkis import create_client
+kis = create_client("configs/account_profiles.yaml")
+
+# JSON
 from vmkis import VmKis
-kis = VmKis("config.yaml")
+kis = VmKis("secret.json")
 ```
 
 전체 대조표와 호환 폴백 목록은
