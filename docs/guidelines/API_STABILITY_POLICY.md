@@ -44,15 +44,15 @@ Major.Minor.Patch-PreRelease+Metadata
 | 버전 | 라이프사이클 | 호환성 |
 |---|---|---|
 | 0.0.x | ⚪ 지난 판 (2026-08-28 ~ 08-29) | 당시 0.x 규칙: minor 도 Breaking 자리 |
-| **0.3.0** | 🟢 **현재 PyPI** | 호환 폴백 제거(`#33` · `#34`) + `Production/Stable`(`#35`) **이미 착지** |
-| 1.0.0 | 🟡 태그 대기 | SemVer major 라인 선언. 폴백을 “다시” 지우는 일이 아님 |
+| 0.3.0 | ⚪ 지난 판 | 호환 폴백 제거(`#33` · `#34`) + `Production/Stable`(`#35`) |
+| **1.0.0** | 🟢 **현재** | SemVer major 라인. 같은 major 안 minor·patch 는 공개 API 를 깨지 않음 |
 
 **1.0.0 이 약속하는 SemVer 한 줄:** 같은 major 안에서 minor·patch 는 공개 API 를
 깨지 않습니다. Breaking 은 major 만. (0.x 의 “minor 도 Breaking 자리” 규칙은
-`v1.0.0` 태그에서 끝납니다.)
+`v1.0.0` 태그에서 끝났습니다.)
 
-> Breaking·Stable 은 **0.3.0** 에 들어갔습니다. 문서가 이를 “1.0.0 에서 제거
-> 예정”처럼 말하지 않습니다. 태그의 뜻은 major 선언과 leftover 정리입니다.
+> Breaking·Stable classifier 는 **0.3.0** 에 들어갔고, **1.0.0** 은 그 SemVer
+> 약속을 번호로 고정한 태그입니다. 폴백을 “다시” 지우지 않았습니다.
 >
 > 이 표는 배포판 `vm-stock-kis` 의 것입니다. 업스트림 `python-kis` 의
 > 2.x 계열과는 **번호를 공유하지 않습니다.**
@@ -234,8 +234,8 @@ quote = kis.stock("005930").quote()
 | 배포판 | 버전 | 상태 | 추천 |
 |---|---|---|---|
 | `python-kis` (업스트림) | 2.1.6 | 🟡 별개 프로젝트 | 이 포크와 무관하게 유지됩니다 |
-| **`vm-stock-kis`** | **0.3.0** | 🟢 현재 PyPI | Breaking·Stable 착지. pip 는 git 태그를 따름 |
-| `vm-stock-kis` | 1.0.0 | 🟡 태그 대기 | SemVer major 선언. 폴백 제거는 0.3.0 에 끝남 |
+| `vm-stock-kis` | 0.3.0 | ⚪ 지난 판 | Breaking·Stable 착지 시점 |
+| **`vm-stock-kis`** | **1.0.0** | 🟢 **현재** | SemVer major. pip 는 git 태그를 따름 |
 
 ### 6.2 업그레이드 계획
 
@@ -304,19 +304,16 @@ pip list --outdated | grep vm-stock-kis
 
 ```text
 # requirements.txt — 배포명은 vm-stock-kis, import 이름은 vmkis 입니다
-# 0.3.0 계열을 고정할 때 (1.0.0 태그 전)
-vm-stock-kis>=0.3.0,<1.0.0
-
-# 1.0.0 태그 이후 — major 핀 (권장)
+# major 핀 (권장)
 vm-stock-kis>=1.0.0,<2.0.0
 
 # 또는 특정 버전
-vm-stock-kis==0.3.0
+vm-stock-kis==1.0.0
 ```
 
 > **Stable 과 “0.x minor Breaking”을 같이 쓰지 않습니다.** 0.3.0 부터
-> classifier 는 Stable 이고, 공개 API 를 깨는 변경은 major 로만 나갑니다.
-> 1.0.0 태그는 그 SemVer 약속을 번호로 고정합니다.
+> classifier 는 Stable 이고, 1.0.0 은 그 SemVer 약속을 번호로 고정합니다.
+> 공개 API 를 깨는 변경은 major 로만 나갑니다.
 
 ### 8.4 안전한 업그레이드
 
@@ -440,13 +437,13 @@ CI 는 그 하한과 분류기의 최신 끝단만 검증합니다
 ### Q2: 0.3.0 이후 업그레이드해도 안전한가요?
 
 🟢 **공개 API 는 Stable 입니다.** Breaking 은 major 로만 나갑니다.
-`v1.0.0` 전에는 `>=0.3.0,<1.0.0`, 태그 뒤에는 `>=1.0.0,<2.0.0` 으로 핀하세요.
+`vm-stock-kis>=1.0.0,<2.0.0` 으로 핀하세요.
 0.0.x–0.2.x 구간의 “minor 도 Breaking” 서술은 그 구간에만 해당합니다.
 
 ### Q3: 1.0.0은 언제 나오나요?
 
-호환 폴백 제거와 Stable classifier 는 **이미 0.3.0** 에 있습니다.
-`v1.0.0` 은 SemVer major 라인을 선언하는 태그입니다. git 에서 찍을 때 나갑니다.
+**나왔습니다.** 호환 폴백 제거와 Stable classifier 는 0.3.0 에 들어갔고,
+`v1.0.0` 은 SemVer major 라인을 선언하는 태그입니다.
 
 ### Q4: Breaking Change 목록을 어디서 보나요?
 

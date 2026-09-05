@@ -123,8 +123,7 @@ vm-stock-kis 1.0.0      SemVer major 라인 선언 (태그)
 0.3.0 이후·1.0.0 태그 뒤에는 major 핀을 권장합니다.
 
 ```text
-vm-stock-kis>=0.3.0,<1.0.0    # 1.0.0 태그 전
-vm-stock-kis>=1.0.0,<2.0.0    # 1.0.0 태그 후
+vm-stock-kis>=1.0.0,<2.0.0
 ```
 
 자세한 내용은 [API_STABILITY_POLICY.md](./guidelines/API_STABILITY_POLICY.md)를
