@@ -1,3 +1,13 @@
+> **동결 — 2025-12 시점의 스냅샷입니다.** 원래 자리는
+> `docs/generated/COMPLETION_SUMMARY.md` 였습니다.
+>
+> 생성기가 만들지 않는 일회성 산출물입니다. 생성기가 만드는 것은
+> `docs/generated/API_REFERENCE.md` 하나입니다.
+>
+> 지금 무엇을 볼 것인가 — `docs/generated/API_REFERENCE.md`, `gh issue list`.
+
+---
+
 # 📋 PyKIS 테스트 개선 프로젝트 - 최종 완료 요약
 
 **프로젝트 상태**: ✅ **완료**

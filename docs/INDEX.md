@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-**최종 업데이트**: 2026-08-31
+**최종 업데이트**: 2026-09-05
 
 이 저장소의 문서 목록입니다. **여기 적힌 경로는 전부 실재합니다** —
 새 문서를 만들거나 옮기면 이 파일도 함께 고쳐 주세요.
@@ -50,6 +50,7 @@
 | 문서 | 내용 |
 |---|---|
 | [architecture/ARCHITECTURE](architecture/ARCHITECTURE.md) | 허브-스포크 구조, **지켜야 할 불변식**, 확장 절차 |
+| [generated/API_REFERENCE](generated/API_REFERENCE.md) | 공개 모듈 docstring 덤프. 손으로 고치지 말고 `uv run python scripts/generate_api_reference.py` |
 | [developer/DEVELOPER_GUIDE](developer/DEVELOPER_GUIDE.md) | 개발 환경, 코드 구조 |
 | [developer/VERSIONING](developer/VERSIONING.md) | git 태그 기반 버저닝, **태그 표기 규칙** |
 | [../CONTRIBUTING](../CONTRIBUTING.md) | 기여 절차, 브랜치·커밋 관례 |
@@ -79,7 +80,6 @@
 | [`prompts/`](prompts/) | 사용자 요청 원본 |
 | [`reports/`](reports/) | 분석·완료 보고서 |
 | [`reports/archive/`](reports/archive/) | 대체된 옛 보고서 |
-| [`generated/`](generated/) | 자동 생성물 (API 레퍼런스 등) |
 | [`../archive/`](../archive/README.md) | 저장소 루트의 동결 보관소 — 보관 기준은 여기 |
 
 **Discussions 는 쓰지 않습니다.** 2025-12-20 에 켠 뒤 8개월간 게시물이 자동

@@ -1,3 +1,13 @@
+> **동결 — 2025-12 시점의 스냅샷입니다.** 원래 자리는
+> `docs/generated/VALIDATION_REPORT_WEBSOCKET_STRESS_COMPLETE.md` 였습니다.
+>
+> 생성기가 만들지 않는 일회성 산출물입니다. 생성기가 만드는 것은
+> `docs/generated/API_REFERENCE.md` 하나입니다.
+>
+> 지금 무엇을 볼 것인가 — `docs/generated/API_REFERENCE.md`, `gh issue list`.
+
+---
+
 # WebSocket Stress Test 통합 검증 보고서
 
 **작성일**: 2025-12-17
