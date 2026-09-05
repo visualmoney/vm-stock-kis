@@ -12,7 +12,7 @@
 1. [이름 변경](#1-이름-변경)
 2. [버전 번호가 낮아지는 이유](#2-버전-번호가-낮아지는-이유)
 3. [공개 API 축소](#3-공개-api-축소)
-4. [1.0.0 Breaking Changes](#4-100-breaking-changes)
+4. [0.3.0 Breaking Changes](#4-030-breaking-changes-호환-폴백)
 5. [FAQ](#5-faq)
 
 ---
@@ -69,7 +69,8 @@ git ls-files '*.py' | xargs sed -i -e 's/PyKis/VmKis/g' -e 's/\bpykis\b/vmkis/g'
 
 ### 이름 호환 폴백 (제거됨)
 
-1.0.0 에서 아래 셋은 **제거**되었습니다 (`#33`).
+**0.3.0** 에서 아래 셋은 **제거**되었습니다 (`#33`). (`v1.0.0` 태그가 다시
+지우는 일이 아닙니다.)
 
 | 대상 | 지금 |
 |---|---|
@@ -110,14 +111,20 @@ python-kis 2.1.6        업스트림. 이 포크의 기점
       ▼
 vm-stock-kis 0.0.1      이 배포명의 첫 릴리스
       ▼
-vm-stock-kis 1.0.0      호환 폴백 완전 제거 + 안정 선언
+vm-stock-kis 0.3.0      호환 폴백 완전 제거 + Stable classifier
+      ▼
+vm-stock-kis 1.0.0      SemVer major 라인 선언 (태그)
 ```
 
-`0.x` 구간에서는 **minor도 Breaking Change 자리**입니다(SemVer 0.y.z).
-의존성을 고정할 때 상한을 두세요.
+**1.0.0 이 약속하는 SemVer 한 줄:** 같은 major 안에서 minor·patch 는 공개 API 를
+깨지 않습니다. Breaking 은 major 만.
+
+0.0.x–0.2.x 구간에서만 **minor도 Breaking Change 자리**였습니다.
+0.3.0 이후·1.0.0 태그 뒤에는 major 핀을 권장합니다.
 
 ```text
-vm-stock-kis>=0.0.1,<1.0.0
+vm-stock-kis>=0.3.0,<1.0.0    # 1.0.0 태그 전
+vm-stock-kis>=1.0.0,<2.0.0    # 1.0.0 태그 후
 ```
 
 자세한 내용은 [API_STABILITY_POLICY.md](./guidelines/API_STABILITY_POLICY.md)를
@@ -200,9 +207,10 @@ order = simple.place_order("005930", qty=10, price=60000)   # price 생략 시 �
 
 ---
 
-## 4. 1.0.0 Breaking Changes
+## 4. 0.3.0 Breaking Changes (호환 폴백)
 
-> **완료** (`#33` · `#34`). 아래 경로는 더 이상 동작하지 않습니다.
+> **완료** (`#33` · `#34`, PyPI `0.3.0`). 아래 경로는 더 이상 동작하지 않습니다.
+> `v1.0.0` 은 이 목록을 다시 지우지 않습니다 — SemVer major 선언용 태그입니다.
 
 ### 4.1 이름 호환 폴백 제거
 
@@ -249,7 +257,7 @@ python -W error::DeprecationWarning your_script.py
 
 ### Q3: 언제까지 옛 이름을 쓸 수 있나요?
 
-**1.0.0 부터는 쓸 수 없습니다.** `PyKis` · `PYKIS_*` · 루트 내부 타입 import 는
+**0.3.0 부터는 쓸 수 없습니다.** `PyKis` · `PYKIS_*` · 루트 내부 타입 import 는
 제거되었습니다. `VmKis` · `VMKIS_*` · `from vmkis.types import …` 로 고치세요.
 
 ### Q4: 업스트림은 계속 유지되나요?

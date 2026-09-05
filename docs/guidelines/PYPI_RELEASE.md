@@ -1,7 +1,7 @@
 # PyPI 배포 가이드 (vm-stock-kis)
 
-**작성일**: 2026-08-27
-**대상**: 최초 배포자 / 릴리스 담당자
+**작성일**: 2026-08-27 · **갱신**: 2026-09-05 (`0.3.0` 게시 이후)
+**대상**: 릴리스 담당자
 **전제**: 이 저장소는 `hatchling` + `hatch-vcs` 로 빌드하며, **버전은 git 태그에서 자동 생성**됩니다.
 
 ---
@@ -10,7 +10,7 @@
 
 | 항목 | 상태 |
 |------|------|
-| 배포명 | `vm-stock-kis` (PyPI/TestPyPI 모두 **미등록 = 선점 가능**, 2026-08-27 확인) |
+| 배포명 | `vm-stock-kis` — PyPI·TestPyPI **등록됨** ([PyPI](https://pypi.org/project/vm-stock-kis/)) |
 | 임포트명 | `vmkis` (`src/vmkis`) |
 | 빌드 백엔드 | `hatchling` (`pyproject.toml`) |
 | 버전 소스 | git 태그 (`[tool.hatch.version] source = "vcs"`) |
@@ -18,9 +18,12 @@
 | 인증 방식 | Trusted Publishing (OIDC) — `pypa/gh-action-pypi-publish`, `permissions: id-token: write` |
 
 > **중요**: 버전이 태그에서 나오므로, **태그가 정확히 찍힌 커밋에서만** PyPI에 올릴 수 있는
-> 버전(`2.2.0`)이 나옵니다. 태그 이후 커밋에서 빌드하면
-> `2.1.6.post1.dev5+g11ea7787f` 처럼 **로컬 버전 식별자(`+...`)** 가 붙고,
+> 버전(`1.0.0`)이 나옵니다. 태그 이후 커밋에서 빌드하면
+> `0.3.0.post1.dev5+g11ea7787f` 처럼 **로컬 버전 식별자(`+...`)** 가 붙고,
 > **PyPI는 로컬 버전이 붙은 파일을 거부**합니다.
+
+게시된 태그·노트는 GitHub Releases 와 [CHANGELOG.md](../../CHANGELOG.md) 를 보세요.
+다음 major 는 `v1.0.0` 태그 세션에서 찍습니다 ([PYPI skill](../../.cursor/skills/pypi-release/SKILL.md)).
 
 ---
 
@@ -40,9 +43,14 @@
 API 토큰을 저장소 시크릿에 넣지 않고, GitHub Actions가 OIDC로 신원을 증명하는 방식입니다.
 이 저장소의 `publish.yml`은 이미 이 방식으로 작성되어 있습니다.
 
-### 2-1. PyPI 쪽 (프로젝트가 아직 없으므로 "pending publisher")
+### 2-1. PyPI 쪽 (이미 등록된 프로젝트)
 
-<https://pypi.org/manage/account/publishing/> 에서 **Add a new pending publisher**:
+프로젝트가 **없을 때만** pending publisher 를 씁니다. `vm-stock-kis` 는 이미
+게시됐으므로 <https://pypi.org/manage/project/vm-stock-kis/settings/publishing/>
+에서 Trusted Publisher 가 `visualmoney/vm-stock-kis` · `publish.yml` · `pypi`
+환경과 맞는지 확인하면 됩니다.
+
+최초 선점 때 쓰던 pending 표 (참고):
 
 | 필드 | 값 |
 |------|-----|
@@ -135,8 +143,8 @@ PyPI는 **같은 버전 번호를 재업로드할 수 없고, 삭제해도 그 �
 
 | 태그 | 판정 | 업로드 대상 | GitHub Release |
 |------|------|-------------|----------------|
-| `v2.2.0rc1`, `v2.2.0a1`, `v2.2.0b1` | 사전 릴리스 | **TestPyPI** | 생성 안 함 |
-| `v2.2.0` | 정식 | **PyPI** | 생성 |
+| `v1.0.0rc1`, `v1.0.0a1`, `v1.0.0b1` | 사전 릴리스 | **TestPyPI** | 생성 안 함 |
+| `v1.0.0` | 정식 | **PyPI** | 생성 |
 
 두 잡 모두 `startsWith(github.ref, 'refs/tags/')` 조건이 있습니다. 브랜치에서 빌드하면
 hatch-vcs가 로컬 버전 식별자(`+g1234abc`)를 붙이고 인덱스가 그런 파일을 거부하므로,
@@ -145,8 +153,8 @@ hatch-vcs가 로컬 버전 식별자(`+g1234abc`)를 붙이고 인덱스가 그�
 ### 실행
 
 ```bash
-git tag -a v2.2.0rc1 -m "TestPyPI rehearsal"
-git push origin v2.2.0rc1
+git tag -a v1.0.0rc1 -m "TestPyPI rehearsal"
+git push origin v1.0.0rc1
 ```
 
 Actions 탭에서 `Build & verify` → `Publish to TestPyPI` 가 도는 것을 확인합니다.
@@ -174,12 +182,12 @@ VIRTUAL_ENV=/tmp/vmkis-test uv pip install \
 리허설 태그는 남겨도 무해하지만, 지우려면 원격까지 지웁니다:
 
 ```bash
-git push --delete origin v2.2.0rc1
-git tag -d v2.2.0rc1
+git push --delete origin v1.0.0rc1
+git tag -d v1.0.0rc1
 ```
 
-> 태그 형식 주의: `v2.2.0-rc1` 처럼 붙임표를 쓰면 PEP 440 정규화 결과가 `2.2.0rc1` 이 되어
-> "Tag matches built version" 검사에서 문자열 비교가 실패합니다. **`v2.2.0rc1`** 형태로 쓰세요.
+> 태그 형식 주의: `v1.0.0-rc1` 처럼 붙임표를 쓰면 PEP 440 정규화 결과가 `1.0.0rc1` 이 되어
+> "Tag matches built version" 검사에서 문자열 비교가 실패합니다. **`v1.0.0rc1`** 형태로 쓰세요.
 
 ## 5. 실제 배포
 
@@ -190,8 +198,8 @@ git checkout main && git pull
 # 2) CI 통과 확인 (테스트/린트/커버리지)
 
 # 3) 태그 생성 및 push  → publish.yml 이 자동 실행됨
-git tag -a v2.2.0 -m "Release 2.2.0"
-git push origin v2.2.0
+git tag -a v1.0.0 -m "Release 1.0.0"
+git push origin v1.0.0
 ```
 
 이후 GitHub → Actions → **"Publish"** 워크플로에서 진행 상황을 봅니다.
@@ -233,7 +241,7 @@ VIRTUAL_ENV=/tmp/vmkis-prod /tmp/vmkis-prod/bin/python -c \
 | `400 File already exists` | 그 버전은 영구히 사용 불가. 버전을 올려서 다시 배포 |
 | README가 깨짐 | `twine check` 로 사전 검증. `readme = "README.md"` 이므로 GFM 확장 문법 주의 |
 | 버전이 `0.0.0` | git 메타데이터 없이 빌드됨(shallow clone/tarball). `fetch-depth: 0` 필요 |
-| 이름이 선점됨 | `vm-stock-kis` 는 2026-08-27 기준 미등록. 늦어지면 선점 위험 → 조기 선점 배포 고려 |
+| 이름이 선점됨 | 다른 배포명을 쓰거나 소유권 이전을 협의 |
 
 ---
 

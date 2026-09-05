@@ -17,6 +17,24 @@
 
 ---
 
+## [1.0.0] — 2026-09-05
+
+### 변경 (Breaking)
+
+- `vmkis.client.exceptions.KisNotFoundError` 별칭을 제거합니다. HTTP 404 는
+  `KisHTTPNotFoundError`, 조회 결과 없음은 `vmkis.exceptions.KisNotFoundError`
+  만 씁니다 (#164)
+
+### 수정
+
+- `SIMPLEKIS_GUIDE` 를 `simple.py` 시그니처·필드명에 맞춥니다 (#163)
+- 0.3.0 Breaking·Stable 내러티브와 SemVer 한 줄을 안정성·마이그레이션 문서에 맞춥니다 (#164)
+- 모의 잔고 `OPSQ2000` leftover 를 예제 README 에 안내합니다 (#164)
+- `PYPI_RELEASE` 예시를 0.3.0 게시 이후로 고칩니다 (#164)
+- README·EXTENDING_API 에 `#100` B(현물 · `fetch()` · 전량 codegen 없음)를 재고지합니다 (#164)
+
+---
+
 ## [0.3.0] — 2026-09-05
 
 ### 변경 (Breaking)

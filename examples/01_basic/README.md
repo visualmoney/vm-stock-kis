@@ -78,4 +78,10 @@ python examples/01_basic/realtime_orderbook.py
 - **실계좌 주문**: `ALLOW_LIVE_TRADES=1` 환경변수 필요
 - **모의투자 권장**: `mode: "paper"` 로 모의투자에서 먼저 검증하세요
 - **`configs/account_profiles.yaml` 보관**: 절대 커밋하지 마세요 (`.gitignore` 에 있습니다)
+- **모의 잔고·계좌 조회 (`OPSQ2000`)**: `get_balance.py` · `account_lookups.py` 가
+  `KisAPIError` `OPSQ2000` / `INVALID_CHECK_ACNO` 로 끝나면, 장 닫힘이 아니라
+  **모의 앱이 그 CANO(계좌번호)를 거부**한 경우가 많습니다. YAML 의
+  `account_no`·`product_code` 가 KIS 모의 계좌와 일치하는지 확인하세요.
+  `#157` 필수 연기(시세·연결)에는 잔고·계좌가 들어 있지 않습니다 — leftover.
+  실측 메모: `docs/dev_logs/2026-09-05_36`–`39_*.md`.
 - **실시간 예제**: 종료 시 Enter를 눌러 구독을 해제하세요

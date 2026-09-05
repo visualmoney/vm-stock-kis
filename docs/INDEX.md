@@ -96,6 +96,7 @@
 | [reports/2026-08-30_EN_DOCS_STAGES](reports/2026-08-30_EN_DOCS_STAGES.md) | 영문 문서를 다시 늘릴 때의 **단계별 범위**. 조건은 없습니다 |
 | [reports/2026-09-05_WIKI_TOC](reports/2026-09-05_WIKI_TOC.md) | Wiki Tutorial 상세 목차. **포인터 유지** (`#145`) |
 | [reports/2026-09-05_ARCHITECTURE_REVIEW](reports/2026-09-05_ARCHITECTURE_REVIEW.md) | 아키텍트 검토. 구조는 유지, 문서를 한 그림으로 |
+| [reports/2026-09-05_V030_TO_V100_REVIEW](reports/2026-09-05_V030_TO_V100_REVIEW.md) | v0.3.0→v1.0.0 전. SimpleKIS 예제 보류, P0–P2 |
 
 ## 그 밖에
 

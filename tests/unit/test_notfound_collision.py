@@ -8,9 +8,9 @@
 문제는 이름이 겹친다는 것 자체가 아니라, **공개 모듈 `vmkis.exceptions` 가
 한 번도 발생하지 않는 쪽(HTTP 404)을 내보내고 있었다**는 것이다. 공개 API 대로
 잡은 사용자의 핸들러가 절대 실행되지 않았다.
-"""
 
-import warnings
+`client.exceptions.KisNotFoundError` 별칭은 제거됐다 (#164).
+"""
 
 import pytest
 
@@ -49,24 +49,23 @@ class TestTheTwoClassesAreDistinct:
         assert not issubclass(KisHTTPNotFoundError, KisNotFoundError)
 
 
-class TestDeprecatedAlias:
-    def test_old_client_path_still_works_with_warning(self):
+class TestClientPathHasNoNotFoundAlias:
+    def test_old_client_path_raises(self):
+        """`vmkis.client.exceptions.KisNotFoundError` 별칭은 제거됐다 (#164)."""
         from vmkis.client import exceptions as ce
 
-        with pytest.warns(DeprecationWarning, match="KisHTTPNotFoundError"):
-            assert ce.KisNotFoundError is KisHTTPNotFoundError
+        with pytest.raises(AttributeError):
+            _ = ce.KisNotFoundError
 
-    def test_alias_is_not_in_all(self):
-        """`__all__` 에 두면 `import *` 가 옛 이름을 계속 퍼뜨린다."""
+    def test_http_name_remains(self):
         from vmkis.client import exceptions as ce
 
         assert "KisNotFoundError" not in ce.__all__
         assert "KisHTTPNotFoundError" in ce.__all__
+        assert ce.KisHTTPNotFoundError is KisHTTPNotFoundError
 
     def test_unknown_attribute_still_raises(self):
         from vmkis.client import exceptions as ce
 
         with pytest.raises(AttributeError):
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                _ = ce.NoSuchThing
+            _ = ce.NoSuchThing
