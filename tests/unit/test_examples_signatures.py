@@ -311,3 +311,18 @@ def test_flat_schema_checker_catches_the_original_defect() -> None:
 
     assert hits, "검사기가 #111 의 원래 결함을 못 잡습니다"
     assert 'id: "YOUR_ID"' in hits[0]
+
+
+def test_hello_world_calls_create_client() -> None:
+    """#152. 첫 연결 예제가 스텁으로 되돌아가면 실패합니다."""
+    text = (EXAMPLES / "01_basic" / "hello_world.py").read_text(encoding="utf-8")
+
+    assert "create_client(" in text
+    assert "Hello from VM-Stock-KIS example" not in text
+
+
+def test_hello_world_stub_is_caught() -> None:
+    stub = 'print("Hello from VM-Stock-KIS example")\n'
+
+    assert "create_client(" not in stub
+    assert "Hello from VM-Stock-KIS example" in stub
