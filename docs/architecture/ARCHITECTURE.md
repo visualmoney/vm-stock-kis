@@ -54,11 +54,17 @@ Balance: TypeAlias = _KisIntegrationBalance
 Order: TypeAlias = _KisOrder
 Chart: TypeAlias = _KisChart
 Orderbook: TypeAlias = _KisOrderbook
-MarketInfo: TypeAlias = _KisMarketInfo
+MarketInfo: TypeAlias = _KisMarketType
+MarketType: TypeAlias = _KisMarketType
 TradingHours: TypeAlias = _KisTradingHours
 
-__all__ = ["Quote", "Balance", "Order", "Chart", "Orderbook", "MarketInfo", "TradingHours"]
+__all__ = [
+    "Quote", "Balance", "Order", "Chart", "Orderbook",
+    "MarketInfo", "MarketType", "TradingHours",
+]
 ```
+
+`MarketType` 은 `public_types` 에만 있습니다. 루트 `__all__` 은 재export 하지 않습니다.
 
 ```python
 # src/vmkis/__init__.py
@@ -166,8 +172,9 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    **이 불변식은 기계가 지킵니다** ([#50](https://github.com/visualmoney/vm-stock-kis/issues/50)).
    `pyproject.toml` 의 `[tool.importlinter]` 에 계약 2개가 있고 CI 의 `lint` 잡이
    `lint-imports` 로 검사합니다. 계약이 덮는 것은 **해소된 위 두 간선뿐**입니다 —
-   `responses → client` 와 `api ↔ adapter` 는 의도적이라 넣지 않았고,
-   `event → api` 는 아직 판정되지 않았습니다(불변식 4번).
+   `responses → client` 와 `api ↔ adapter` · `api ↔ event` 는 의도적이라
+   넣지 않았습니다. `event → api` 는 2026-08-29 에 의도적으로 판정했습니다
+   (불변식 4번, [#63](https://github.com/visualmoney/vm-stock-kis/issues/63)).
 
    계약을 넣으면서 **세 번째 역방향 간선이 드러났습니다.** `utils/diagnosis.py` 가
    `import vmkis` 로 루트 파사드를 모듈 레벨에서 끌어오고 있었습니다. 루트는
@@ -268,55 +275,36 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 
 ### 전체 데이터 흐름도
 
+§1 허브-스포크와 같은 그림입니다. 하향 계층이 아닙니다.
+
+JSON(`KisAuth` → `VmKis("secret.json")`)과 YAML(`create_client`) 둘 다
+유효합니다. `VmKis` 경로에는 JSON만 넘깁니다.
+
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│                      사용자 코드                                   │
-│  kis = VmKis("secret.json")                                      │
-│  stock = kis.stock("000660")                                     │
-│  quote = stock.quote()                                           │
-│  kis.account().balance()                                         │
-└──────────────────────┬───────────────────────────────────────────┘
-                       │
-        ┌──────────────┴──────────────┐
-        │                             │
-┌───────▼──────────────────┐  ┌──────▼──────────────────┐
-│  Scope Layer (API 진입점) │  │  WebSocket (실시간)    │
-│  - account()             │  │  - on_price()          │
-│  - stock()               │  │  - on_execution()      │
-│  - trading_hours()       │  │  - on_orderbook()      │
-└───────┬──────────────────┘  └──────┬──────────────────┘
-        │                             │
-        └──────────────┬──────────────┘
-                       │
-        ┌──────────────▼──────────────┐
-        │  Adapter Layer (기능 추가)   │
-        │  - KisQuotableProductMixin  │
-        │  - KisOrderableOrderMixin   │
-        │  - KisRealtimeOrderable...  │
-        └──────────────┬──────────────┘
-                       │
-        ┌──────────────▼──────────────┐
-        │  VmKis Client (중앙 관리)    │
-        │  - HTTP Session 관리        │
-        │  - WebSocket 관리           │
-        │  - Token 관리               │
-        │  - Rate Limiting            │
-        └──────────────┬──────────────┘
-                       │
-        ┌──────────────┴──────────────┐
-        │                             │
-┌───────▼──────────────────┐  ┌──────▼──────────────────┐
-│  HTTP Client             │  │  WebSocket Client      │
-│  (requests library)      │  │  (websocket-client)    │
-└───────┬──────────────────┘  └──────┬──────────────────┘
-        │                             │
-        └──────────────┬──────────────┘
-                       │
-        ┌──────────────▼──────────────┐
-        │  KIS OpenAPI Servers       │
-        │  - Live Domain (실전)       │
-        │  - Paper Domain (모의)      │
-        └───────────────────────────┘
+                         ┌──────────────────────────┐
+                         │   사용자 코드              │
+                         │  kis = VmKis("secret.json")│
+                         │  또는 create_client(...)   │
+                         │  stock = kis.stock(...)    │
+                         │  stock.quote()             │
+                         │  stock.on("price", ...)    │
+                         └───────────┬────────────────┘
+                                     │
+                         ┌───────────▼────────────────┐
+                         │   VmKis (kis.py) — 허브     │
+                         └───────┬────────────────────┘
+              조립               │
+        ┌───────────┬────────────┼────────────┐
+        ▼           ▼            ▼            ▼
+   scope/      adapter/        api/        event/
+        │           │            │            │
+        └───────────┴──── responses/ ──► client/
+                                    │
+                                  utils/
+                                     │
+                          HTTP / WebSocket
+                                     │
+                          KIS OpenAPI (실전 · 모의)
 ```
 
 ---
@@ -332,9 +320,9 @@ src/vmkis/
 ├── kis.py                # VmKis 메인 클래스
 ├── logging.py            # 로깅 유틸리티
 ├── types.py              # 고급 사용자용 타입 (약 100개 export)
-├── public_types.py       # 공개 타입 별칭 (9개) ← 일반 사용자는 여기
+├── public_types.py       # 공개 타입 별칭. MarketType 은 여기만
 │
-├── api/                  # API 계층 (REST, WebSocket)
+├── api/                  # TR 구현과 응답 타입
 │   ├── auth/             # 인증 관련 API
 │   │   └── token.py
 │   ├── stock/            # 주식 관련 API
@@ -348,12 +336,12 @@ src/vmkis/
 │       ├── order_execution.py  # 실시간 체결
 │       └── order_book.py # 실시간 호가
 │
-├── scope/                # Scope 계층 (API 진입점)
+├── scope/                # 사용자 진입. kis.stock / kis.account
 │   ├── base.py          # Scope 베이스 클래스
 │   ├── account.py       # 계좌 Scope
 │   └── stock.py         # 주식 Scope
 │
-├── adapter/              # Adapter 계층 (기능 믹스인)
+├── adapter/              # Mixin. quote · order · websocket
 │   ├── product/          # 상품 관련 어댑터
 │   │   ├── quote.py
 │   │   └── ...
@@ -366,7 +354,7 @@ src/vmkis/
 │       ├── execution.py
 │       └── ...
 │
-├── client/               # Client 계층 (저수준 통신)
+├── client/               # HTTP · 웹소켓 · 토큰 · 엔드포인트
 │   ├── auth.py          # 인증 정보 관리 (KisAuth)
 │   ├── account.py       # 계좌번호 관리
 │   ├── appkey.py        # 앱키 관리
@@ -379,7 +367,7 @@ src/vmkis/
 │   ├── page.py          # 페이지 네이션
 │   └── ...
 │
-├── responses/            # Response Transform 계층
+├── responses/            # 동적 응답 변환. client 타입 위에 성립
 │   ├── dynamic.py       # 동적 타입 시스템
 │   ├── types.py         # KisType 구현체들
 │   ├── response.py      # 응답 베이스 클래스
@@ -387,7 +375,7 @@ src/vmkis/
 │   ├── exceptions.py    # 응답 레벨 예외
 │   └── ...
 │
-├── event/                # Event 계층
+├── event/                # 구독 티켓 · 필터
 │   ├── handler.py       # 이벤트 핸들러 기반 클래스
 │   ├── subscription.py  # 이벤트 구독 관련
 │   └── filters/         # 이벤트 필터
@@ -396,7 +384,7 @@ src/vmkis/
 │       ├── order.py
 │       └── ...
 │
-└── utils/                # Utility 계층
+└── utils/                # 상위 그룹을 import 하지 않음
     ├── rate_limit.py    # Rate Limiting
     ├── thread_safe.py   # Thread-safe 데코레이터
     ├── repr.py          # 커스텀 repr 구현
@@ -437,12 +425,12 @@ class VmKis:
     @property websocket                 # WebSocket 클라이언트
 ```
 
-### 2. Scope 계층 (진입점)
+### 2. Scope (진입점)
 
 **클래스**:
 
-- `KisAccountScope`: 계좌 관련 API의 진입점
-- `KisStockScope`: 주식 관련 API의 진입점
+- `KisAccount`: 계좌 진입. base protocol + adapter mixin
+- `KisStock`: 주식 진입. base protocol + adapter mixin
 
 **역할**:
 
@@ -458,7 +446,7 @@ stock = kis.stock("000660")       # KisStockScope
 quote = stock.quote()             # KisQuote
 ```
 
-### 3. Adapter 계층 (Mixin 기능)
+### 3. Adapter (Mixin)
 
 **목적**: Scope에 기능을 동적으로 추가
 
@@ -473,7 +461,7 @@ class KisStock(KisStockScope, KisQuotableProductMixin, ...):
     pass
 ```
 
-### 4. Response Transform 계층
+### 4. Response Transform
 
 **시스템**: 동적 타입 시스템 (`KisType`, `KisObject`)
 
@@ -924,8 +912,8 @@ tests/
 
 ### Coverage 목표
 
-- 최소 80% 코드 커버리지
-- 핵심 기능 100%
+목표는 문서에 박지 않습니다. 현재 값은
+`uv run pytest -m 'not requires_api and not performance' --cov` 로 봅니다.
 
 ---
 

@@ -107,6 +107,10 @@ with VmKis("secret.json", keep_token=True) as kis:
 
 ## 인증 관리
 
+JSON(`KisAuth` → `VmKis("secret.json")`)과 YAML(`create_client`) 둘 다
+유효합니다. `VmKis` 경로에는 JSON만 넘깁니다. YAML 설정은
+[QUICKSTART](../../QUICKSTART.md) 의 `create_client` 를 보세요.
+
 ### 1. 파일 기반 인증 (권장)
 
 #### Step 1: 인증 정보 파일 생성
@@ -295,15 +299,15 @@ from datetime import date
 stock = kis.stock("000660")
 
 # 일봉
-daily_chart = stock.chart(period="D", end_date=date(2024, 12, 10))
+daily_chart = stock.chart(period="day", end=date(2024, 12, 10))
 for bar in daily_chart:
     print(f"{bar.date}: {bar.open} -> {bar.close}")
 
 # 주봉
-weekly_chart = stock.chart(period="W")
+weekly_chart = stock.chart(period="week")
 
 # 월봉
-monthly_chart = stock.chart(period="M")
+monthly_chart = stock.chart(period="month")
 ```
 
 ---

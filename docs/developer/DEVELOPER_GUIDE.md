@@ -154,7 +154,7 @@ kis = VmKis(
 # 패턴 4: 모의투자
 kis = VmKis(
     "real_secret.json",
-    "virtual_secret.json",
+    "paper_secret.json",
     keep_token=True
 )
 ```
@@ -376,7 +376,7 @@ class KisStock(
     # Mixin에서 상속한 메서드
     def quote(self):         # 시세 조회
     def chart(self):         # 차트 조회
-    def on_price(callback):  # 실시간 시세
+    def on(event, callback):  # 실시간. stock.on("price", ...)
 ```
 
 ---
@@ -721,7 +721,7 @@ def quote(self, extended: bool = False) -> KisQuote:
         70000
 
     Note:
-        실시간 시세는 on_price() 메서드를 사용하세요.
+        실시간 시세는 stock.on("price", ...) 를 사용하세요.
     """
     pass
 ```
@@ -873,7 +873,7 @@ for symbol in symbols[:40]:
 
 ```bash
 # 모드 가상 테스트 환경
-kis = VmKis("secret.json", "virtual_secret.json")
+kis = VmKis("secret.json", "paper_secret.json")
 
 # 모의투자로 테스트 후 실전 전환
 ```
