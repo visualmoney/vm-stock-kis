@@ -1,8 +1,8 @@
 blank_issues_enabled: true
 contact_links:
   - name: 📄 Docs
-    url: https://github.com/visualmoney/vm-stock-kis/wiki
-    about: VmKis 라이브러리의 문서
+    url: https://github.com/visualmoney/vm-stock-kis/blob/main/docs/INDEX.md
+    about: 저장소 문서 목록
   - name: 📄 한국투자증권 API 문서
     url: https://apiportal.koreainvestment.com/apiservice/oauth2
     about: 라이브러리에서 지원하지 않는 기능을 찾고 계신가요?

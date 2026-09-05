@@ -12,7 +12,7 @@ body:
     attributes:
       label: 빠른 문제 해결을 위해 다음을 확인했나요?
       description: >
-        VmKis [Docs](https://github.com/visualmoney/vm-stock-kis/wiki)나 [Issues](https://github.com/visualmoney/vm-stock-kis/issues)에서 유사한 버그가 존재하는지 확인해주세요.
+        VmKis [Docs](https://github.com/visualmoney/vm-stock-kis/blob/main/docs/INDEX.md)나 [Issues](https://github.com/visualmoney/vm-stock-kis/issues)에서 유사한 버그가 존재하는지 확인해주세요.
       options:
         - label: >
             VmKis [Issues](https://github.com/visualmoney/vm-stock-kis/issues)에서 검색했지만 유사한 버그를 찾지 못했습니다.
