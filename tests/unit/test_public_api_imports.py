@@ -1,14 +1,16 @@
-import warnings
+"""루트에서 내부 타입을 가져오면 실패하는지 봅니다. (#34)"""
+
+from __future__ import annotations
+
+import pytest
 
 
 def test_public_types_and_core_imports():
-    # core class
     from vmkis import KisAuth, VmKis
 
     assert VmKis is not None
     assert KisAuth is not None
 
-    # public types
     from vmkis import Balance, Chart, Order, Orderbook, Quote
 
     assert Quote is not None
@@ -18,16 +20,20 @@ def test_public_types_and_core_imports():
     assert Orderbook is not None
 
 
-def test_deprecated_import_warns():
-    # importing a legacy symbol from package root should warn and still work
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        try:
-            # 이 import 자체가 테스트 대상이다. 값을 쓰지 않는다고 지우면
-            # 테스트가 아무것도 검증하지 않게 된다.
-            from vmkis import KisObjectProtocol  # noqa: F401
-        except Exception:
-            # if types module missing, just ensure warning was raised
-            pass
+def test_deprecated_root_import_is_gone():
+    with pytest.raises(ImportError):
+        from vmkis import KisObjectProtocol  # noqa: F401
 
-        assert any(isinstance(x.message, DeprecationWarning) or x.category is DeprecationWarning for x in w)
+
+def test_types_module_still_exports_protocols():
+    from vmkis.types import KisObjectProtocol
+
+    assert KisObjectProtocol is not None
+
+
+def test_pykis_root_alias_is_gone():
+    """#33 과 같은 표면. 루트 __getattr__ 이 없어지면 같이 사라집니다."""
+    import vmkis
+
+    with pytest.raises(AttributeError):
+        _ = vmkis.PyKis

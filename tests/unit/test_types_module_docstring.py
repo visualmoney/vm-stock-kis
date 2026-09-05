@@ -32,10 +32,11 @@ def test_types_docstring_does_not_name_a_release_as_current() -> None:
     )
 
 
-def test_compat_table_still_says_00x_is_active() -> None:
+def test_compat_table_says_root_path_is_gone() -> None:
     text = TYPES.read_text(encoding="utf-8")
 
-    assert re.search(r"0\.0\.x\s*\|\s*✅\s*활성", text), "호환 경로가 아직 살아 있다는 표 행이 사라졌습니다"
+    assert re.search(r"1\.0\.0\+\s*\|\s*✅\s*적용", text), "1.0.0+ 적용 행이 없습니다"
+    assert not re.search(r"0\.0\.x\s*\|\s*✅\s*활성", text), "0.0.x 활성 행이 아직 있습니다"
 
 
 def test_stale_current_line_is_caught() -> None:

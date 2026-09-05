@@ -481,7 +481,7 @@ print(repr(orders))
 ### 1. 실시간 시세
 
 ```python
-from vmkis import KisSubscriptionEventArgs, KisRealtimePrice
+from vmkis.types import KisSubscriptionEventArgs, KisRealtimePrice
 
 stock = kis.stock("000660")
 

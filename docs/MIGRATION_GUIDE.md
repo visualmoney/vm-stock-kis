@@ -12,7 +12,7 @@
 1. [이름 변경](#1-이름-변경)
 2. [버전 번호가 낮아지는 이유](#2-버전-번호가-낮아지는-이유)
 3. [공개 API 축소](#3-공개-api-축소)
-4. [1.0.0 예정 Breaking Changes](#4-100-예정-breaking-changes)
+4. [1.0.0 Breaking Changes](#4-100-breaking-changes)
 5. [FAQ](#5-faq)
 
 ---
@@ -67,25 +67,21 @@ git ls-files '*.py' | xargs sed -i -e 's/PyKis/VmKis/g' -e 's/\bpykis\b/vmkis/g'
 > Windows PowerShell의 `-replace`는 **대소문자를 무시**하므로 `PyKis`와 `pykis`를
 > 구분하지 못합니다. Git Bash의 GNU sed를 쓰세요.
 
-### 하위 호환 폴백 (1.0.0까지)
+### 이름 호환 폴백 (제거됨)
 
-당장 고치지 않아도 아래 셋은 `DeprecationWarning`과 함께 동작합니다.
+1.0.0 에서 아래 셋은 **제거**되었습니다 (`#33`).
 
-| 대상 | 동작 |
+| 대상 | 지금 |
 |---|---|
-| `vmkis.PyKis` | `VmKis`와 **동일 객체**를 반환합니다. `isinstance` 검사도 그대로 동작합니다. |
-| `~/.pykis` | `~/.vmkis`가 없고 예전 경로만 있으면 계속 사용합니다 (토큰 캐시 보존). |
-| `PYKIS_*` | `VMKIS_*`가 없으면 폴백합니다. |
+| `vmkis.PyKis` | `AttributeError`. `VmKis` 를 쓰세요 |
+| `~/.pykis` | 무시됩니다. `~/.vmkis` 만 씁니다 |
+| `PYKIS_*` | 무시됩니다. `VMKIS_*` 만 씁니다 |
 
 ```python
-from vmkis import PyKis   # ❌ 동작하지 않습니다 (__all__에 없음)
-
 import vmkis
-kis = vmkis.PyKis(...)    # ✅ 동작합니다 (DeprecationWarning)
+# vmkis.PyKis(...)  → AttributeError
+kis = vmkis.VmKis(...)
 ```
-
-`from vmkis import PyKis` 형태가 안 되는 것은 의도된 것입니다. `__all__`에 넣으면
-`from vmkis import *`가 옛 이름을 계속 퍼뜨립니다.
 
 ### `pykis` 호환 패키지는 제공하지 않습니다
 
@@ -142,13 +138,13 @@ from vmkis import (
 )
 ```
 
-루트에서 사라진 이름은 `DeprecationWarning`과 함께 `vmkis.types`로 위임됩니다.
+루트에서 사라진 내부 이름은 더 이상 위임되지 않습니다 (`#34`).
 
 ```python
-# ⚠️ 동작하지만 경고 (1.0.0에서 제거)
-from vmkis import KisObjectProtocol
+# ❌ ImportError — 아래는 더 이상 동작하지 않습니다
+# from vmkis import KisObjectProtocol
 
-# ✅ 권장
+# ✅
 from vmkis.types import KisObjectProtocol
 from vmkis.adapter.product.quote import KisQuotableProductMixin
 ```
@@ -204,36 +200,37 @@ order = simple.place_order("005930", qty=10, price=60000)   # price 생략 시 �
 
 ---
 
-## 4. 1.0.0 예정 Breaking Changes
+## 4. 1.0.0 Breaking Changes
 
-> 아래는 **1.0.0 예정** 사항입니다. 0.0.x에서는 경고만 나옵니다.
+> **완료** (`#33` · `#34`). 아래 경로는 더 이상 동작하지 않습니다.
 
 ### 4.1 이름 호환 폴백 제거
 
-`vmkis.PyKis`, `~/.pykis` 작업공간 폴백, `PYKIS_*` 환경변수 폴백이 제거됩니다.
+`vmkis.PyKis`, `~/.pykis` 작업공간 폴백, `PYKIS_*` 환경변수 폴백이 제거되었습니다.
+`VmKis`, `~/.vmkis`, `VMKIS_*` 만 씁니다.
 
 ### 4.2 루트 deprecated import 경로 제거
 
 ```python
-# ❌ AttributeError
-from vmkis import KisObjectProtocol
+# ❌ ImportError
+# from vmkis import KisObjectProtocol
 
 # ✅
 from vmkis.types import KisObjectProtocol
 ```
 
-### 4.3 `types.py` 역할 정리
+### 4.3 `types.py` 역할
 
 `vmkis.types`는 내부 Protocol/고급 타입만 담습니다. 공개 타입은
 `vmkis.public_types` 또는 루트에서 가져오세요.
 
-### 지금 확인하는 방법
+### 확인
 
 ```bash
 python -W error::DeprecationWarning your_script.py
 ```
 
-경고가 하나도 없으면 1.0.0 대비가 끝난 것입니다.
+옛 경로를 쓰면 지금 바로 실패합니다.
 
 ---
 
@@ -252,8 +249,8 @@ python -W error::DeprecationWarning your_script.py
 
 ### Q3: 언제까지 옛 이름을 쓸 수 있나요?
 
-**1.0.0 전까지**입니다. 날짜는 정해져 있지 않습니다. `DeprecationWarning`이 보이면
-그때 고쳐 두세요.
+**1.0.0 부터는 쓸 수 없습니다.** `PyKis` · `PYKIS_*` · 루트 내부 타입 import 는
+제거되었습니다. `VmKis` · `VMKIS_*` · `from vmkis.types import …` 로 고치세요.
 
 ### Q4: 업스트림은 계속 유지되나요?
 

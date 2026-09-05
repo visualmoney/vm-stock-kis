@@ -61,12 +61,8 @@ VM-Stock-KIS 내부 타입 및 Protocol 정의
 
 | 버전 | 상태 | 설명 |
 |------|------|------|
-| 0.0.x | ✅ 활성 | `from vmkis import <내부타입>`이 DeprecationWarning과 함께 동작 |
-| 1.0.0+ | ❌ 제거 | 직접 import 불가. `vmkis.types` 등 명시적 경로만 |
-
-마이그레이션 가이드:
-- 지금: 기존 코드가 경고와 함께 계속 동작
-- 1.0.0: 루트 경로 제거, 명시적 경로 사용 필수
+| 0.x | ⚪ 지난 경고 구간 | 루트에서 내부 타입을 가져오면 경고가 났음 |
+| 1.0.0+ | ✅ 적용 | 루트 위임 없음. `from vmkis.types import …` 만 |
 
 자세한 내용은 docs/MIGRATION_GUIDE.md 를 보세요.
 

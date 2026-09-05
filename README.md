@@ -170,13 +170,13 @@ colorlog>=6.8.2
 `stock.quote()` 함수를 이용하여 국내주식 및 해외주식의 시세를 조회할 수 있습니다.
 
 ```python
-from vmkis import KisQuote
+from vmkis import Quote
 
 # 엔비디아의 상품 객체를 가져옵니다.
 stock = kis.stock("NVDA")
 
-quote: KisQuote = stock.quote()
-quote: KisQuote = stock.quote(extended=True) # 주간거래 시세
+quote: Quote = stock.quote()
+quote: Quote = stock.quote(extended=True) # 주간거래 시세
 
 # VmKis의 모든 객체는 repr을 통해 주요 내용을 확인할 수 있습니다.
 # 데이터를 확인하는 용도이므로 실제 프로퍼티 타입과 다를 수 있습니다.
@@ -220,12 +220,12 @@ KisForeignQuote(
 `account.balance()` 함수를 이용하여 예수금 및 보유 종목을 조회할 수 있습니다.
 
 ```python
-from vmkis import KisBalance
+from vmkis import Balance
 
 # 주 계좌 객체를 가져옵니다.
 account = kis.account()
 
-balance: KisBalance = account.balance()
+balance: Balance = account.balance()
 
 print(repr(balance)) # repr을 통해 객체의 주요 내용을 확인할 수 있습니다.
 ```
@@ -253,25 +253,25 @@ KisIntegrationBalance(
 `stock.order()`, `stock.buy()`, `stock.sell()`, `stock.modify()`, `stock.cancel()` 함수를 이용하여 매수/매도 주문 및 정정/취소를 할 수 있습니다.
 
 ```python
-from vmkis import KisOrder
+from vmkis import Order
 
 hynix = kis.stock("000660")
 account = kis.account()
 
 # SK하이닉스 1주 시장가 매수 주문
-order: KisOrder = hynix.buy(qty=1)
+order: Order = hynix.buy(qty=1)
 # SK하이닉스 1주 지정가 매수 주문
-order: KisOrder = hynix.buy(price=194700, qty=1)
+order: Order = hynix.buy(price=194700, qty=1)
 # SK하이닉스 전량 시장가 매도 주문
-order: KisOrder = hynix.sell()
+order: Order = hynix.sell()
 # SK하이닉스 전량 지정가 매도 주문
-order: KisOrder = hynix.sell(price=194700)
+order: Order = hynix.sell(price=194700)
 
 print(order.pending) # 미체결 주문인지 여부
 print(order.pending_order.pending_qty) # 미체결 수량
 
-order: KisOrder = order.modify(price=195000) # 단가 정정
-order: KisOrder = order.modify(qty=10) # 수량 정정
+order: Order = order.modify(price=195000) # 단가 정정
+order: Order = order.modify(qty=10) # 수량 정정
 
 order.cancel() # 주문 취소
 
@@ -285,7 +285,8 @@ for order in account.pending_orders():
 국내주식 및 해외주식의 실시간 체결가 조회는 `stock.on("price", callback)` 함수를 이용하여 수신할 수 있습니다.
 
 ```python
-from vmkis import KisRealtimePrice, KisSubscriptionEventArgs, KisWebsocketClient, VmKis
+from vmkis import VmKis
+from vmkis.types import KisRealtimePrice, KisSubscriptionEventArgs, KisWebsocketClient
 
 def on_price(sender: KisWebsocketClient, e: KisSubscriptionEventArgs[KisRealtimePrice]):
     print(e.response)
