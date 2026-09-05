@@ -44,8 +44,8 @@ Major.Minor.Patch-PreRelease+Metadata
 | 버전 | 라이프사이클 | 호환성 |
 |---|---|---|
 | 0.0.x | ⚪ 지난 판 (2026-08-28 ~ 08-29) | ⚠️ 0.x 구간이라 minor 도 Breaking 자리 |
-| **0.x** | 🟢 **현재** | ⚠️ 같음. 호환 폴백은 다음 major 직전까지 유지됩니다 |
-| 1.0.0 | 🟡 예정 | ⚠️ Breaking — 호환 경로 제거 |
+| **0.x** | 🟢 **현재** (태그 `v0.2.0` 계열) | 호환 폴백은 코드에서 이미 제거됨 (`#33` · `#34`) |
+| 1.0.0 | 🟡 태그 대기 | Breaking 반영 완료. Development Status Stable (`#35`) |
 
 > 이 표는 배포판 `vm-stock-kis` 의 것입니다. 업스트림 `python-kis` 의
 > 2.x 계열과는 **번호를 공유하지 않습니다.**
@@ -104,11 +104,11 @@ Breaking Change는 **기존 코드를 수정하지 않으면 작동하지 않게
 **예시**:
 
 ```python
-# 신규 경로 추가
-from vmkis.types import KisObjectProtocol  # 신규 경로
+# 신규 경로
+from vmkis.types import KisObjectProtocol
 
-# 기존 스타일 계속 작동 (경고 없음)
-from vmkis import KisObjectProtocol  # 기존 경로
+# 0.x 루트 위임은 1.0.0 에서 제거됨 — 아래는 더 이상 동작하지 않습니다
+# from vmkis import KisObjectProtocol
 ```
 
 #### 2️⃣ 경고 (0.x)
@@ -120,13 +120,11 @@ from vmkis import KisObjectProtocol  # 기존 경로
 **예시**:
 
 ```python
-# 0.x: Deprecation 경고
-from vmkis import KisObjectProtocol
+# 0.x 에서는 DeprecationWarning 이 났고, 1.0.0 에서는 ImportError 입니다
+# from vmkis import KisObjectProtocol
 
-# 출력:
-# DeprecationWarning: from vmkis import KisObjectProtocol is deprecated;
-# use 'from vmkis.types import KisObjectProtocol' instead.
-# This alias will be removed in a future major release.
+# 올바른 경로
+from vmkis.types import KisObjectProtocol
 ```
 
 #### 3️⃣ 제거 (1.0.0)
@@ -137,9 +135,8 @@ from vmkis import KisObjectProtocol
 **예시**:
 
 ```python
-# 1.0.0: Deprecation 경로 완전 제거
-from vmkis import KisObjectProtocol  # ❌ 에러!
-# AttributeError: module 'vmkis' has no attribute 'KisObjectProtocol'
+# 1.0.0: 루트 위임 제거 — 아래는 ImportError
+# from vmkis import KisObjectProtocol
 
 # ✅ 올바른 방식
 from vmkis.types import KisObjectProtocol
@@ -159,8 +156,8 @@ vm-stock-kis 0.0.1      이 배포명의 첫 릴리스 (2026-08)
 vm-stock-kis 0.x        경고 유지. 사용자 마이그레이션 기간
       │
       ▼
-vm-stock-kis 1.0.0      위 호환 경로 **완전 제거**
-                        Development Status → 5 - Production/Stable
+vm-stock-kis 1.0.0      위 호환 경로 **완전 제거** (#33 · #34)
+                        Development Status → 5 - Production/Stable (#35)
 ```
 
 > **버전이 2.1.6보다 낮아지는 것은 다운그레이드가 아닙니다.** 배포명이
@@ -232,8 +229,8 @@ quote = kis.stock("005930").quote()
 | 배포판 | 버전 | 상태 | 추천 |
 |---|---|---|---|
 | `python-kis` (업스트림) | 2.1.6 | 🟡 별개 프로젝트 | 이 포크와 무관하게 유지됩니다 |
-| **`vm-stock-kis`** | **0.x** | 🟡 베타 | ⚠️ 0.x 구간이므로 상한을 고정해 쓰세요 |
-| `vm-stock-kis` | 1.0.0 (예정) | ⚪ 미출시 | 호환 경로 제거 후 안정 선언 |
+| **`vm-stock-kis`** | **0.x** | 🟢 현재 태그 계열 | pip 설치 버전은 git 태그를 따릅니다 |
+| `vm-stock-kis` | 1.0.0 | 🟡 태그 대기 | 호환 경로 제거·Stable classifier 는 코드에 반영됨 |
 
 ### 6.2 업그레이드 계획
 
@@ -243,10 +240,10 @@ quote = kis.stock("005930").quote()
 2. pip install vm-stock-kis
 3. MIGRATION_GUIDE.md 의 이름 대조표대로 코드 치환
 
-⚠️ 0.x 를 쓰는 경우:
-1. requirements 에 상한을 두세요 (`vm-stock-kis>=0.0.1,<1.0.0`)
-2. DeprecationWarning 이 보이면 그때 고쳐 두세요.
-   1.0.0 에서 해당 경로가 사라집니다.
+⚠️ 0.x 에서 1.0.0 으로:
+1. `PyKis` → `VmKis`, `PYKIS_*` → `VMKIS_*`, `~/.pykis` → `~/.vmkis`
+2. `from vmkis import <내부타입>` → `from vmkis.types import …`
+3. 공개 타입(`Quote` 등)은 루트 그대로
 ```
 
 ---
@@ -255,11 +252,11 @@ quote = kis.stock("005930").quote()
 
 ### 7.1 버전별 지원 기간
 
-이 배포판은 아직 초기(0.x) 단계라 **정해진 지원 기간이 없습니다.**
-지원 대상은 항상 **최신 0.x** 입니다. 이전 버전으로는 백포트하지 않습니다.
+**1.0.0 이후** 지원 대상은 항상 **최신 major** 입니다. 이전 major 로는 백포트하지
+않습니다. 보안 패치는 [SECURITY.md](../../SECURITY.md) 절차를 따릅니다.
 
-1.0.0 이후에 지원 기간 정책을 정의합니다. 그전에 지원 기간을 약속하면
-지킬 수 없는 약속이 됩니다.
+minor · patch 는 최신 1.x 라인에만 나갑니다. 지원 기간을 “N개월”처럼 날짜로
+박지 않습니다 — 약속할 수 있는 것은 **어느 라인을 고치는가**뿐입니다.
 
 업스트림 [`Soju06/python-kis`](https://github.com/Soju06/python-kis) 의 지원
 정책은 이 문서의 대상이 아닙니다.
@@ -268,9 +265,9 @@ quote = kis.stock("005930").quote()
 
 | 지원 유형 | 내용 | 대상 |
 |---|---|---|
-| **일반 지원** | 버그 수정, 성능 개선 | 최신 0.x |
-| **보안 패치** | 보안 취약점 수정 | 최신 0.x ([SECURITY.md](../../SECURITY.md)) |
-| **하위 호환성** | 공개 API 시그니처 유지 | 0.x 구간 |
+| **일반 지원** | 버그 수정, 성능 개선 | 최신 1.x |
+| **보안 패치** | 보안 취약점 수정 | 최신 1.x ([SECURITY.md](../../SECURITY.md)) |
+| **하위 호환성** | 공개 API 시그니처 유지 | 같은 major |
 | **질문/이슈** | GitHub Issues | 지속 |
 
 ---
@@ -356,12 +353,13 @@ kis = VmKis("secret.json")
 전체 대조표와 호환 폴백 목록은
 [MIGRATION_GUIDE.md](../MIGRATION_GUIDE.md) 에 있습니다.
 
-### 9.2 0.x → 1.0.0 (예정)
+### 9.2 0.x → 1.0.0 (완료)
 
-- `vmkis.PyKis` 별칭 제거
-- `~/.pykis` 작업공간 폴백 제거
-- `PYKIS_*` 환경변수 폴백 제거
-- `from vmkis import <내부타입>` 루트 경로 제거
+- `vmkis.PyKis` 별칭 제거 (`#33`)
+- `~/.pykis` 작업공간 폴백 제거 (`#33`)
+- `PYKIS_*` 환경변수 폴백 제거 (`#33`)
+- `from vmkis import <내부타입>` 루트 경로 제거 (`#34`)
+- `Development Status` → `5 - Production/Stable` (`#35`)
 
 ---
 
@@ -434,8 +432,8 @@ Breaking Change 자리입니다. `vm-stock-kis>=0.0.1,<1.0.0` 처럼 상한을 �
 
 ### Q3: 1.0.0은 언제 나오나요?
 
-날짜를 정해 두지 않았습니다. 호환 폴백이 더 필요 없다고 판단되는 시점입니다.
-그때 `Development Status` 도 `5 - Production/Stable` 로 올립니다.
+호환 폴백 제거(`#33` · `#34`)와 Stable classifier(`#35`)는 코드에 반영됐습니다.
+태그는 git 에서 `v1.0.0` 을 찍을 때 나갑니다.
 
 ### Q4: Breaking Change 목록을 어디서 보나요?
 
@@ -452,6 +450,6 @@ Breaking Change 자리입니다. `vm-stock-kis>=0.0.1,<1.0.0` 처럼 상한을 �
 
 ---
 
-**마지막 업데이트**: 2026-08-28
+**마지막 업데이트**: 2026-09-05
 **검토 주기**: 매 메이저 버전
-**다음 검토**: 1.0.0 준비 시
+**다음 검토**: 다음 major 준비 시
