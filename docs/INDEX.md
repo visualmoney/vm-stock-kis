@@ -94,6 +94,8 @@
 | [reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR](reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md) | 공식 샘플과의 비교. API 커버리지 격차, 확장 전략 |
 | [reports/2026-08-30_DOCS_AUDIT](reports/2026-08-30_DOCS_AUDIT.md) | 마크다운 전수 조사. `#108` 문서 정리군의 근거 |
 | [reports/2026-08-30_EN_DOCS_STAGES](reports/2026-08-30_EN_DOCS_STAGES.md) | 영문 문서를 다시 늘릴 때의 **단계별 범위**. 조건은 없습니다 |
+| [reports/2026-09-05_WIKI_TOC](reports/2026-09-05_WIKI_TOC.md) | Wiki Tutorial 상세 목차. **포인터 유지** (`#145`) |
+| [reports/2026-09-05_ARCHITECTURE_REVIEW](reports/2026-09-05_ARCHITECTURE_REVIEW.md) | 아키텍트 검토. 구조는 유지, 문서를 한 그림으로 |
 
 ## 그 밖에
 
