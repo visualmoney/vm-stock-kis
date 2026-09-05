@@ -540,11 +540,23 @@ class VmKis:
 
         return f"token_{domain}_{self.appkey.id}_{hash}.json"
 
-    def _load_cached_token(self, token_dir: str | PathLike[str] | Path) -> None:
+    def _token_cache_dir(self, token_dir: str | PathLike[str] | Path) -> Path:
+        """토큰을 두는 디렉터리.
+
+        `create_client` 는 앱 이름 파일(`configs/token/app_paper_1.json`)을
+        `keep_token` 으로 넘깁니다. 예전 코드는 그걸 디렉터리로 `mkdir` 해서
+        파일이 이미 있으면 `FileExistsError` 가 났습니다 (#157).
+        """
         if not isinstance(token_dir, Path):
             token_dir = Path(token_dir)
-
         token_dir = token_dir.resolve()
+        if token_dir.suffix == ".json" or token_dir.is_file():
+            token_dir = token_dir.parent
+        token_dir.mkdir(parents=True, exist_ok=True)
+        return token_dir
+
+    def _load_cached_token(self, token_dir: str | PathLike[str] | Path) -> None:
+        token_dir = self._token_cache_dir(token_dir)
         paper_token_path = token_dir / self._get_hashed_token_name("live")
 
         if paper_token_path.exists():
@@ -572,11 +584,7 @@ class VmKis:
         domain: Literal["live", "paper"] | None = None,
         force: bool = False,
     ):
-        if not isinstance(token_dir, Path):
-            token_dir = Path(token_dir)
-
-        token_dir = token_dir.resolve()
-        token_dir.mkdir(parents=True, exist_ok=True)
+        token_dir = self._token_cache_dir(token_dir)
 
         if domain is None or domain == "live":
             token = self.token if force else self._token
