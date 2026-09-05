@@ -101,3 +101,66 @@ def test_old_template_smoke_path_is_caught() -> None:
     old = 'cfg = REPO_ROOT / "configs" / "template_account_profiles.yaml"\n'
 
     assert '/ "template_account_profiles.yaml"' in old
+
+
+def test_comment_your_hts_id_is_not_a_template(tmp_path) -> None:
+    """#157. 주석에 YOUR_HTS_ID 가 남아도 값이 채워져 있으면 템플릿이 아닙니다."""
+    from tests.integration.test_examples_run_smoke import is_unfilled_template
+
+    path = tmp_path / "account_profiles.yaml"
+    path.write_text(
+        """
+version: 1
+# 템플릿 안내는 YOUR_HTS_ID 입니다
+apps:
+  app_paper1:
+    mode: "paper"
+    hts_id: "filledid"
+    app_key: "k123456789012345678901234567890123"
+    app_secret: "s123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+accounts:
+  acc_paper1:
+    app: "app_paper1"
+    account_no: "12345678"
+    product_code: "01"
+default_account: "acc_paper1"
+""",
+        encoding="utf-8",
+    )
+
+    assert "YOUR_HTS_ID" in path.read_text(encoding="utf-8")
+    assert is_unfilled_template(path) is False
+
+
+def test_hours_independent_smoke_excludes_account_reads() -> None:
+    """#30. 잔고·계좌 조회는 자격증명 필수 연기가 아닙니다."""
+    from tests.integration.test_examples_run_smoke import _HOURS_INDEPENDENT
+
+    assert "get_balance.py" not in _HOURS_INDEPENDENT
+    assert "account_lookups.py" not in _HOURS_INDEPENDENT
+
+
+def test_placeholder_hts_id_is_a_template(tmp_path) -> None:
+    from tests.integration.test_examples_run_smoke import is_unfilled_template
+
+    path = tmp_path / "account_profiles.yaml"
+    path.write_text(
+        """
+version: 1
+apps:
+  app_paper1:
+    mode: "paper"
+    hts_id: "YOUR_HTS_ID"
+    app_key: "k123456789012345678901234567890123"
+    app_secret: "s123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
+accounts:
+  acc_paper1:
+    app: "app_paper1"
+    account_no: "12345678"
+    product_code: "01"
+default_account: "acc_paper1"
+""",
+        encoding="utf-8",
+    )
+
+    assert is_unfilled_template(path) is True

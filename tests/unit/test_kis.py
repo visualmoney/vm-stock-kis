@@ -1145,3 +1145,33 @@ def test_request_with_none_form_element(mock_session):
     assert response.json()["rt_cd"] == "0"
     # None은 무시되고 mock_form만 build 호출됨
     mock_form.build.assert_called_once()
+
+
+def test_save_cached_token_when_keep_token_is_an_existing_file(tmp_path) -> None:
+    """#157. create_client 는 앱 이름 json 을 keep_token 으로 넘깁니다."""
+    token_file = tmp_path / "app_paper_1.json"
+    token_file.write_text("{}", encoding="utf-8")
+    kis = VmKis(id="t", appkey=VALID_APPKEY, secretkey=VALID_SECRETKEY, keep_token=token_file, use_websocket=False)
+    token = KisObject.transform_(
+        {
+            "access_token": "new_token",
+            "token_type": "Bearer",
+            "access_token_token_expired": "2099-01-01 00:00:00",
+            "expires_in": 86400,
+        },
+        KisAccessToken,
+    )
+    kis._token = token
+    kis._save_cached_token(kis._keep_token, domain="live")
+
+    saved = list(tmp_path.glob("token_live_*.json"))
+    assert saved, "파일 경로 keep_token 에서 토큰을 저장하지 못했습니다"
+    assert token_file.is_file()
+
+
+def test_mkdir_on_existing_token_file_is_caught(tmp_path) -> None:
+    """결함을 되넣으면 파일이 있는 자리에 mkdir 합니다."""
+    token_file = tmp_path / "app_paper_1.json"
+    token_file.write_text("{}", encoding="utf-8")
+    with pytest.raises(FileExistsError):
+        token_file.mkdir(parents=True, exist_ok=True)
