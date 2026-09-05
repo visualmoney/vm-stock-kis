@@ -24,7 +24,7 @@ VM-Stock-KIS는 **한국 사용자**와 **글로벌 개발자**를 모두 지원
 - 앱 키 (App Key) 획득
 - 비밀번호 설정
 
-**설정 파일** (`config.yaml`):
+**설정 파일** (`configs/account_profiles.yaml`):
 
 ```yaml
 # configs/account_profiles.yaml — 한국, 실전
