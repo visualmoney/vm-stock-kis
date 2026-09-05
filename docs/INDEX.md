@@ -49,7 +49,7 @@
 
 | 문서 | 내용 |
 |---|---|
-| [architecture/ARCHITECTURE](architecture/ARCHITECTURE.md) | 허브-스포크 구조, **지켜야 할 불변식**, 확장 절차 |
+| [architecture/ARCHITECTURE](architecture/ARCHITECTURE.md) | 허브-스포크 **만** 모듈 구조. 얇은 파사드 · `fetch()`. **불변식** |
 | [generated/API_REFERENCE](generated/API_REFERENCE.md) | 공개 모듈 docstring 덤프. 손으로 고치지 말고 `uv run python scripts/generate_api_reference.py` |
 | [developer/DEVELOPER_GUIDE](developer/DEVELOPER_GUIDE.md) | 개발 환경, 코드 구조 |
 | [developer/VERSIONING](developer/VERSIONING.md) | git 태그 기반 버저닝, **태그 표기 규칙** |

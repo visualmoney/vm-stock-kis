@@ -141,6 +141,15 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 > 존재합니다. `import vmkis` 가 정상 동작하는 것은 순환이 없어서가 아니라,
 > 아래 불변식이 로드 순서를 지켜 주기 때문입니다.
 
+### 1.0 사용자 면과 확장점
+
+모듈 구조는 위 허브-스포크 **하나**입니다. 사용자가 알아야 할 면은 얇은
+파사드입니다 — `create_client`, `kis.stock` / `kis.account`. `SimpleKIS` 는
+그 위 선택이지 파사드 자체가 아닙니다. 없는 TR 은 파사드를 두껍게 하지
+않고 [`fetch()`](../user/EXTENDING_API.md) 로 엽니다.
+
+이 조합을 1.0.0 의 개선된 소프트웨어 구조라고 부릅니다 ([#30](https://github.com/visualmoney/vm-stock-kis/issues/30)).
+
 ### 1.1 반드시 지켜야 할 불변식
 
 아래는 **암묵적으로만 지켜지던 규칙**입니다. 어기면 패키지가 import 단계에서

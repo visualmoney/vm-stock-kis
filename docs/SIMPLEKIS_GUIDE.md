@@ -1,6 +1,9 @@
 # SimpleKIS: 완벽한 초보자 인터페이스
 
-일반적인 `VmKis` 사용법 외에, 더 간단한 인터페이스를 원한다면 **`SimpleKIS`** 파사드를 사용하세요.
+일반적인 `VmKis` 사용법 외에, 더 간단한 인터페이스를 원한다면 **`SimpleKIS`** 를
+쓰세요. 이것은 Tutorial 정본이 아닙니다. 정본은 `create_client` 와
+`kis.stock` / `kis.account` 입니다. `SimpleKIS` 는 그 위 선택이고
+시세·잔고·매수·취소만 있습니다. 차트·호가는 `stock` 을 보세요.
 `SimpleKIS`는 Protocol과 Mixin 없이 직관적인 메서드만 제공합니다.
 
 ## 1. 기본 사용법
