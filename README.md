@@ -321,103 +321,14 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 - [USER_GUIDE.md](./docs/user/USER_GUIDE.md) — 인증, 시세, 주문, 잔고, 실시간
 - [examples/](./examples/) — 초급·중급·고급 예제
 - [EXTENDING_API.md](./docs/user/EXTENDING_API.md) — 없는 TR 은 `fetch()`
-- 이 배포판의 변경은 [CHANGELOG.md](./CHANGELOG.md). 아래 4절은 업스트림 이력입니다.
+- [CHANGELOG.md](./CHANGELOG.md) — 이 배포판의 변경
 
-## 4. Changelog ✨
+이 포크는 업스트림 [`python-kis`](https://github.com/Soju06/python-kis) 2.1.6 에서
+갈라졌습니다. 두 번호는 비교되지 않습니다 —
+[MIGRATION_GUIDE](docs/MIGRATION_GUIDE.md#2-버전-번호가-낮아지는-이유).
+업스트림 항목별 이력은
+[Releases](https://github.com/Soju06/python-kis/releases) 에 있습니다.
 
-> 아래 항목은 **업스트림 [`Soju06/python-kis`](https://github.com/Soju06/python-kis)
-> 의 이력**입니다. 이 포크는 그 2.1.6 에서 갈라져 나왔고, 배포명이 바뀌면서
-> 버전을 `0.0.1` 부터 새로 시작합니다. 두 번호는 서로 비교되지 않습니다 —
-> 자세한 이유는 [MIGRATION_GUIDE.md](docs/MIGRATION_GUIDE.md#2-버전-번호가-낮아지는-이유)
-> 를 보세요. 이 포크의 변경 이력은 [CHANGELOG.md](CHANGELOG.md) 에 있습니다.
+## License
 
-### ver 2.1.3
-
-- [HTTPSConnectionPool이 제대로 닫히지 않는 것 같습니다.](https://github.com/Soju06/python-kis/issues/58) [fixed #58: session 추가](https://github.com/Soju06/python-kis/pull/59) by @tasoo-oos
-- [Refector/decorator keeping function information](https://github.com/Soju06/python-kis/pull/60) `KisChartBar`의 타이핑 문제를 해결했습니다.
-
-### ver 2.1.2
-
-- [fix: SyntaxError: f-string: expecting '}' but got "}"](https://github.com/Soju06/python-kis/pull/57) 파이썬 3.11 이하에서 SyntaxError 오류가 발생하는 문제를 해결했습니다. by @tasoo-oos
-
-### ver 2.1.1
-
-- [해외주식 실시간 체결 이벤트 버그 수정](https://github.com/Soju06/python-kis/pull/53) 해외주식 실시간 체결 이벤트를 받을 수 없는 버그를 수정했습니다.
-- [이벤트 티켓 암시적 구독 해지 경고 메시지 추가](https://github.com/Soju06/python-kis/pull/55) 이벤트 티켓이 GC에 의해 해지되었을 때 경고 메시지를 추가했습니다.
-- [코드 리펙토링](https://github.com/Soju06/python-kis/pull/56) 기존 `EMPTY`, `EMPTY_TYPE` 대신 `EllipsisType`를 사용하도록 변경하고, `Impl` 타입의 이름을 `Mixin`으로 변경했습니다.
-
-### ver 2.1.0
-
-- [몇몇 종목의 주식 객체 quote, chart 동작 관련 질문](https://github.com/Soju06/python-kis/issues/47) 상품기본정보 조회 시세조회 가능 여부 확인 로직을 추가했습니다.
-- [order 객체를 분실했을 때, order 객체를 다시 가져올 수 있는 방법이 있을까요?](https://github.com/Soju06/python-kis/issues/45) 미체결 주문 객체에 KisOrder 프로토콜을 지원하도록 개선했습니다.
-- 인증 토큰 만료되었을 때 발생하는 예외를 핸들링하여 재발급을 시도하도록 개선했습니다.
-
-### ver 2.0.4
-
-- [krx 주식 002170 정보를 quote 로 가져올 때 발생하는 버그](https://github.com/Soju06/python-kis/issues/48) 국내주식 시세조회의 업종명이 없을때 발생하는 버그를 수정했습니다.
-
-### ver 2.0.3
-
-- [KisIntegrationBalance에서 해외주식 잔고수량이 0으로 표시됨](https://github.com/Soju06/python-kis/issues/41) 버그를 수정했습니다.
-
-### ver 2.0.2
-
-- `KisBalance`, `KisChart` 등 `__iter__` 메서드의 반환 타입이 누락되어있는 버그를 수정했습니다.
-- 주문 수량을 입력할 때 `Decimal` 타입 이외의 `int`, `float` 타입을 입력할 수 있도록 개선했습니다.
-
-### ver 2.0.1
-
-- 초기 웹소켓 이벤트 구독시 클라이언트 접속 후 구독을 요청하는 코드에서 `_connected_event`가 set 되어있지 않아, 요청이 무시되는 버그를 수정했습니다.
-
-### ver 2.0.0
-
-- 라이브러리가 완전히 새롭게 변경되었습니다.
-- 모든 객체에 대한 추상화 및 네이밍이 변경되었습니다.
-- 한국투자증권의 국내, 해외 API 구분 없이 동일한 인터페이스로 사용할 수 있습니다.
-- 실시간 시세 조회는 새로운 이벤트 시스템으로 변경되었습니다.
-- 계좌 및 상품 Scope 활용이 극대화되었습니다.
-
-### ver 1.0.6
-
-- 상품기본조회가 추가되었습니다.
-
-- 환경 변수를 분리하였습니다.
-  각각의 파일에 나뉘어있던 Version, 접속 URL, API Rate Limit 등의 상수 데이터를 `__env__.py`로 옮겼습니다.
-
-- 예외구조 변경
-  기존 HTTP Error, RT_CD Error를 모두 `ValueError`로 처리하던 구조에서 각각의 `KisHTTPError`, `KisAPIError` 예외 객체로 나누었고, `rt_cd`, `msg_cd` 등의 변수를 예외 객체에서 참조할 수 있도록 변경하였습니다.
-
-- 엑세스토큰 발급 Thread Safe
-  엑세스 토큰이 발급되어있지 않은 상태에서 멀티스레드로 `KisAccessToken.ensure()` 함수를 호출하면 Thread Lock 되지 않고 다수가 `KisAccessToken.issue()`를 호출하는 문제를 해결하였습니다.
-
-### ver 1.0.5
-
-- `RTClient`에서 웹소켓 연결이 끊어졌을 때, 이벤트 처리가 잘못되는 버그를 수정하였습니다.
-
-- `RTClient`에서 재연결시 실시간 조회가 복구되지 않는 버그를 수정하였습니다.
-
-- 휴장일 조회가 추가되었습니다.
-
-- 해외 주식 주문이 추가되었습니다.
-
-- 해외 미체결 조회가 추가되었습니다.
-
-### ver 1.0.4
-
-- 주식잔고조회_실현손익 조회가 추가되었습니다.
-
-- [실시간 해제요청이 정상적으로 되지 않습니다](https://github.com/Soju06/python-kis/issues/1) 버그를 수정하였습니다.
-
-### ver 1.0.3
-
-- `RTClient` [웹소켓 보안강화를 위한 개선 안내](https://apiportal.koreainvestment.com/community/10000000-0000-0011-0000-000000000001)의 내용에 따라, 앱키 대신 웹소켓 접속키를 발급하여 사용하도록 변경되었습니다.
-
-### ver 1.0.2
-
-- API 초당 요청 제한을 넘어버리는 버그를 수정하였습니다.
-- `period_price` 응답 데이터의 `stck_fcam`값 `float`으로 변경하였습니다.
-- `utils.KRXMarketOpen` 공휴일 데이터가 1개인 경우 오류 발생하는 버그 수정하였습니다.
-
-### License
-
-[MIT](https://github.com/visualmoney/vm-stock-kis/blob/main/LICENCE)
+[MIT](./LICENCE)

@@ -21,6 +21,7 @@
 - examples/README 바닥의 고정 버전·날짜를 지웠습니다 (#136)
 - USER_GUIDE·FAQ 호출을 업스트림 Tutorial 이름에 맞췄습니다 (#139)
 - README 의 `virtual_secret.json` 과 미정의 `hynix` 를 고쳤습니다 (#141)
+- README 에 붙여 두던 업스트림 Changelog 항목을 링크로 돌렸습니다 (#143)
 
 ---
 

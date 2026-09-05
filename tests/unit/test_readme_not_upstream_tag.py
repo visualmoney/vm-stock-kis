@@ -58,6 +58,23 @@ def test_virtual_secret_filename_is_caught() -> None:
     assert "virtual_secret.json" in 'kis = VmKis("secret.json", "virtual_secret.json")\n'
 
 
+_UPSTREAM_VER_HEADING = "### ver "
+
+
+def test_readme_does_not_paste_upstream_changelog_entries() -> None:
+    """#143. 업스트림 항목별 이력은 Releases 로 둡니다."""
+    text = README.read_text(encoding="utf-8")
+
+    assert _UPSTREAM_VER_HEADING not in text
+    assert "CHANGELOG.md" in text
+    assert "## License" in text
+    assert "[MIT](./LICENCE)" in text
+
+
+def test_pasted_upstream_ver_heading_is_caught() -> None:
+    assert _UPSTREAM_VER_HEADING in "### ver 2.1.3\n"
+
+
 def test_stale_readme_sentence_is_caught() -> None:
     """#135 이전의 혼동 문장을 그대로 먹여 봅니다."""
     stale = (
