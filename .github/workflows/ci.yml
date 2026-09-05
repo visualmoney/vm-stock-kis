@@ -27,7 +27,7 @@ jobs:
       matrix:
         # requires-python = ">=3.10" 의 양 끝단만 검증합니다.
         # 1인 프로젝트에서 중간 버전과 OS 매트릭스는 한계효용이 낮고 피드백만 느려집니다.
-        python-version: ['3.10', '3.13']
+        python-version: ['3.10', '3.14']
     steps:
       - uses: actions/checkout@v7
         with:
