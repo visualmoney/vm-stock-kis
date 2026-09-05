@@ -535,10 +535,13 @@ CMD ["python", "main.py"]
 **requirements.txt:**
 
 ```text
-vm-stock-kis>=0.0.1,<1.0.0
+vm-stock-kis>=0.3.0,<1.0.0
 pyyaml>=6.0
 python-dotenv>=1.2.0
 ```
+
+> 1.0.0 태그 뒤에는 `>=1.0.0,<2.0.0` 을 권장합니다.
+> ([API_STABILITY_POLICY](./guidelines/API_STABILITY_POLICY.md) §2.2 · §8.3)
 
 ### Q23: 성능을 최적화하려면?
 
