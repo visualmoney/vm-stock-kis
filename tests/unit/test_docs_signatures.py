@@ -42,9 +42,9 @@ from vmkis import KisAuth, SimpleKIS, VmKis, create_client, save_config_interact
 
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[2]
 
-#: 동결 문서와 자동 생성물. 손으로 고치는 대상이 아닙니다.
-#: `generated/` 는 재생성해야 하는 것이지 편집할 것이 아닙니다.
-SKIP_PARTS = {"reports", "dev_logs", "prompts", "archive", "generated"}
+#: 동결 문서. 손으로 고치는 대상이 아닙니다.
+#: `generated/API_REFERENCE.md` 는 생성기가 맞추므로 검사 대상입니다.
+SKIP_PARTS = {"reports", "dev_logs", "prompts", "archive"}
 
 CHECKED: dict[str, Callable[..., Any]] = {
     "create_client": create_client,
@@ -149,6 +149,13 @@ def test_doc_examples_match_public_api(path: pathlib.Path) -> None:
     origin = str(path.relative_to(REPO_ROOT))
     problems = [p for code, line0 in _blocks(path) for p in _check_block(code, origin, line0)]
     assert not problems, "문서 예제가 실제 API 와 다릅니다:\n  " + "\n  ".join(problems)
+
+
+def test_generated_api_reference_is_signature_checked() -> None:
+    """#94: 생성물을 SKIP 하면 다시 눈이 멀었습니다."""
+    paths = {p.relative_to(REPO_ROOT).as_posix() for p in _doc_files()}
+
+    assert "docs/generated/API_REFERENCE.md" in paths, f"API_REFERENCE 가 시그니처 검사 밖입니다: {sorted(paths)}"
 
 
 def test_checker_actually_reads_documents() -> None:

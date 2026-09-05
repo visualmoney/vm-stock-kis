@@ -283,7 +283,7 @@ quote = kis.stock("005930").quote()
 import vmkis
 
 print(f"VmKis 버전: {vmkis.__version__}")
-# 출력: VmKis 버전: 0.0.1
+# 출력은 설치된 배포판의 태그입니다. 숫자를 여기에 박지 않습니다.
 ```
 
 ### 8.2 최신 버전 확인

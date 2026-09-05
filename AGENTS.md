@@ -71,6 +71,7 @@ docs/
 ├── dev_logs/            # frozen YYYY-MM-DD_nn_*.md
 ├── reports/             # frozen; archive/
 ├── prompts/             # frozen YYYY-MM-DD_nn_*.md
+├── generated/           # API_REFERENCE.md only — regenerate, don't hand-edit
 └── user/                # USER_GUIDE.md, EXTENDING_API.md, en/
 
 archive/                 # retired docs; see archive/README.md

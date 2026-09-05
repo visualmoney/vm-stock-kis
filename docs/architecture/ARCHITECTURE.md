@@ -18,7 +18,7 @@
 
 - **프로젝트명**: VM-Stock-KIS (Korea Investment Securities API Wrapper)
 - **목적**: 한국투자증권의 OpenAPI를 파이썬 환경에서 쉽게 사용할 수 있도록 제공
-- **버전**: 0.0.1 (이 배포명의 첫 릴리스. `CHANGELOG.md` 참고)
+- **버전**: git 태그 (`git describe`). 첫 릴리스는 `0.0.1` — `CHANGELOG.md` 참고
 - **라이선스**: MIT
 - **최소 Python 버전**: 3.10+
 
