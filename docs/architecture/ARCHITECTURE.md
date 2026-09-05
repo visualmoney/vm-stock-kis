@@ -96,8 +96,8 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 
 | 버전 | 상태 | 루트 import | 명시적 경로 |
 |---|---|---|---|
-| 0.x | ✅ 현재 | 동작 (DeprecationWarning) | ✅ 권장 |
-| 1.0.0 | Breaking | ❌ 제거 | ✅ 필수 |
+| 0.x (~0.2) | ⚪ 지난 판 | 동작 (DeprecationWarning) | ✅ 권장 |
+| 0.3.0+ | Breaking 반영 | ❌ 제거 (`#33` · `#34`) | ✅ 필수 |
 
 ---
 
