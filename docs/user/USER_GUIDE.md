@@ -423,24 +423,24 @@ print(f"총 손익: {balance.profit} ({balance.profit_rate}%)")
 
 ```python
 account = kis.account()
+stock = kis.stock("000660")
 
-# 현금 매수 가능액
-orderable_amount = account.orderable_amount()
-print(f"매수 가능 금액: {orderable_amount.amount}")
+# 계좌에서 종목·시장을 지정
+orderable_amount = account.orderable_amount(market="KRX", symbol="000660")
+print(repr(orderable_amount))
 
-# 신용 이용
-orderable_amount = account.orderable_amount(include_credit=True)
+# 종목 스코프 (지정가)
+orderable_amount = stock.orderable_amount(price=40950)
+print(repr(orderable_amount))
 ```
 
 ### 3. 매도 가능 수량
 
 ```python
 stock = kis.stock("000660")
-account = kis.account()
 
 # 해당 종목 매도 가능 수량
-sellable = stock.sellable()
-print(f"매도 가능 수량: {sellable}")
+print(stock.orderable)
 ```
 
 ### 4. 일별 손익 조회
@@ -448,14 +448,10 @@ print(f"매도 가능 수량: {sellable}")
 ```python
 account = kis.account()
 
-# 기간 손익 조회
 from datetime import date
 
-profit = account.profit(
-    start_date=date(2024, 1, 1),
-    end_date=date(2024, 12, 10)
-)
-print(f"기간 손익: {profit}")
+profits = account.profits(start=date(2024, 1, 1))
+print(repr(profits))
 ```
 
 ### 5. 체결 내역 조회
@@ -463,12 +459,10 @@ print(f"기간 손익: {profit}")
 ```python
 account = kis.account()
 
-# 일별 체결 내역
 from datetime import date
 
-executions = account.daily_executions(date=date(2024, 12, 10))
-for execution in executions:
-    print(f"{execution.symbol}: {execution.qty}주 @ {execution.price}")
+orders = account.daily_orders(start=date(2024, 4, 2), end=date(2024, 6, 1))
+print(repr(orders))
 ```
 
 ---
@@ -639,9 +633,9 @@ for symbol in symbols:
 from vmkis import VmKis
 kis = VmKis("secret.json")
 
-# 장 운영 시간 확인
-trading_hours = kis.trading_hours()
-print(trading_hours.is_market_open)  # True/False
+# 장 운영 시간 확인. market 은 필수입니다 (국가 코드도 됩니다).
+hours = kis.trading_hours("KR")
+print(hours.open, hours.close)
 ```
 
 ### Q2: 인증 에러가 발생합니다

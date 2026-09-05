@@ -134,8 +134,8 @@ colorlog>=6.8.2
     kis = VmKis(KisAuth.load("secret.json"), keep_token=True)
 
     # 모의투자용 VmKis 객체를 생성합니다.
-    kis = VmKis("secret.json", "virtual_secret.json", keep_token=True)
-    kis = VmKis(KisAuth.load("secret.json"), KisAuth.load("virtual_secret.json"), keep_token=True)
+    kis = VmKis("secret.json", "paper_secret.json", keep_token=True)
+    kis = VmKis(KisAuth.load("secret.json"), KisAuth.load("paper_secret.json"), keep_token=True)
     ```
 
 2. 시크릿 키를 직접 입력하는 방법
@@ -255,6 +255,9 @@ KisIntegrationBalance(
 ```python
 from vmkis import KisOrder
 
+hynix = kis.stock("000660")
+account = kis.account()
+
 # SK하이닉스 1주 시장가 매수 주문
 order: KisOrder = hynix.buy(qty=1)
 # SK하이닉스 1주 지정가 매수 주문
@@ -287,6 +290,7 @@ from vmkis import KisRealtimePrice, KisSubscriptionEventArgs, KisWebsocketClient
 def on_price(sender: KisWebsocketClient, e: KisSubscriptionEventArgs[KisRealtimePrice]):
     print(e.response)
 
+hynix = kis.stock("000660")
 ticket = hynix.on("price", on_price)
 
 print(kis.websocket.subscriptions) # 현재 구독중인 이벤트 목록
