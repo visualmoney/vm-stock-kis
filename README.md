@@ -319,7 +319,7 @@ KisDomesticRealtimePrice(market='KRX', symbol='000660', time='2024-08-02T13:50:4
 
 - [QUICKSTART.md](./QUICKSTART.md) — 설치부터 첫 조회
 - [USER_GUIDE.md](./docs/user/USER_GUIDE.md) — 인증, 시세, 주문, 잔고, 실시간
-- [examples/](./examples/) — 초급·중급·고급 예제
+- [examples/](./examples/) — 현물 예제 (`01_basic/`)
 - [EXTENDING_API.md](./docs/user/EXTENDING_API.md) — 없는 TR 은 `fetch()`
 - [CHANGELOG.md](./CHANGELOG.md) — 이 배포판의 변경
 

@@ -406,6 +406,4 @@ with ThreadPoolExecutor(max_workers=3) as executor:
 
 **예제:**
 
-- `examples/01_basic/` - 기본 사용법
-- `examples/02_intermediate/` - 중급 예제 (예정)
-- `examples/03_advanced/` - 고급 예제 (예정)
+- `examples/01_basic/` — 현물 예제
