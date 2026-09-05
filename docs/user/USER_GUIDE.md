@@ -107,6 +107,11 @@ with VmKis("secret.json", keep_token=True) as kis:
 
 ## 인증 관리
 
+사용자가 알 면은 `create_client` 와 `kis.stock` / `kis.account` 입니다.
+`SimpleKIS` 는 그 위 선택입니다. 없는 TR 은
+[EXTENDING_API](EXTENDING_API.md) 의 `fetch()` 로 엽니다. 모듈 구조는
+[ARCHITECTURE](../architecture/ARCHITECTURE.md) §1 허브-스포크 하나입니다.
+
 JSON(`KisAuth` → `VmKis("secret.json")`)과 YAML(`create_client`) 둘 다
 유효합니다. `VmKis` 경로에는 JSON만 넘깁니다. YAML 설정은
 [QUICKSTART](../../QUICKSTART.md) 의 `create_client` 를 보세요.
