@@ -274,14 +274,15 @@ def test_the_expected_default_is_a_path_the_docs_can_create() -> None:
 def test_the_name_check_also_reads_the_readmes() -> None:
     """검사가 `.py` 만 보고 있지 않은지 봅니다.
 
-    #95 의 28곳은 전부 `.py` 였지만, 같은 문자열이 예제 README 2곳에도 있었고
-    사용자는 그쪽을 먼저 읽습니다. `_example_docs()` 가 빈 목록이 되면 그 2곳은
-    조용히 검사 밖으로 나갑니다.
+    #95 의 28곳은 전부 `.py` 였지만, 같은 문자열이 README 에도 있었고
+    사용자는 그쪽을 먼저 읽습니다. `_example_docs()` 가 빈 목록이 되면
+    조용히 검사 밖으로 나갑니다. `#155` 이후 예제 README 는 둘입니다
+    (`examples/` · `01_basic/`).
     """
     docs = _example_docs()
     readmes = [p for p in docs if p.name == "README.md"]
 
-    assert len(readmes) >= 4, f"예제 README 를 {len(readmes)}개만 찾았습니다: {EXAMPLES}"
+    assert len(readmes) == 2, f"예제 README 가 {len(readmes)}개입니다: {readmes}"
 
 
 def test_the_name_check_also_reads_the_tutorial_notebook() -> None:
