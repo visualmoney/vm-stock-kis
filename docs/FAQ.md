@@ -341,13 +341,11 @@ from vmkis import VmKis
 
 kis = VmKis(...)
 
-# 장 시간 확인
-hours = kis.stock("005930").trading_hours()
+# 장 시간 확인. 메서드는 클라이언트에 있고 market 이 필요합니다.
+hours = kis.trading_hours("KR")
+print(hours.open, hours.close)
 
-if hours.is_open_now:
-    quote = kis.stock("005930").quote()
-else:
-    print(f"폐장 중. 다음 개장: {hours.next_open_time}")
+quote = kis.stock("005930").quote()
 ```
 
 ---

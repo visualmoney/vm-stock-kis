@@ -43,22 +43,34 @@
 
 ## 예제 목록
 
-- `hello_world.py` — 기본 초기화 및 `stock("005930").quote()` 출력
+- `hello_world.py` — 기본 초기화
+- `keep_token.py` — `keep_token=True` 로 토큰 저장
 - `get_quote.py` — 시세 조회 예제 (삼성전자)
+- `get_chart.py` — `stock.chart()` 일봉
+- `get_orderbook.py` — `stock.orderbook()`
+- `trading_hours.py` — `kis.trading_hours(market)`
 - `get_balance.py` — 잔고 조회 예제
+- `account_lookups.py` — `profits` · `daily_orders` · `orderable_amount` · `orderable` · `pending_orders`
 - `place_order.py` — 시장가 매수 예제 (안전 장치 포함)
+- `place_sell.py` — 매도 1주 (안전 장치 포함)
+- `modify_cancel_order.py` — 지정가 매수 뒤 정정·취소
 - `realtime_price.py` — 실시간 체결가 구독 예제
+- `realtime_orderbook.py` — 실시간 호가
+- `realtime_execution.py` — 실시간 체결내역
 
 ## 실행 방법
 
 ```bash
 # 모의투자 계정에서 먼저 검증 (권장)
 python examples/01_basic/get_quote.py
+python examples/01_basic/get_chart.py
 python examples/01_basic/get_balance.py
+python examples/01_basic/account_lookups.py
 python examples/01_basic/place_order.py
 
 # 실시간 예제 (Enter를 눌러 종료)
 python examples/01_basic/realtime_price.py
+python examples/01_basic/realtime_orderbook.py
 ```
 
 ## 주의사항

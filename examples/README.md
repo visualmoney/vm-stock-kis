@@ -23,10 +23,19 @@ examples/
 **예제**:
 
 - `hello_world.py` - 첫 연결
+- `keep_token.py` - 토큰 자동 저장
 - `get_quote.py` - 시세 조회
+- `get_chart.py` - 차트 조회
+- `get_orderbook.py` - 호가 조회
+- `trading_hours.py` - 장운영 시간
 - `get_balance.py` - 잔고 조회
-- `place_order.py` - 주문 (모의)
-- `realtime_price.py` - 실시간 수가
+- `account_lookups.py` - 손익·체결·주문가능·미체결
+- `place_order.py` - 매수 (모의, 실계좌 가드)
+- `place_sell.py` - 매도 (실계좌 가드)
+- `modify_cancel_order.py` - 정정·취소 (실계좌 가드)
+- `realtime_price.py` - 실시간 체결가
+- `realtime_orderbook.py` - 실시간 호가
+- `realtime_execution.py` - 실시간 체결내역
 
 **학습 목표**:
 

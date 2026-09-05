@@ -44,6 +44,20 @@ def test_issue_templates_do_not_call_wiki_docs() -> None:
     assert not hits, "이슈 템플릿이 빈 Wiki 를 Docs 라고 부릅니다:\n  " + "\n  ".join(hits)
 
 
+def test_readme_does_not_keep_virtual_secret_filename() -> None:
+    """#141. Home 의 virtual_ 파일명을 이 배포판처럼 두지 않습니다."""
+    text = README.read_text(encoding="utf-8")
+
+    assert "virtual_secret.json" not in text
+    assert "paper_secret.json" in text
+    assert "hynix = kis.stock(" in text
+    assert "account = kis.account()" in text
+
+
+def test_virtual_secret_filename_is_caught() -> None:
+    assert "virtual_secret.json" in 'kis = VmKis("secret.json", "virtual_secret.json")\n'
+
+
 def test_stale_readme_sentence_is_caught() -> None:
     """#135 이전의 혼동 문장을 그대로 먹여 봅니다."""
     stale = (
