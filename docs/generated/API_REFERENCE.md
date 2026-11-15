@@ -128,7 +128,7 @@ Raises:
 - `keep_token()`: API 접속 토큰 자동 저장 여부
 - `base_url()`: REST 서버 주소. 설정에 재정의가 있으면 그것을, 없으면 기본값을 씁니다.
 - `ws_url()`: 웹소켓 서버 주소. `base_url` 과 같은 규칙입니다.
-- `request()`
+- `request()`: HTTP 요청을 보냅니다. 단건 호출도 재시도 루프마다 `RateLimiter.acquire()` 합니다.
 - `fetch()`
 - `call()`: 엔드포인트 스펙으로 API 를 호출합니다.
 - `fetch_pages()`: 연속조회를 끝까지 따라가며 결과를 하나로 합칩니다.
@@ -165,7 +165,9 @@ REST 서버 주소. 설정에 재정의가 있으면 그것을, 없으면 기본
 
 #### `request()`
 
-(No docstring)
+HTTP 요청을 보냅니다. 단건 호출도 재시도 루프마다 `RateLimiter.acquire()` 합니다.
+
+`wait` / `on_success` / `on_error` 는 없습니다. 유량 획득은 `acquire()` 뿐입니다.
 
 #### `fetch()`
 

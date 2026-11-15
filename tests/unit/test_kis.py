@@ -9,6 +9,7 @@ from vmkis.client.exceptions import KisAuthenticationError, KisHTTPError, KisRat
 from vmkis.client.form import KisForm
 from vmkis.kis import VmKis
 from vmkis.responses.dynamic import KisObject
+from vmkis.utils.rate_limit import RateLimiter
 
 
 @pytest.fixture
@@ -208,6 +209,29 @@ def test_request_rate_limit_and_token_expiry(mock_session):
 
             mock_token_issue.assert_called_once()  # 토큰 재발급
             assert kis.token.token == "new_token"
+
+
+@patch("vmkis.kis.requests.Session")
+def test_single_request_calls_acquire(mock_session):
+    """단건 REST 도 `acquire()` 한다. `wait()` 는 없다. (#167)
+
+    비교 보고서 7.4 오른쪽 칸과 같다. 이 호출을 빼면 시세 한 건이 유량 밖으로 나간다.
+    """
+    kis = _authed_kis()
+    mock_session.return_value.request.return_value = MagicMock(ok=True)
+
+    calls: list[object] = []
+    real = RateLimiter.acquire
+
+    def spy(self: RateLimiter, *args: object, **kwargs: object) -> bool:
+        calls.append(self)
+        return real(self, *args, **kwargs)
+
+    with patch.object(RateLimiter, "acquire", spy):
+        kis.request("/")
+
+    assert calls, "단건 request() 가 acquire() 를 타지 않습니다"
+    assert not hasattr(RateLimiter, "wait")
 
 
 # ---------------------------------------------------------------------------

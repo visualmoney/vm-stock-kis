@@ -186,20 +186,12 @@ websocket = kis.websocket
 
 #### Rate Limiting 메커니즘
 
+`VmKis.request()` 가 단건 REST 를 포함해 매번 유량을 획득합니다.
+`wait` / `on_success` / `on_error` 메서드는 없습니다.
+
 ```python
-# 내부 동작
-@property
-def rate_limiter(self) -> RateLimiter:
-    return self._rate_limiters.get(domain)
-
-# 요청 전
-rate_limiter.wait()  # 제한에 따라 대기
-
-# 요청 후
-if success:
-    rate_limiter.on_success()
-else:
-    rate_limiter.on_error()
+rate_limit = self._rate_limiters[domain]  # "live" | "paper"
+rate_limit.acquire(blocking_callback=self._rate_limit_exceeded)
 ```
 
 ### 2. 동적 타입 시스템 (responses/dynamic.py)

@@ -51,8 +51,7 @@ class RateLimiter:
             return 0 if time.time() - self._last > self.period else self._count
 
     def acquire(self, blocking: bool = True, blocking_callback: Callable[[], None] | None = None) -> bool:
-        """
-        호출 유량을 획득합니다.
+        """호출 유량을 획득합니다. `VmKis.request()` 가 단건 포함 매번 여기를 탑니다.
 
         Args:
             blocking: 호출 횟수가 초과되었을 때 대기 여부

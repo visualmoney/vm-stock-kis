@@ -617,6 +617,10 @@ class VmKis:
         form_location: Literal["header", "params", "body"] | None = None,
         auth: bool = True,
     ) -> Response:
+        """HTTP 요청을 보냅니다. 단건 호출도 재시도 루프마다 `RateLimiter.acquire()` 합니다.
+
+        `wait` / `on_success` / `on_error` 는 없습니다. 유량 획득은 `acquire()` 뿐입니다.
+        """
         if method == "GET":
             if body is not None:
                 raise ValueError("GET 요청에는 body를 입력할 수 없습니다.")
