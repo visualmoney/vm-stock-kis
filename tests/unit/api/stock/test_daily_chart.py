@@ -1364,3 +1364,100 @@ class TestProductDailyChart:
             assert call_args[1]["end"] == dt_date(2023, 12, 1)
             assert call_args[1]["period"] == "week"
             assert call_args[1]["adjust"] is True
+
+
+class TestCollectDatedBars:
+    """날짜 커서 헬퍼. 일봉 두 함수가 공유한다."""
+
+    def test_stops_on_empty_page(self):
+        """첫 페이지에 봉이 없으면 그 차트만 돌려주고 다시 호출하지 않는다."""
+        from vmkis.api.stock.daily_chart import _collect_dated_bars
+
+        calls: list[date | None] = []
+        empty = _MockChart([])
+
+        def fetch(cursor, _start):
+            calls.append(cursor)
+            return empty
+
+        chart, start = _collect_dated_bars(fetch, cursor=date(2023, 12, 5), start=None, step=timedelta(days=1))
+
+        assert chart is empty
+        assert start is None
+        assert calls == [date(2023, 12, 5)]
+
+    def test_extends_older_page_then_stops(self):
+        """다음 페이지의 봉을 첫 페이지 뒤에 잇고, 빈 페이지에서 멈춘다."""
+        from vmkis.api.stock.daily_chart import _collect_dated_bars
+
+        pages = [
+            _MockChart([_MockBar(date(2023, 12, 5)), _MockBar(date(2023, 12, 4))]),
+            _MockChart([_MockBar(date(2023, 12, 3)), _MockBar(date(2023, 12, 2))]),
+            _MockChart([]),
+        ]
+
+        def fetch(_cursor, _start):
+            return pages.pop(0)
+
+        chart, _start = _collect_dated_bars(
+            fetch, cursor=date(2023, 12, 5), start=date(2023, 12, 1), step=timedelta(days=1)
+        )
+
+        assert [bar.time.date() for bar in chart.bars] == [
+            date(2023, 12, 5),
+            date(2023, 12, 4),
+            date(2023, 12, 3),
+            date(2023, 12, 2),
+        ]
+
+    def test_discards_page_when_cursor_does_not_move_back(self):
+        """커서가 마지막 봉보다 앞서면 그 페이지는 합치지 않는다."""
+        from vmkis.api.stock.daily_chart import _collect_dated_bars
+
+        first = _MockChart([_MockBar(date(2023, 12, 5)), _MockBar(date(2023, 12, 4))])
+        stuck = _MockChart([_MockBar(date(2023, 12, 5)), _MockBar(date(2023, 12, 4))])
+        pages = [first, stuck, _MockChart([])]
+
+        def fetch(_cursor, _start):
+            return pages.pop(0)
+
+        chart, _start = _collect_dated_bars(fetch, cursor=date(2023, 12, 5), start=None, step=timedelta(days=1))
+
+        assert chart.bars == first.bars
+        assert len(chart.bars) == 2
+
+    def test_timedelta_start_becomes_a_date_and_stops(self):
+        """timedelta 시작은 첫 봉에서 날짜가 되고, 그 날짜에 닿으면 멈춘다."""
+        from vmkis.api.stock.daily_chart import _collect_dated_bars
+
+        calls: list[tuple[date | None, date | timedelta | None]] = []
+        page = _MockChart([_MockBar(date(2023, 12, 5)), _MockBar(date(2023, 12, 4))])
+
+        def fetch(cursor, start):
+            calls.append((cursor, start))
+            return page
+
+        _chart, start = _collect_dated_bars(
+            fetch, cursor=date(2023, 12, 5), start=timedelta(days=1), step=timedelta(days=1)
+        )
+
+        assert calls == [(date(2023, 12, 5), timedelta(days=1))]
+        assert start == date(2023, 12, 4)
+
+    def test_raises_when_page_cap_is_hit(self):
+        """커서가 계속 뒤로 가도 페이지 상한에서 멈춘다."""
+        from vmkis.api.stock.daily_chart import _collect_dated_bars
+
+        calls: list[date | None] = []
+
+        def fetch(cursor, _start):
+            calls.append(cursor)
+            if len(calls) > 10:
+                raise AssertionError("cap not applied")
+            day = date(2024, 1, 1) - timedelta(days=len(calls) - 1)
+            return _MockChart([_MockBar(day)])
+
+        with pytest.raises(RuntimeError, match="페이지를 넘겼습니다"):
+            _collect_dated_bars(fetch, cursor=date(2024, 1, 1), start=None, step=timedelta(days=1), max_pages=3)
+
+        assert len(calls) == 3

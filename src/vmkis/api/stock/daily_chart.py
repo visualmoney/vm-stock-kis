@@ -1,6 +1,7 @@
+from collections.abc import Callable
 from datetime import date, datetime, timedelta, tzinfo
 from decimal import Decimal
-from typing import TYPE_CHECKING, Any, Literal, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, Protocol, TypeVar
 
 from vmkis.api.stock.chart import KisChart, KisChartBar, KisChartBarRepr, KisChartBase
 from vmkis.api.stock.market import (
@@ -213,6 +214,67 @@ class KisForeignDailyChart(KisResponse, KisChartBase):
 
 TChartBase = TypeVar("TChartBase", bound=KisChartBase)
 
+# 날짜 커서가 멈추지 않을 때의 상한. 일봉 100개씩이면 약 500년분이다.
+_MAX_DATE_PAGES = 500
+
+
+class _DatedPage(Protocol):
+    bars: list[Any]
+
+
+def _collect_dated_bars(
+    fetch: Callable[[date | None, date | timedelta | None], _DatedPage],
+    *,
+    cursor: date | None,
+    start: date | timedelta | None,
+    step: timedelta,
+    max_pages: int = _MAX_DATE_PAGES,
+) -> tuple[_DatedPage, date | timedelta | None]:
+    """날짜 커서로 봉을 이어 붙입니다.
+
+    `fetch(cursor, start)` 가 한 페이지를 돌려줍니다. 봉이 없으면 멈춥니다.
+    커서가 마지막 봉보다 앞서면 그 페이지는 합치지 않고 멈춥니다. `start` 가
+    `timedelta` 이면 첫 봉에서 날짜로 바꿉니다.
+
+    `KisPage` 연속조회(`fetch_pages`)와 다릅니다. 종료가 `is_last` 하나가
+    아니라 봉 시각에서 나옵니다.
+    """
+    chart: _DatedPage | None = None
+
+    for _ in range(max_pages):
+        result = fetch(cursor, start)
+
+        if chart is None:
+            chart = result
+
+        if not result.bars:
+            break
+
+        last = result.bars[-1].time.date()
+
+        if cursor is not None and cursor < last:
+            break
+
+        if result != chart:
+            chart.bars.extend(result.bars)
+
+        if isinstance(start, timedelta):
+            start = (chart.bars[0].time - start).date()
+
+        if start and last <= start:
+            break
+
+        cursor = last - step
+    else:
+        raise RuntimeError(
+            f"날짜 커서 조회가 {max_pages}페이지를 넘겼습니다. 커서가 진행을 멈추지 않았거나 구간이 너무 깁니다."
+        )
+
+    if chart is None:
+        raise RuntimeError("날짜 커서 조회가 한 페이지도 받지 못했습니다.")
+
+    return chart, start
+
 
 def drop_after(
     chart: TChartBase,
@@ -279,18 +341,16 @@ def domestic_daily_chart(
     if isinstance(start, date) and end and start > end:
         start, end = end, start
 
-    cursor = end
-    chart = None
     period_delta = timedelta(days=1 if period == "day" else 7 if period == "week" else 30 if period == "month" else 365)
 
-    while True:
-        result = self.call(
+    def fetch(cursor: date | None, window_start: date | timedelta | None) -> KisDomesticDailyChart:
+        return self.call(
             DOMESTIC_DAILY_CHART,
             params={
                 "FID_COND_MRKT_DIV_CODE": "J",
                 "FID_INPUT_ISCD": symbol,
-                "FID_INPUT_DATE_1": start.strftime("%Y%m%d") if isinstance(start, date) else "00000101",
-                "FID_INPUT_DATE_2": cursor.strftime("%Y%m%d"),
+                "FID_INPUT_DATE_1": window_start.strftime("%Y%m%d") if isinstance(window_start, date) else "00000101",
+                "FID_INPUT_DATE_2": cursor.strftime("%Y%m%d") if cursor else "",
                 "FID_PERIOD_DIV_CODE": (
                     "D" if period == "day" else "W" if period == "week" else "M" if period == "month" else "Y"
                 ),
@@ -299,27 +359,7 @@ def domestic_daily_chart(
             response_type=KisDomesticDailyChart(symbol=symbol),
         )
 
-        if not chart:
-            chart = result
-
-        if not result.bars:
-            break
-
-        last = result.bars[-1].time.date()
-
-        if cursor and cursor < last:
-            break
-
-        if chart and result != chart:
-            chart.bars.extend(result.bars)
-
-        if isinstance(start, timedelta):
-            start = (chart.bars[0].time - start).date()
-
-        if start and last <= start:
-            break
-
-        cursor = last - period_delta
+    chart, start = _collect_dated_bars(fetch, cursor=end, start=start, step=period_delta)
 
     return drop_after(
         chart,
@@ -368,12 +408,10 @@ def foreign_daily_chart(
     if isinstance(start, date) and end and start > end:
         start, end = end, start
 
-    cursor = end
-    chart = None
     period_delta = timedelta(days=1 if period == "day" else 7 if period == "week" else 30)
 
-    while True:
-        result = self.call(
+    def fetch(cursor: date | None, _window_start: date | timedelta | None) -> KisForeignDailyChart:
+        return self.call(
             FOREIGN_DAILY_CHART,
             params={
                 "AUTH": "",
@@ -389,27 +427,7 @@ def foreign_daily_chart(
             ),
         )
 
-        if not chart:
-            chart = result
-
-        if not result.bars:
-            break
-
-        last = result.bars[-1].time.date()
-
-        if cursor and cursor < last:
-            break
-
-        if chart and result != chart:
-            chart.bars.extend(result.bars)
-
-        if isinstance(start, timedelta):
-            start = (chart.bars[0].time - start).date()
-
-        if start and last <= start:
-            break
-
-        cursor = last - period_delta
+    chart, start = _collect_dated_bars(fetch, cursor=end, start=start, step=period_delta)
 
     if period == "year":
         bars = []
