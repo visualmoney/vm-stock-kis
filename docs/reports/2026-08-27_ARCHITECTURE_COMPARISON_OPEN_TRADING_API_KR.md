@@ -10,6 +10,8 @@
 
 > **검증 원칙**: 본 보고서의 모든 수치와 구조 주장은 기존 문서를 인용하지 않고 **실제 소스 코드를 직접 읽어 검증**했습니다.
 > 기존 문서(`docs/architecture/ARCHITECTURE.md`, `docs/reports/ARCHITECTURE_*_KR.md`)와 코드가 불일치하는 항목은 §11에 별도 정리했습니다.
+>
+> **측정과 판정**: 줄 번호·LOC·TR 개수 등 정량 서술은 2026-08-27 측정이다. §5의 판정 문장(무엇을 고치고 무엇을 남기는가)은 2026-11-15 코드에 맞춘다.
 
 ---
 
@@ -36,8 +38,8 @@
 
 1. **폭(breadth)은 공식 샘플의 압승** — 커버리지 격차가 REST 기준 **약 9배**(74 vs 377 TR ID). vm-stock-kis는 KIS OpenAPI 중 **주식 현물 도메인만** 구현했습니다.
 2. **깊이(depth)·안전성은 vm-stock-kis의 압승** — 타입, 예외, 재연결 복구, 참조카운팅 구독 해지, 멀티환경 동시성은 공식 샘플에 **아예 없는 기능**입니다.
-3. **vm-stock-kis의 계층 아키텍처는 문서가 주장하는 단방향 계층이 아닙니다.** 코드상 `client → api`, `responses → client`, `api → adapter`, `event → api` 역방향 의존이 실재하며(§4.3), 이것이 **신규 API 추가 비용을 250~800 LOC까지 끌어올리는 근본 원인**입니다(§10). 다만 *단방향이 아닌 것 자체가 결함인가*는 별도 판정이 필요하며, §5에서 다룹니다.
-4. **단방향이 아닌 것 자체는 결함이 아닙니다** — 역방향 7건 중 3건(`responses→client`, `api↔adapter`, `api→scope`)은 rich domain object 설계의 필연이고, **반드시 고칠 것은 2건**(`client/websocket.py:19`, `utils/retry.py:14`)입니다. 진짜 문제는 순환을 끊는 지연 import 30곳에 **사유 주석이 0곳**이라는 것입니다 (§5).
+3. **vm-stock-kis는 단방향 계층이 아니라 허브-스포크다.** 2026-08-27 측정에서 역방향 의존이 신규 API 비용을 250~800 LOC까지 끌어올리는 구조였다(§4.3, §10). `client → api` 모듈 레벨 간선과 `utils → client`는 그 뒤 해소됐다(§5).
+4. **단방향이 아닌 것 자체는 결함이 아니다.** 남은 의도적 역방향은 `responses→client`, `api↔adapter`, `api↔event`, `api→scope`다. 수정 대상이던 응답 맵(`client/websocket.py`)과 `utils/retry.py`의 client 의존은 해소됐다. 파일 상단으로 올리면 로드가 깨지는 지연 import에는 사유 주석이 있다(§5).
 5. **커버리지 격차는 손으로 메울 수 없고, codegen으로는 메울 수 있습니다** — 공식 샘플 벤더링은 **라이선스 부재(all rights reserved)로 기각**되지만, `examples_llm/`은 REST 274개 중 **271개(98.9%)가 AST 파싱되는 기계 판독 스펙**임을 실측으로 증명했습니다. 사실만 추출해 vmkis 네이티브 코드를 생성하는 전략이 유일한 현실적 경로입니다 (§13).
 
 ---
@@ -300,7 +302,7 @@ AST로 전 파일 import를 런타임/TYPE_CHECKING으로 분류한 결과:
 
 ## 5. 단방향 의존이 아니어도 되는가 — 아키텍처 판정
 
-**한 줄 결론: "단방향이 아니라는 것" 자체는 죄가 아니다. 죄는 두 가지다 — (1) 문서가 코드에 없는 단방향성을 주장하고 있다는 것, (2) 순환을 끊는 장치(지연 import 30곳, TYPE_CHECKING 35파일, 클래스 본문 import)가 어디에도 설명 없이 존재해서, 누구든 "정리"하는 순간 부서질 수 있다는 것.** 역방향 간선 7종 중 **2개는 반드시 수정**, **3개는 의도적 설계로 인정하고 문서화**, **2개는 저비용 정리 대상**입니다.
+**한 줄 결론: "단방향이 아니라는 것" 자체는 죄가 아니다.** 2026-08-27에는 문서가 코드에 없는 단방향성을 주장하고, 순환을 끊는 지연 import에 사유가 없다는 두 가지가 문제였다. 역방향 7종은 **수정 2건**, **의도적 설계**, **저비용 정리 2건**으로 갈랐다. 수정 2건과 정리 (b)는 해소됐다. (e)는 재배치하지 않고 의도적 양방향으로 동결했다. 파일 상단으로 올리면 로드가 깨지는 지연 import에는 사유 주석이 있다.
 
 ### 5.1 원칙 정리 — 계층 아키텍처가 실제로 요구하는 것
 
@@ -315,7 +317,7 @@ AST로 전 파일 import를 런타임/TYPE_CHECKING으로 분류한 결과:
 원칙을 이 코드에 적용하면:
 
 - **ADP(Acyclic Dependencies Principle)**: 위반 확실. 다만 Python은 링커가 없어 벌금이 C++/Java보다 쌉니다. 벌금은 "import 순서 민감성"과 "부분 로드 불가"로 지불됩니다(§5.3).
-- **SDP(Stable Dependencies Principle)**: 가장 많이 의존받는 모듈은 `client/`(responses·utils·event·api 전부가 참조)이므로 client가 가장 안정적이어야 합니다. 그런데 `client/websocket.py:19`가 api의 구체 타입 맵(`WEBSOCKET_RESPONSES_MAP`)을 import합니다 — **가장 안정적이어야 할 모듈이 신규 TR 추가마다 바뀌는 가장 변동성 큰 모듈에 의존**합니다. 이 코드베이스에서 원칙 위반이 실질 위험으로 직결되는 유일한 지점입니다.
+- **SDP(Stable Dependencies Principle)**: 가장 많이 의존받는 모듈은 `client/`(responses·utils·event·api 전부가 참조)이므로 client가 가장 안정적이어야 합니다. 2026-08-27에는 `client/websocket.py:19`가 api의 구체 타입 맵(`WEBSOCKET_RESPONSES_MAP`)을 import해서, 신규 TR마다 client가 같이 바뀌었다. 이 간선은 [#17](https://github.com/visualmoney/vm-stock-kis/issues/17)에서 끊겼다. 레지스트리는 `responses/websocket.py`의 `register_websocket_response`가 채우고, client는 id로 조회만 한다.
 - **DIP**: `adapter/`는 이미 DIP를 절반 수행 중입니다. `adapter/account_product/order_modify.py:25,38,64`에 `KisCancelableOrder`, `KisModifyableOrder` Protocol이 정의되어 있고 api가 Mixin을 상속합니다. 추상은 이미 있는데 문서가 이를 "계층"으로 잘못 서술할 뿐입니다.
 
 **결정적 사실**: 이 코드의 실제 형상은 계층(layer)이 아니라 **허브-스포크**입니다. `kis.py:756-758`이 클래스 본문에서 scope를 import해 VmKis를 허브로 만들고, 17개 api 모듈이 `self: "VmKis"` 문자열 어노테이션(58곳)으로 허브를 역참조합니다. 허브-스포크에서 스포크 간 참조는 정의상 계층 위반이 아니라 **허브 설계의 자연스러운 귀결**입니다.
@@ -324,23 +326,23 @@ AST로 전 파일 import를 런타임/TYPE_CHECKING으로 분류한 결과:
 
 | 간선 | 위치 | 분류 | 근거 |
 |---|---|---|---|
-| **(a)** client→api | `client/websocket.py:19` (모듈 레벨) | **우발적 — MUST FIX** | `WEBSOCKET_RESPONSES_MAP` 사용처는 `:546` dispatch 한 곳뿐. client는 "어떤 응답 타입이 존재하는가"를 알 필요 없고 "id로 찾을 수 있다"만 알면 됨. 전형적 DIP 미적용이며 역전 비용이 매우 낮음 |
-| **(b)** client→api | `client/messaging.py:52` (지연) | **우발적 — FIX 권장** | WS 요청 빌더가 approval key를 스스로 조달하러 상위를 호출. 이미 kis 허브를 들고 있으므로 key 공급자를 주입받는 형태로 뒤집는 것이 자연스러움 |
+| **(a)** client→api | `client/websocket.py:19` (당시 모듈 레벨) | **해소 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17))** | 사용처는 dispatch 한 곳뿐이었다. 레지스트리를 `responses/websocket.py`로 옮기고 api가 `@register_websocket_response`로 자기등록한다 |
+| **(b)** client→api | `client/messaging.py` (당시 지연 import) | **해소 ([#176](https://github.com/visualmoney/vm-stock-kis/issues/176))** | 요청 빌더가 approval key를 가지러 api를 불렀다. `VmKis.websocket_approval_key`가 발급하고 client는 api를 import하지 않는다 |
 | **(c)** responses→client | `responses/response.py:5-7` (모듈 레벨) | **본질적 — 코드가 아니라 문서가 틀림** | `KisResponse`가 `KisAPIError`를 던지고 `KisObjectBase`/`KisPage` 정체성을 갖는 건 응답 객체의 본질. 실제 방향은 일관되게 responses→client인데 `ARCHITECTURE.md:106-109`만 Client를 Response Transform **위에** 그려놓음. 고칠 대상은 문서 |
 | **(d)** api↔adapter | `api/account/order.py:15,19` + `order.py:546`의 `KisOrderBase(KisOrderNumberBase, KisOrderableOrderMixin, KisRealtimeOrderableOrderMixin)` | **본질적 — KEEP + 문서화** | `order.cancel()`, `balance.stock.sell()`이 되는 rich domain object가 이 라이브러리의 상품성 자체. Mixin 쪽(`order_modify.py:80,107`)이 지연 import로 api를 역호출하므로 진짜 순환이지만 **"데이터와 행위의 결합"이라는 설계 의도의 필연**. 억지로 역전하면 사용자 API가 `kis.cancel(order)`로 퇴화 |
-| **(e)** event→api | `event/filters/product.py:3-4`, `filters/order.py:4-5` | **우발적·저위험 — 재배치 권장** | `event/handler.py`는 순수 제네릭인데 `event/filters/`만 도메인 타입을 앎. 잘못 놓인 건 의존이 아니라 **디렉터리**. filters를 도메인 측으로 옮기면 event는 순수 하위 계층이 됨 |
-| **(f)** utils→client | `utils/retry.py:14` | **우발적 — MUST FIX (5분)** | "유틸리티가 최하층"이라는 문서 주장과 정면충돌하는 유일한 utils 간선. 재시도 가능 예외 튜플을 파라미터로 받으면 끝 |
+| **(e)** event→api | `event/filters/product.py:3-4`, `filters/order.py:4-5` | **의도적 — 동결 ([#63](https://github.com/visualmoney/vm-stock-kis/issues/63))** | `event/handler.py`는 순수 제네릭이고 filters만 도메인 타입을 안다. 재배치 대신 api ↔ event 양방향을 동결했다. `get_type_hints`가 깨지고, `api → event`를 남겨 두면 순환이 그대로이기 때문이다 |
+| **(f)** utils→client | `utils/retry.py:14` (당시) | **해소 ([#18](https://github.com/visualmoney/vm-stock-kis/issues/18))** | retry가 client 예외 목록을 import했다. `KisException.retryable` 표식으로 끊었다. 파라미터 주입은 하지 않았다 |
 | **(g)** api→scope | `api/base/product.py:93` (property 내 지연) | **본질적 — KEEP** | `product.stock`으로 상위 scope로 항해하는 fluent API. 허브-스포크의 의도된 역방향 항해이며 지연 import로 로드 순서에서 격리됨 |
 
 ### 5.3 이미 지불한 비용 — 측정 결과
 
 전부 이 저장소에서 직접 측정/실행한 값입니다.
 
-1. **순환 우회 장치의 총량**: 함수/프로퍼티 내부의 `vmkis.*` 지연 import **30곳**(AST 계수). 순환 우회 목적이 명백한 것 — adapter→api 12곳(`adapter/websocket/execution.py:83,111,145,173`, `adapter/websocket/price.py:222,232,309,319`, `adapter/product/quote.py:220,232`, `adapter/account_product/order_modify.py:80,107`), client→api 1곳, api→scope 1곳, kis→api 3곳(`kis.py:674,698,716`). 여기에 `TYPE_CHECKING` 블록 보유 파일 **35개**, `self: "VmKis"` 문자열 어노테이션 **17파일 58곳**, `kis.py:756-758` 클래스 본문 import.
+1. **순환 우회 장치의 총량 (2026-08-27 AST)**: 함수/프로퍼티 내부의 `vmkis.*` 지연 import **30곳**. 당시 순환 우회로 센 것 — adapter→api 12곳(`adapter/websocket/execution.py:83,111,145,173`, `adapter/websocket/price.py:222,232,309,319`, `adapter/product/quote.py:220,232`, `adapter/account_product/order_modify.py:80,107`), client→api 1곳, api→scope 1곳, kis→api 3곳(`kis.py:674,698,716`). 여기에 `TYPE_CHECKING` 블록 보유 파일 **35개**, `self: "VmKis"` 문자열 어노테이션 **17파일 58곳**, `kis.py:756-758` 클래스 본문 import. 2026-11-15에 함수 안 import를 파일 상단에 두고 `import vmkis`를 다시 띄운 결과, price·quote의 그 import와 `kis.py`의 `token_issue`는 로드가 깨지지 않았다. 깨지는 곳은 §5.5 (d)(g)와 `order.py`·`market.py`·`trading_hours.py`의 일부다.
 
 2. **부분 로드 불가 — 실측**: `import vmkis.responses.response` 하나만 해도 **vmkis 모듈 87개 전부**가 로드됩니다(실행 확인). `import vmkis.client.websocket`도 동일. `__init__.py`가 `VmKis`를 즉시 import하고 kis.py 클래스 본문이 scope→adapter→api→전체를 연쇄 로드하기 때문입니다. **retry 데코레이터 하나 쓰려 해도 웹소켓 클라이언트까지 로드됩니다.** `import vmkis` 소요 157~220ms(requests 단독 98ms 제외 시 vmkis 몫 약 60~120ms) — 치명적이진 않으나 구조적으로 줄일 수 없는 상태입니다.
 
-3. **문서화되지 않은 load-bearing 불변식**: 전체가 ImportError 없이 로드되는 이유는 단 하나 — **어떤 모듈도 `vmkis.kis`를 모듈 레벨에서 import하지 않는다**(`scope/stock.py:27`, `scope/base.py:6`, `scope/account.py:14` 모두 TYPE_CHECKING 블록 안). 이 불변식은 어디에도 적혀 있지 않습니다. 결정적으로 **`grep -rn "circular\|순환" src/vmkis` 결과는 0건**이고 git 이력에도 순환 관련 커밋이 없습니다. 즉 지연 import 30곳 중 단 한 곳도 사유가 적혀 있지 않습니다. 선의의 리팩터러가 `adapter/websocket/execution.py:83`의 함수 내 import를 파일 상단으로 올리는 순간(린터가 흔히 권하는 바로 그 정리) 패키지가 로드 불능이 될 수 있는데, **그 지뢰의 위치가 코드 어디에도 표시돼 있지 않습니다.**
+3. **load-bearing 불변식**: 전체가 ImportError 없이 로드되는 이유는 **어떤 모듈도 `vmkis.kis`를 모듈 레벨에서 import하지 않는다**는 것이다(`scope/stock.py`, `scope/base.py`, `scope/account.py`는 TYPE_CHECKING 안). 2026-08-27에는 이 문장이 어디에도 없고 `grep 순환`이 0건이었다. 지금은 `ARCHITECTURE.md` §1.1에 적혀 있고, 파일 상단으로 올리면 로드가 깨지는 지연 import에는 `순환 방지` 주석이 있다([#175](https://github.com/visualmoney/vm-stock-kis/issues/175)). `tests/unit/test_import_contracts.py`가 그 주석을 지운 경우를 실패로 본다.
 
 ### 5.4 아직 지불하지 않은 비용 — 공정한 평가
 
@@ -351,15 +353,29 @@ AST로 전 파일 import를 런타임/TYPE_CHECKING으로 분류한 결과:
 - **배포 분리 요구 없음** — 단일 wheel 배포. ADP의 최대 벌금(순환된 컴포넌트는 함께 릴리스해야 함)은 컴포넌트를 쪼갤 계획이 없으면 부과되지 않음. api/adapter/responses/client를 별도 패키지로 나눌 로드맵이 없는 한 (c)(d)의 순환은 **요금이 청구되지 않음**.
 - **런타임 정합성 문제 없음** — 지연 import는 호출 시점에 이미 전 모듈이 로드된 뒤 실행되므로 실행 중 ImportError 위험도 사실상 없음.
 
-즉 현재 비용은 "장애"가 아니라 **"이해 비용 + 변경 취약성"**에 국한됩니다. 다만 **(a)만은 예외**입니다 — TR 추가마다 api와 client가 함께 변경되는 구조는 지금도 요금이 나가고 있습니다.
+즉 당시 비용은 "장애"가 아니라 **"이해 비용 + 변경 취약성"**에 국한됐다. **(a)만은 예외**여서 TR 추가마다 api와 client가 함께 바뀌고 있었다. 그 요금은 [#17](https://github.com/visualmoney/vm-stock-kis/issues/17)의 자기등록으로 끊겼다.
 
 ### 5.5 판정
 
-> **질문에 대한 답**: 지금 당장은 문제가 터지지 않았고 대부분은 앞으로도 안 터집니다. 그러나 쟁점은 "단방향이 아니어도 되는가"가 아니라 **"어떤 역방향은 설계이고 어떤 역방향은 사고인가"**이며, 이 프로젝트는 그 둘을 구분해 둔 곳이 없다는 것이 진짜 문제입니다.
+> **이슈 대조 (2026-11-15).** 아래 Tier 문장은 이 표의 결과에 맞춘 판정이다.
 
-**Tier 1 — 반드시 수정** (모듈 레벨 상향 참조, 역전 비용 낮음)
+| 항목 | 당시 판정 | 현황 |
+|---|---|---|
+| **(a)** client→api 자기등록 | Tier 1 수정 | 완료. [#17](https://github.com/visualmoney/vm-stock-kis/issues/17). 레지스트리는 `responses/websocket.py` 의 `register_websocket_response` |
+| **(f)** `utils/retry` → client | Tier 1 수정 | 완료. [#18](https://github.com/visualmoney/vm-stock-kis/issues/18). 예외의 `retryable` 표식. 파라미터 주입은 하지 않음 |
+| **(c)** responses→client | 문서 수정 | 완료. `ARCHITECTURE.md` §1.1 이 의도적으로 적음 |
+| **(d)** api↔adapter 문서화 + 지연 import 주석 | 수정 금지, 주석 필수 | 문서화는 완료. 파일 상단으로 올리면 로드가 깨지는 지연 import 에 사유 주석 ([#175](https://github.com/visualmoney/vm-stock-kis/issues/175)). `adapter/websocket/price.py` · `adapter/product/quote.py` 의 함수 안 import 는 올려도 로드되어 주석을 달지 않음 |
+| **(g)** api→scope 항해 | 지연 import 유지 + 주석 | 완료. `api/base/product.py` `stock` 에 사유 주석 ([#175](https://github.com/visualmoney/vm-stock-kis/issues/175)) |
+| **(b)** approval key 주입 | Tier 3 | 완료. `VmKis.websocket_approval_key` 가 발급. `client` 는 api 를 import 하지 않음. `ignore_imports` 없음 ([#176](https://github.com/visualmoney/vm-stock-kis/issues/176)) |
+| **(e)** `event/filters` 재배치 | Tier 3 | 재배치하지 않음. [#63](https://github.com/visualmoney/vm-stock-kis/issues/63) 이 의도적 양방향 순환으로 동결 |
 
-- **(a)** `client/websocket.py:19` — client에 빈 레지스트리를 두고 api가 자기등록하도록 역전:
+§5.6의 다이어그램·불변식·import-linter는 `ARCHITECTURE.md` §1.1과 [#50](https://github.com/visualmoney/vm-stock-kis/issues/50)에 반영됐다.
+
+> **질문에 대한 답**: 쟁점은 "단방향이 아니어도 되는가"가 아니라 **어떤 역방향은 설계이고 어떤 역방향은 사고인가**이다. 그 구분은 `ARCHITECTURE.md` §1.1과 아래 표에 있다.
+
+**Tier 1 — 해소** (모듈 레벨 상향 참조. 역전 비용이 낮아 고쳤다)
+
+- **(a)** 당시 `client/websocket.py:19`. client에 빈 레지스트리를 두고 api가 자기등록하도록 역전했다. 레지스트리의 자리는 `responses/websocket.py`다.
 
   ```python
   # client/websocket.py — 소유권 이전
@@ -376,23 +392,23 @@ AST로 전 파일 import를 런타임/TYPE_CHECKING으로 분류한 결과:
   class KisDomesticRealtimePrice(...): ...
   ```
 
-  `client/websocket.py:546`의 dispatch는 그대로. **신규 TR 추가 시 client 무변경**이 됩니다. 단 등록이 api 모듈 로드에 의존하므로 `api/websocket/__init__.py`가 로드를 보장해야 하며, 현 허브 구조에서는 자동 충족됩니다.
-- **(f)** `utils/retry.py:14` — `retry(..., on: tuple[type[Exception], ...])`로 예외를 파라미터화하거나 해당 예외 4종의 *정의*를 client 밖 하위 모듈로 이동.
+  dispatch는 그대로다. **신규 TR 추가 시 client는 바뀌지 않는다.** 등록이 api 모듈 로드에 의존하므로 `vmkis/__init__.py`가 `vmkis.api.websocket` 로드를 보장한다.
+- **(f)** 당시 `utils/retry.py:14`. 예외 목록을 파라미터로 받지 않았다. `KisException.retryable`을 예외 자신이 들고, retry는 `getattr`로 본다([#18](https://github.com/visualmoney/vm-stock-kis/issues/18)).
 
-**Tier 2 — 의도적 설계로 공인하고 문서화 (수정 금지)**
+**Tier 2 — 의도적 설계. 코드 구조는 유지하고 문서와 주석으로 공인**
 
-- **(c)** responses→client: 실제 방향이 맞고 문서의 화살표가 틀림 → 문서 수정.
-- **(d)** api↔adapter: rich domain object 설계의 본질. "adapter는 계층이 아니라 api와 같은 링(ring)의 역할 분담"으로 재서술. adapter 내 지연 import 12곳에 `# 순환 방지: api가 이 Mixin을 상속하므로 모듈 레벨 불가` 주석 필수.
-- **(g)** api→scope 항해 프로퍼티: 허브-스포크의 의도된 역방향. 지연 import 유지 + 주석.
+- **(c)** responses→client: 실제 방향이 맞다. `ARCHITECTURE.md`가 이 화살표를 의도적으로 적는다.
+- **(d)** api↔adapter: rich domain object의 본질이다. adapter는 별도 층이 아니라 api와 같은 역할 분담이다. 파일 상단으로 올리면 로드가 깨지는 지연 import에만 `순환 방지` 주석이 있다. `adapter/websocket/price.py`와 `adapter/product/quote.py`의 함수 안 import는 올려도 로드되어 그 주석이 없다([#175](https://github.com/visualmoney/vm-stock-kis/issues/175)).
+- **(g)** api→scope 항해 프로퍼티: 허브-스포크의 의도된 역방향. `api/base/product.py`의 `stock`은 지연 import와 사유 주석을 유지한다.
 
-**Tier 3 — 저비용 정리 (여유 있을 때)**
+**Tier 3 — 저비용 정리의 결과**
 
-- **(b)** approval key 공급자 주입으로 역전.
-- **(e)** `event/filters/`를 도메인 측(api 또는 adapter)으로 재배치. event 코어는 이미 깨끗함.
+- **(b)** 해소. approval key는 `VmKis.websocket_approval_key`가 발급한다. `ignore_imports`는 없다([#176](https://github.com/visualmoney/vm-stock-kis/issues/176)).
+- **(e)** 재배치하지 않음. [#63](https://github.com/visualmoney/vm-stock-kis/issues/63)이 api ↔ event를 의도적 양방향 순환으로 동결했다. event 코어(`event/handler.py`)는 제네릭 그대로다.
 
-### 5.6 문서 처방 — ARCHITECTURE.md가 말해야 할 진실
+### 5.6 문서 처방 — ARCHITECTURE.md에 반영된 그림
 
-`docs/architecture/ARCHITECTURE.md:97-112`의 4단 수직 다이어그램(API → Client → Response Transform → Utility)은 삭제하고 다음으로 교체할 것을 제안합니다.
+2026-08-27의 4단 수직 다이어그램(API → Client → Response Transform → Utility)은 삭제됐다. 아래 스케치가 `ARCHITECTURE.md`의 허브-스포크 그림으로 들어갔다. 살아 있는 정본은 그 파일이다.
 
 ```text
                          ┌──────────────────────────┐
@@ -407,25 +423,26 @@ AST로 전 파일 import를 런타임/TYPE_CHECKING으로 분류한 결과:
    │  scope/ │───▶│ adapter/ │◀────▶│   api/   │  ◀─ api↔adapter 순환은
    └─────────┘    └──────────┘ 의도적└─┬───┬────┘     의도적(rich object)
                         순환(d)        │   │ ▲
-                                       │   │ └─(a) client가 응답맵 참조
-                                       ▼   ▼      [수정 대상: 자기등록으로 역전]
+                                       │   │ └─(a) 응답맵은 responses 가 보유 [해소 #17]
+                                       ▼   ▼
                                  ┌──────────┐   ┌────────────┐
                                  │responses/│──▶│  client/   │◀── event/ (subscription)
                                  └──────────┘(c)└─────┬──────┘
-                                  의도적: 응답은        │(f) utils/retry가 참조
-                                  client 기반 위에 있음  ▼   [수정 대상]
+                                  의도적: 응답은        │(f) retry 의 client 의존 [해소 #18]
+                                  client 기반 위에 있음  ▼
                                                  ┌──────────┐
                                                  │  utils/  │
                                                  └──────────┘
-   실제 계층 순서(위가 상위): scope → adapter/api → event → responses → client → utils
+   역할 그룹: scope, adapter/api, event, responses, client, utils
+   읽는 법은 허브-스포크다. 정본은 ARCHITECTURE.md 다.
 ```
 
-그리고 다음 **불변식**을 문서에 명문화해야 합니다.
+다음 **불변식**은 `ARCHITECTURE.md` §1.1에 있다.
 
-1. **`vmkis.kis`를 모듈 레벨에서 import 금지** (TYPE_CHECKING 블록만 허용). 현재 전체 패키지가 정상 로드되는 유일한 이유이며 지금은 암묵입니다.
-2. **신규 모듈-레벨 역방향 간선 금지.** 하위→상위 지식이 필요하면 (a)처럼 등록을 역전하거나 주입받습니다. 기존 역방향은 (c)(d)(g) 셋으로 동결하고 각각 "의도적"으로 표기합니다.
-3. **모든 순환 우회 지연 import에 사유 주석 필수.** 현재 30곳 중 0곳에 사유가 있습니다.
-4. CI에 **import-linter** 도입 권장: `utils → 상위 금지`, `client → api 금지`(등록 역전 후) 두 계약만으로 Tier 1 회귀를 기계적으로 차단할 수 있습니다.
+1. **`vmkis.kis`를 모듈 레벨에서 import 금지** (TYPE_CHECKING 블록만 허용). 패키지가 로드되는 이유이며, 이제는 문서에 있다.
+2. **신규 모듈-레벨 역방향 간선 금지.** 하위 그룹이 상위 지식을 필요로 하면 등록을 역전하거나 주입받는다. 동결된 역방향은 `responses → client`, `api ↔ adapter`, `api ↔ event`([#63](https://github.com/visualmoney/vm-stock-kis/issues/63)), `api → scope`다.
+3. **파일 상단으로 올리면 로드가 깨지는 지연 import에 사유 주석.** 2026-08-27에는 30곳 중 0곳이었다. 2026-11-15 측정으로 깨지는 곳에 `순환 방지` 주석이 있다([#175](https://github.com/visualmoney/vm-stock-kis/issues/175)).
+4. **import-linter는 CI에 있다**([#50](https://github.com/visualmoney/vm-stock-kis/issues/50)). 계약은 `utils → 상위 금지`, `client → api 금지` 두 개다. `ignore_imports`는 없다([#176](https://github.com/visualmoney/vm-stock-kis/issues/176)).
 
 ---
 
@@ -1973,10 +1990,10 @@ print(samsung.overtime_price().price)               # 동작 확인됨
 
 - `src/vmkis/kis.py` — `VmKis` 파사드, `request()`/`fetch()` 게이트웨이, 메서드 주입 지점
 - `src/vmkis/responses/dynamic.py` + `types.py` + `response.py` — 동적 변환 엔진 3종 세트
-- `src/vmkis/client/websocket.py` — 실시간 엔진, `client → api` 역참조 지점(:19)
+- `src/vmkis/client/websocket.py` — 실시간 엔진. 응답 맵은 `responses/websocket.py`가 보유한다(#17)
 - `src/vmkis/scope/stock.py` + `adapter/product/quote.py` — Scope 조립 루트와 Mixin 바인딩
 - `src/vmkis/api/stock/quote.py` — 엔드포인트 구현 표준 패턴(761줄)
-- `src/vmkis/api/websocket/__init__.py` — `WEBSOCKET_RESPONSES_MAP` 등록 지점
+- `src/vmkis/api/websocket/__init__.py` — 실시간 응답 모듈을 로드해 `@register_websocket_response`를 실행(#17)
 - `src/vmkis/__env__.py` — 도메인·한도·Rate Limit 상수
 
 **open-trading-api**

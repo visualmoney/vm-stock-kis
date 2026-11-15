@@ -638,6 +638,7 @@ class KisOrderBase(KisOrderNumberBase, KisOrderableOrderMixin, KisRealtimeOrdera
     @property
     def pending_order(self) -> "KisPendingOrder | None":
         """미체결 주문"""
+        # 순환 방지: pending_order 가 이 모듈을 모듈 레벨에서 import 한다.
         from vmkis.api.account.pending_order import pending_orders
 
         return pending_orders(
@@ -945,6 +946,7 @@ def _orderable_quantity(
         KisNotFoundError: 조회 결과가 없는 경우
     """
     if order == "buy":
+        # 순환 방지: orderable_amount 가 이 모듈을 모듈 레벨에서 import 한다.
         from vmkis.api.account.orderable_amount import orderable_amount
 
         amount = orderable_amount(
@@ -967,6 +969,7 @@ def _orderable_quantity(
 
         return qty, amount.unit_price
     else:
+        # 순환 방지: balance 가 이 모듈을 모듈 레벨에서 import 한다.
         from vmkis.api.account.balance import orderable_quantity
 
         qty = orderable_quantity(

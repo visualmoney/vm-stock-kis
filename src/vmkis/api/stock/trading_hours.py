@@ -184,6 +184,7 @@ def trading_hours(
             close=time(15, 30, tzinfo=TIMEZONE),
         )
     else:
+        # 순환 방지: day_chart 가 이 모듈을 모듈 레벨에서 import 한다.
         from vmkis.api.stock.day_chart import foreign_day_chart
 
         while isinstance(samples := MARKET_SAMPLE_STOCK_MAP[market], str):

@@ -39,16 +39,13 @@ class DummyWS:
         self.closed = True
 
 
-def make_client(monkeypatch, paper=False):
+def make_client(_monkeypatch, paper=False):
     kis = DummyKis(paper=paper)
     c = KisWebsocketClient(kis=kis, paper=False)
     # prevent threads from being started by connect
     c.thread = None
-    # provide a fake websocket approval key function so KisWebsocketRequest.build() works
-    monkeypatch.setattr(
-        "vmkis.api.auth.websocket.websocket_approval_key",
-        lambda kis_obj, domain=None: SimpleNamespace(approval_key="APPKEY-123"),
-    )
+    # 허브가 키를 발급한다. client 는 api 를 import 하지 않는다 (#176).
+    kis.websocket_approval_key = lambda domain=None: SimpleNamespace(approval_key="APPKEY-123")
     return c
 
 

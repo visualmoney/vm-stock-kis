@@ -305,13 +305,10 @@ forbidden_modules = [
     "vmkis.adapter",
     "vmkis.scope",
 ]
-# 순환 회피용 지연 import 1건. 함수 안에 있어 import 시점에는 실행되지 않지만
-# grimp 은 모듈 레벨과 구분하지 않으므로 여기서 면제합니다.
-# 사유는 client/messaging.py 의 해당 줄 주석에 있습니다. 이 목록이 늘어난다면
-# 그것은 예외가 아니라 계약이 깨지고 있다는 신호입니다.
-ignore_imports = [
-    "vmkis.client.messaging -> vmkis.api.auth.websocket",
-]
+# 면제 목록은 두지 않습니다. client → api 지연 import 1건(#176 이전
+# messaging.py 의 approval key)을 ignore_imports 로 빼면, 그 import 를
+# 파일 상단으로 올려도 계약이 통과합니다. 키가 다시 생기면 예외가 아니라
+# 계약이 깨지고 있다는 신호입니다.
 
 # ================================================================ pytest ====
 [tool.pytest.ini_options]

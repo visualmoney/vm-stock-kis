@@ -138,8 +138,9 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 > **이 그림은 계층이 아닙니다. 하향으로 쌓은 층도 아닙니다.**
 > 처음 검토는 layered(계층) 렌즈였다. 동결 기록
 > [`2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md`](../reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md)
-> 가 그 렌즈로 코드를 대조했고, 결론은 **허브-스포크**다. 그 보고서는 갱신하지
-> 않는다. 살아 있는 문서는 이 절의 그림만 그린다.
+> 가 그 렌즈로 코드를 대조했고, 결론은 **허브-스포크**다. 그 보고서의 정량·줄
+> 번호는 2026-08-27 스냅샷이다. §5 판정 문장은 이후 이슈 결과에 맞춘다.
+> 살아 있는 문서는 이 절의 그림만 그린다.
 >
 > 예전 스케치는 `API → Client → Response Transform → Utility` 하향 단방향
 > 층이었다. **코드와 일치하지 않는다.** AST 전수 분석 결과 런타임 모듈레벨
@@ -183,6 +184,10 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    참조했습니다. 목록을 옮기는 대신 **판단 근거를 예외 자신에게 넘겼습니다** —
    `KisException.retryable` 표식을 보고 `getattr` 로 확인하므로 유틸은 아무것도
    import 하지 않습니다. 한 그룹이 다른 그룹의 이름을 필요로 할 때의 일반적인 해법입니다.
+   웹소켓 approval key 도 같은 방향입니다. `client` 가 api 를 부르지 않고
+   `VmKis.websocket_approval_key` 가 발급합니다
+   ([#176](https://github.com/visualmoney/vm-stock-kis/issues/176)).
+   계약에 `ignore_imports` 는 없습니다.
 
    **이 불변식은 기계가 지킵니다** ([#50](https://github.com/visualmoney/vm-stock-kis/issues/50)).
    `pyproject.toml` 의 `[tool.importlinter]` 에 계약 2개가 있고 CI 의 `lint` 잡이
@@ -199,12 +204,8 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    그래프에서는 상위 전체입니다.** 그룹 단위로만 보는 눈(그리고 사람이 쓴 AST
    스캔)은 이것을 놓칩니다.
 
-   계약이 못 보는 것도 두 가지 적어 둡니다.
+   계약이 못 보는 것도 적어 둡니다.
 
-   - **면제는 모듈 쌍 단위입니다.** `client/messaging.py` 의 지연 import 1건이
-     `ignore_imports` 에 있는데, 이 import 를 파일 상단으로 올려도 `lint-imports`
-     는 통과합니다(실측). `tests/unit/test_import_contracts.py` 의 AST 검사가
-     그 자리를 막습니다.
    - **그래프가 비어 있어도 통과합니다.** grimp 은 `__init__.py` 없는 디렉터리를
      스캔에서 놓칠 수 있고, 그 상태에서도 `lint-imports` 는 초록입니다.
      [#64](https://github.com/visualmoney/vm-stock-kis/issues/64) 에서

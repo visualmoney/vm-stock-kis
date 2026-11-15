@@ -63,6 +63,7 @@ class KisMarketBase(KisObjectBase):
     @property
     def foreign(self) -> bool:
         """해외종목 여부"""
+        # 순환 방지: info → quote → product → 이 모듈. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.stock.info import MARKET_TYPE_MAP
 
         return self.market not in MARKET_TYPE_MAP["KRX"]

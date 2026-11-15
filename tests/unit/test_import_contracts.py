@@ -72,31 +72,72 @@ def test_contract_graph_covers_every_source_module() -> None:
     )
 
 
-def test_messaging_keeps_api_import_lazy() -> None:
-    """`client/messaging.py` 의 `api` import 는 함수 안에 있어야 합니다.
+# 2026-11-15 에 파일 상단으로 올려 `import vmkis` 가 깨지는 곳만 모았습니다.
+# 같은 날 올려도 로드가 된 곳(`adapter/websocket/price.py`,
+# `adapter/product/quote.py` 의 차트 import, `kis.py` 의 `token_issue`)은
+# 순환이 아니므로 여기 없습니다.
+CYCLE_LAZY_IMPORTS: tuple[tuple[str, str], ...] = (
+    ("adapter/account_product/order_modify.py", "vmkis.api.account.order_modify"),
+    ("adapter/websocket/execution.py", "vmkis.api.websocket.order_execution"),
+    ("api/account/order.py", "vmkis.api.account.pending_order"),
+    ("api/account/order.py", "vmkis.api.account.orderable_amount"),
+    ("api/account/order.py", "vmkis.api.account.balance"),
+    ("api/base/market.py", "vmkis.api.stock.info"),
+    ("api/base/product.py", "vmkis.api.stock.info"),
+    ("api/base/product.py", "vmkis.scope.stock"),
+    ("api/stock/trading_hours.py", "vmkis.api.stock.day_chart"),
+)
 
-    이 한 줄은 "client 는 api 를 import 하지 않는다" 계약의 `ignore_imports` 에
-    면제로 등록되어 있습니다. **면제는 모듈 쌍 단위**라서 위치를 보지 않습니다 —
-    이 import 를 파일 상단으로 올려도 `lint-imports` 는 초록으로 통과합니다(실측).
 
-    모듈 레벨로 올라가면 패키지가 로드 불능이 되므로(ARCHITECTURE.md 불변식 3번)
-    계약이 못 보는 이 구멍을 여기서 막습니다.
+def _comment_above(lines: list[str], lineno: int) -> str:
+    index = lineno - 2
+    while index >= 0 and lines[index].strip() == "":
+        index -= 1
+    if index < 0:
+        return ""
+    return lines[index].strip()
+
+
+def test_cycle_lazy_imports_name_the_cycle() -> None:
+    """순환 우회 지연 import 바로 위에 사유가 있어야 합니다 (#175).
+
+    주석을 지우면 이 테스트가 실패합니다. import-linter 는 이 지연 import 를
+    계약에 넣지 않습니다(api ↔ adapter 는 의도적 순환).
+    """
+    missing: list[str] = []
+    for rel, module in CYCLE_LAZY_IMPORTS:
+        path = PACKAGE_DIR / rel
+        source = path.read_text(encoding="utf-8")
+        lines = source.splitlines()
+        found = False
+        for node in ast.walk(ast.parse(source)):
+            if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                continue
+            for sub in ast.walk(node):
+                if not isinstance(sub, ast.ImportFrom) or sub.module != module or not sub.lineno:
+                    continue
+                found = True
+                comment = _comment_above(lines, sub.lineno)
+                if not (comment.startswith("#") and "순환" in comment):
+                    missing.append(f"{rel}:{sub.lineno} {module} 앞에 순환 사유가 없습니다 ({comment!r})")
+        if not found:
+            missing.append(f"{rel} 에 함수 안 `{module}` import 가 없습니다")
+
+    assert not missing, "\n".join(missing)
+
+
+def test_messaging_does_not_import_api() -> None:
+    """`client/messaging.py` 는 api 를 어디에서도 import 하지 않습니다 (#176).
+
+    approval key 는 `VmKis.websocket_approval_key` 가 발급합니다.
+    예전에는 함수 안 import 1건이 `ignore_imports` 면제였고, 그 면제는
+    위치를 보지 않아 파일 상단으로 올려도 `lint-imports` 가 통과했습니다.
     """
     source = (PACKAGE_DIR / "client" / "messaging.py").read_text(encoding="utf-8")
-    tree = ast.parse(source)
-
-    lazy = set()
-    for node in ast.walk(tree):
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            lazy |= {id(x) for x in ast.walk(node) if isinstance(x, (ast.Import, ast.ImportFrom))}
-
     offenders = [
         node.module
-        for node in ast.walk(tree)
-        if isinstance(node, ast.ImportFrom)
-        and node.module
-        and node.module.startswith("vmkis.api")
-        and id(node) not in lazy
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ImportFrom) and node.module and node.module.startswith("vmkis.api")
     ]
 
-    assert not offenders, f"client/messaging.py 가 api 를 모듈 레벨에서 import 합니다: {offenders}"
+    assert not offenders, f"client/messaging.py 가 api 를 import 합니다: {offenders}"

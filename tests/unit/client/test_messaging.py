@@ -1,5 +1,4 @@
 import copy
-from typing import Any
 
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import padding
@@ -49,21 +48,15 @@ def test_tr_constants():
     assert TR_UNSUBSCRIBE_TYPE == "2"
 
 
-def test_websocket_request_build_includes_header_and_body(monkeypatch):
-    class DummyKis:
-        pass
-
-    # fake approval key function
+def test_websocket_request_build_includes_header_and_body():
     class FakeApproval:
         def __init__(self, key: str):
             self.approval_key = key
 
-    def fake_websocket_approval_key(kis_obj: Any, domain=None):
-        assert isinstance(kis_obj, DummyKis)
-        return FakeApproval("APPKEY-123")
-
-    # patch the function that is imported inside build()
-    monkeypatch.setattr("vmkis.api.auth.websocket.websocket_approval_key", fake_websocket_approval_key)
+    class DummyKis:
+        def websocket_approval_key(self, domain=None):
+            assert domain == "live"
+            return FakeApproval("APPKEY-123")
 
     # body that implements build()
     class SimpleBody:
@@ -85,14 +78,11 @@ def test_websocket_request_build_includes_header_and_body(monkeypatch):
     assert built["body"]["input"] == {"x": 1}
 
 
-def test_websocket_request_build_without_body(monkeypatch):
+def test_websocket_request_build_without_body():
     class DummyKis:
-        pass
-
-    def fake_websocket_approval_key(kis_obj: Any, domain=None):
-        return type("A", (), {"approval_key": "K"})()
-
-    monkeypatch.setattr("vmkis.api.auth.websocket.websocket_approval_key", fake_websocket_approval_key)
+        def websocket_approval_key(self, domain=None):
+            assert domain is None
+            return type("A", (), {"approval_key": "K"})()
 
     kis = DummyKis()
     req = KisWebsocketRequest(kis=kis, type="T2", body=None, domain=None)
