@@ -48,8 +48,8 @@ cp docs/NEWSLETTER_TEMPLATE.md archive/docs/YYYY-MM_NEWSLETTER.md
 ```python
 from vmkis import create_client
 
-kis = create_client("configs/account_profiles.yaml")
-quote = kis.stock("005930").quote()
+hub = create_client("configs/account_profiles.yaml")
+quote = hub.stock("005930").quote()
 ```
 
 ---
@@ -143,8 +143,8 @@ from vmkis.utils.retry import with_retry
 
 
 @with_retry(max_retries=5, initial_delay=2.0)
-def reliable_fetch(kis, symbol):
-    return kis.stock(symbol).quote()
+def reliable_fetch(hub, symbol):
+    return hub.stock(symbol).quote()
 ```
 
 ---

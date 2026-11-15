@@ -166,7 +166,7 @@ def is_market_closed(trading_date: date) -> bool:
 
 ```python
 # 한국: KRW (원)
-quote = kis.stock("005930").quote()  # 삼성전자
+quote = hub.stock("005930").quote()  # 삼성전자
 print(f"가격: {quote.price:,}원")    # 예: 60,000원
 ```
 
@@ -179,7 +179,7 @@ from vmkis import VmKis
 
 # 1. 클라이언트 초기화
 #    `app_key`·`app_secret`·`account_number`·`server` 라는 인자는 없습니다.
-kis = VmKis(
+hub = VmKis(
     id="YOUR_HTS_ID",
     appkey="YOUR_APP_KEY",
     secretkey="YOUR_APP_SECRET",
@@ -188,15 +188,15 @@ kis = VmKis(
 
 # 설정 파일이 있다면 이 한 줄이 위를 대신합니다.
 #     from vmkis import create_client
-#     kis = create_client("configs/account_profiles.yaml")
+#     hub = create_client("configs/account_profiles.yaml")
 
 # 2. 주식 시세 조회
-samsung = kis.stock("005930")  # 삼성전자
+samsung = hub.stock("005930")  # 삼성전자
 quote = samsung.quote()
 print(f"삼성전자 현재가: {quote.price:,}원")
 
 # 3. 계좌 잔고 확인
-account = kis.account()
+account = hub.account()
 balance = account.balance()
 print(f"보유금: {balance.cash:,}원")
 print(f"평가금: {balance.evaluated_amount:,}원")
@@ -234,7 +234,7 @@ import requests_mock
 from vmkis import VmKis
 
 def test_quote_without_network():
-    kis = VmKis(
+    hub = VmKis(
         id="tester",
         appkey="P" + "A" * 35,       # 36자
         secretkey="S" * 180,          # 180자
@@ -330,9 +330,9 @@ from vmkis import create_client
 
 # configs/account_profiles.yaml 의 default_account 를 씁니다.
 # 그 계좌가 모의(mode: "paper")면 모의 도메인으로 나갑니다.
-kis = create_client()
+hub = create_client()
 
-samsung = kis.stock("005930")
+samsung = hub.stock("005930")
 print(samsung.quote().price)
 ```
 

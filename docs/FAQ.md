@@ -90,8 +90,8 @@ paper_auth = KisAuth(
 )
 
 # 두 번째 위치 인자가 모의 인증입니다. 둘 다 주면 모의 클라이언트가 됩니다.
-kis = VmKis(live_auth, paper_auth)
-assert kis.paper is True
+hub = VmKis(live_auth, paper_auth)
+assert hub.paper is True
 ```
 
 > 실전 인증을 생략한 `VmKis(None, paper_auth)` 는 지금 동작하지 않습니다
@@ -104,15 +104,15 @@ A: 다음을 확인하세요:
 1. **AppKey와 AppSecret이 정확한가요?**
 
    ```python
-   print(f"AppKey: {kis.account.appkey}")  # 마스킹됨
-   print(f"Account: {kis.account.account}")
+   print(f"AppKey: {hub.account.appkey}")  # 마스킹됨
+   print(f"Account: {hub.account.account}")
    ```
 
 2. **토큰이 만료되었나요?**
 
    ```python
    # 토큰 자동 갱신
-   kis.authenticate()
+   hub.authenticate()
    ```
 
 3. **모의 계좌와 실전 계좌를 혼동하지 않았나요?**
@@ -128,7 +128,7 @@ from vmkis.utils.retry import with_retry
 
 @with_retry(max_retries=5, initial_delay=2.0)
 def fetch_quote(symbol):
-    return kis.stock(symbol).quote()
+    return hub.stock(symbol).quote()
 
 # 자동 재시도 (exponential backoff 적용)
 quote = fetch_quote("005930")
@@ -152,8 +152,8 @@ A: 다음과 같이 조회할 수 있습니다:
 ```python
 from vmkis import VmKis
 
-kis = VmKis(...)
-quote = kis.stock("005930").quote()  # 삼성전자
+hub = VmKis(...)
+quote = hub.stock("005930").quote()  # 삼성전자
 
 print(f"종목명: {quote.name}")
 print(f"현재가: {quote.price:,}원")
@@ -169,14 +169,14 @@ A: 루프를 사용하거나 비동기 처리를 활용하세요:
 # 방법 1: 간단한 루프
 symbols = ["005930", "000660", "051910"]
 for symbol in symbols:
-    quote = kis.stock(symbol).quote()
+    quote = hub.stock(symbol).quote()
     print(f"{quote.name}: {quote.price:,}원")
 
 # 방법 2: 비동기 (더 빠름)
 import asyncio
 
 async def fetch_quotes(symbols):
-    tasks = [kis.stock(s).quote_async() for s in symbols]
+    tasks = [hub.stock(s).quote_async() for s in symbols]
     return await asyncio.gather(*tasks)
 
 quotes = asyncio.run(fetch_quotes(symbols))
@@ -189,16 +189,16 @@ A: WebSocket을 사용하세요:
 ```python
 from vmkis import VmKis
 
-kis = VmKis(...)
+hub = VmKis(...)
 
 def on_quote(quote):
     print(f"{quote.name}: {quote.price:,}원")
 
 # 특정 종목 실시간 구독
-kis.stock("005930").subscribe_quote(on_quote)
+hub.stock("005930").subscribe_quote(on_quote)
 
 # 또는 전체 시장 구독
-kis.subscribe_quotes(
+hub.subscribe_quotes(
     symbols=["005930", "000660"],
     on_quote=on_quote,
     on_error=lambda e: print(f"에러: {e}")
@@ -216,10 +216,10 @@ A: 다음과 같이 주문할 수 있습니다:
 ```python
 from vmkis import VmKis
 
-kis = VmKis(...)
+hub = VmKis(...)
 
 # 매수
-order = kis.stock("005930").buy(
+order = hub.stock("005930").buy(
     price=65000,  # 매수 가격
     qty=10,       # 수량
     order_type="limit"  # 지정가 주문
@@ -229,7 +229,7 @@ print(f"주문번호: {order.order_number}")
 print(f"상태: {order.status}")
 
 # 매도
-sell_order = kis.stock("005930").sell(
+sell_order = hub.stock("005930").sell(
     price=66000,
     qty=10
 )
@@ -242,10 +242,10 @@ A: 주문번호를 사용하여 취소할 수 있습니다:
 ```python
 # 주문 취소
 order_number = "123456"
-kis.account().cancel_order(order_number)
+hub.account().cancel_order(order_number)
 
 # 또는 주문 객체에서 직접
-order = kis.stock("005930").buy(65000, 10)
+order = hub.stock("005930").buy(65000, 10)
 order.cancel()
 ```
 
@@ -258,7 +258,7 @@ def on_order_status(order):
     print(f"주문 {order.order_number}: {order.status}")
     print(f"체결: {order.filled_qty}/{order.qty}")
 
-kis.subscribe_orders(on_order_status)
+hub.subscribe_orders(on_order_status)
 ```
 
 ---
@@ -272,10 +272,10 @@ A: 다음과 같이 확인할 수 있습니다:
 ```python
 from vmkis import VmKis
 
-kis = VmKis(...)
+hub = VmKis(...)
 
 # 잔고 조회
-balance = kis.account().balance()
+balance = hub.account().balance()
 
 print(f"현금: {balance.cash:,}원")
 print(f"예수금: {balance.deposits}")
@@ -292,7 +292,7 @@ for stock in stocks:
 A: 다음과 같이 계산할 수 있습니다:
 
 ```python
-balance = kis.account().balance()
+balance = hub.account().balance()
 
 # 계산
 total_investment = sum(s.quantity * s.avg_price for s in balance.stocks)
@@ -321,7 +321,7 @@ from vmkis.exceptions import KisConnectionError
 @with_retry(max_retries=5, initial_delay=1.0)
 def fetch_with_retry(symbol):
     try:
-        return kis.stock(symbol).quote()
+        return hub.stock(symbol).quote()
     except KisConnectionError as e:
         print(f"연결 실패: {e}")
         raise  # 재시도
@@ -339,13 +339,13 @@ A: 주식 시장이 닫혀있을 때 발생합니다. 장 시간을 확인하세
 ```python
 from vmkis import VmKis
 
-kis = VmKis(...)
+hub = VmKis(...)
 
 # 장 시간 확인. 메서드는 클라이언트에 있고 market 이 필요합니다.
-hours = kis.trading_hours("KR")
+hours = hub.trading_hours("KR")
 print(hours.open, hours.close)
 
-quote = kis.stock("005930").quote()
+quote = hub.stock("005930").quote()
 ```
 
 ---
@@ -360,10 +360,10 @@ A: 다음과 같이 변환할 수 있습니다:
 import pandas as pd
 from vmkis import VmKis
 
-kis = VmKis(...)
+hub = VmKis(...)
 
 # 차트 데이터를 DataFrame으로
-charts = kis.stock("005930").chart(period="day")  # 일봉
+charts = hub.stock("005930").chart(period="day")  # 일봉
 df = pd.DataFrame([
     {
         "date": chart.date,
@@ -390,10 +390,10 @@ A: 이동평균 교차 전략 예제:
 import pandas as pd
 from vmkis import VmKis
 
-kis = VmKis(...)
+hub = VmKis(...)
 
 # 데이터 준비
-charts = kis.stock("005930").chart(period="day")
+charts = hub.stock("005930").chart(period="day")
 df = pd.DataFrame([...])  # 위 예제 참고
 
 # 이동평균 계산
@@ -409,7 +409,7 @@ df.loc[df['MA20'] < df['MA60'], 'signal'] = -1  # 하향 신호
 latest = df.iloc[-1]
 if latest['signal'] == 1 and df.iloc[-2]['signal'] != 1:
     print("매수 신호 발생!")
-    kis.stock("005930").buy(price=latest['close'], qty=10)
+    hub.stock("005930").buy(price=latest['close'], qty=10)
 ```
 
 ### Q18: 로그 레벨을 조절하려면?
@@ -428,7 +428,7 @@ setLevel("WARNING") # 경고와 에러만
 enable_json_logging()
 
 # 이후 로그는 JSON 형식으로 출력
-kis = VmKis(...)
+hub = VmKis(...)
 # ... 코드 실행 ...
 ```
 
@@ -551,10 +551,10 @@ A: 다음 팁을 참고하세요:
 ```python
 # 비효율적
 for symbol in symbols:
-    quote = kis.stock(symbol).quote()
+    quote = hub.stock(symbol).quote()
 
 # 효율적 (있으면)
-quotes = kis.stocks(symbols).quotes()
+quotes = hub.stocks(symbols).quotes()
 ```
 
 1. **비동기 처리 사용**
@@ -563,7 +563,7 @@ quotes = kis.stocks(symbols).quotes()
 import asyncio
 
 async def fetch_all():
-    tasks = [kis.stock(s).quote_async() for s in symbols]
+    tasks = [hub.stock(s).quote_async() for s in symbols]
     return await asyncio.gather(*tasks)
 
 results = asyncio.run(fetch_all())
@@ -582,7 +582,7 @@ from functools import lru_cache
 
 @lru_cache(maxsize=128)
 def get_quote(symbol):
-    return kis.stock(symbol).quote()
+    return hub.stock(symbol).quote()
 ```
 
 ---

@@ -136,15 +136,15 @@ src/vmkis/
 
 ```python
 # 패턴 1: 파일 기반
-kis = VmKis("secret.json")
+hub = VmKis("secret.json")
 
 # 패턴 2: KisAuth 객체
 from vmkis import KisAuth
 auth = KisAuth(id="...", appkey="...", secretkey="...", account="...")
-kis = VmKis(auth)
+hub = VmKis(auth)
 
 # 패턴 3: 직접 입력
-kis = VmKis(
+hub = VmKis(
     id="soju06",
     account="00000000-01",
     appkey="...",
@@ -152,7 +152,7 @@ kis = VmKis(
 )
 
 # 패턴 4: 모의투자
-kis = VmKis(
+hub = VmKis(
     "real_secret.json",
     "paper_secret.json",
     keep_token=True
@@ -163,25 +163,25 @@ kis = VmKis(
 
 ```python
 # Scope 진입점
-account = kis.account()      # KisAccount
-stock = kis.stock("000660")  # KisStock
+account = hub.account()      # KisAccount
+stock = hub.stock("000660")  # KisStock
 
 # 저수준 API
-response = kis.request(
+response = hub.request(
     path="/uapi/domestic-stock/v1/quotations/inquire-price",
     method="GET",
     params={"fid_cond_mrkt_div_code": "J"}
 )
 
 # API 래퍼
-result = kis.api(
+result = hub.api(
     "usdh1",
     params={...},
     response_type=KisQuote
 )
 
 # WebSocket
-websocket = kis.websocket
+websocket = hub.websocket
 ```
 
 #### Rate Limiting 메커니즘
@@ -290,7 +290,7 @@ ticket = stock.on("price", callback)
 # 또는 직접 사용
 from vmkis.client.messaging import KisWebsocketTR
 
-websocket = kis.websocket
+websocket = hub.websocket
 tr = KisWebsocketTR("H0STCNT0", "000660")
 websocket.subscribe(tr, callback)
 ```
@@ -404,14 +404,14 @@ if TYPE_CHECKING:
     from vmkis.kis import VmKis
 
 def get_my_data(
-    kis: "VmKis",
+    hub: "VmKis",
     symbol: str,
     domain: Literal["live", "paper"] = "live"
 ) -> KisMyData:
     """내 데이터 조회
 
     Args:
-        kis: VmKis 인스턴스
+        hub: VmKis 인스턴스
         symbol: 종목코드
         domain: 도메인 ("live" 또는 "paper")
 
@@ -421,7 +421,7 @@ def get_my_data(
     Raises:
         KisAPIError: API 에러
     """
-    return kis.api(
+    return hub.api(
         "my_api_tr_id",
         method="GET",
         params={
@@ -441,7 +441,7 @@ from typing import Protocol
 class KisMyApiCapable(Protocol):
     """내 API를 사용할 수 있는 객체"""
     @property
-    def kis(self) -> "VmKis":
+    def hub(self) -> "VmKis":
         ...
 
 class KisMyApiMixin(KisMyApiCapable):
@@ -450,7 +450,7 @@ class KisMyApiMixin(KisMyApiCapable):
     def get_my_data(self) -> KisMyData:
         """내 데이터 조회"""
         from vmkis.api.my_api import get_my_data
-        return get_my_data(self.kis, self.symbol)
+        return get_my_data(self.hub, self.symbol)
 ```
 
 #### Step 4: Scope에 Mixin 추가
@@ -490,8 +490,8 @@ class KisSimpleQuote(KisResponse):
     price: Decimal = KisDecimal()
 
 # 2. API 함수
-def get_simple_quote(kis: "VmKis", symbol: str) -> KisSimpleQuote:
-    return kis.api(
+def get_simple_quote(hub: "VmKis", symbol: str) -> KisSimpleQuote:
+    return hub.api(
         "simple_quote_tr",
         params={"symbol": symbol},
         response_type=KisSimpleQuote
@@ -500,14 +500,14 @@ def get_simple_quote(kis: "VmKis", symbol: str) -> KisSimpleQuote:
 # 3. Mixin
 class KisSimpleQuotableMixin:
     def simple_quote(self) -> KisSimpleQuote:
-        return get_simple_quote(self.kis, self.symbol)
+        return get_simple_quote(self.hub, self.symbol)
 
 # 4. Scope에 추가
 class KisStock(KisStockScope, KisSimpleQuotableMixin, ...):
     pass
 
 # 5. 사용
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 quote = stock.simple_quote()
 ```
 
@@ -544,7 +544,7 @@ from vmkis import VmKis, KisAuth
 from vmkis.client.exceptions import KisAPIError
 
 @pytest.fixture
-def kis():
+def hub():
     """테스트 VmKis 인스턴스"""
     auth = KisAuth(
         id="test_user",
@@ -554,22 +554,22 @@ def kis():
     )
     return VmKis(auth)
 
-def test_kis_initialization(kis):
+def test_kis_initialization(hub):
     """VmKis 초기화 테스트"""
-    assert kis is not None
-    assert kis.primary_account == "00000000-01"
+    assert hub is not None
+    assert hub.primary_account == "00000000-01"
 
-def test_kis_stock_creation(kis):
+def test_kis_stock_creation(hub):
     """주식 객체 생성 테스트"""
-    stock = kis.stock("000660")
+    stock = hub.stock("000660")
     assert stock.symbol == "000660"
-    assert stock.kis == kis
+    assert stock.hub == hub
 
-def test_kis_account_creation(kis):
+def test_kis_account_creation(hub):
     """계좌 객체 생성 테스트"""
-    account = kis.account()
-    assert account.account_number == kis.primary_account
-    assert account.kis == kis
+    account = hub.account()
+    assert account.account_number == hub.primary_account
+    assert account.hub == hub
 ```
 
 ### Mock을 이용한 테스트
@@ -582,10 +582,10 @@ from unittest.mock import Mock
 import pytest
 
 @pytest.fixture
-def mock_kis(kis):
+def mock_kis(hub):
     """Mock된 VmKis"""
-    kis.request = Mock()
-    return kis
+    hub.request = Mock()
+    return hub
 
 def test_quote_with_mock(mock_kis):
     """시세 조회 Mock 테스트"""
@@ -612,10 +612,10 @@ import pytest
 from vmkis import VmKis
 
 @pytest.mark.integration
-def test_real_api_call(kis):
+def test_real_api_call(hub):
     """실제 API 호출 테스트 (개발 환경에서만)"""
     # 주의: 실제 계정으로 테스트 가능
-    stock = kis.stock("000660")
+    stock = hub.stock("000660")
 
     # quote = stock.quote()
     # assert quote is not None
@@ -707,7 +707,7 @@ def quote(self, extended: bool = False) -> KisQuote:
         KisMarketNotOpenedError: 시장 미개장 시
 
     Examples:
-        >>> stock = kis.stock("000660")
+        >>> stock = hub.stock("000660")
         >>> quote = stock.quote()
         >>> print(quote.price)
         70000
@@ -784,7 +784,7 @@ kis_id = os.getenv("KIS_ID")
 from vmkis.__env__ import TRACE_DETAIL_ERROR
 
 # kis.py의 verbose 파라미터 활용
-response = kis.api(..., verbose=True)
+response = hub.api(..., verbose=True)
 ```
 
 ### WebSocket 디버깅
@@ -807,9 +807,9 @@ logging.setLevel("DEBUG")
 ```python
 # VmKis는 자동으로 requests.Session을 재사용
 # 여러 요청: 같은 KisAccessToken 재사용
-kis = VmKis(...)
+hub = VmKis(...)
 for symbol in symbols:
-    stock = kis.stock(symbol)
+    stock = hub.stock(symbol)
     quote = stock.quote()  # 같은 세션 재사용
 ```
 
@@ -823,7 +823,7 @@ from vmkis.utils.rate_limit import RateLimiter
 
 # 순차 요청 (자동 rate limit)
 for symbol in symbols:
-    quote = kis.stock(symbol).quote()  # 자동으로 대기
+    quote = hub.stock(symbol).quote()  # 자동으로 대기
 
 # 병렬 처리 (권장하지 않음 - rate limit 위반)
 # asyncio나 threading 사용 시 rate limit 고려
@@ -848,12 +848,12 @@ symbols = ["000660", "005930", "035420"]
 
 # 최적: 순차 처리 (rate limit 자동)
 for symbol in symbols:
-    quote = kis.stock(symbol).quote()
+    quote = hub.stock(symbol).quote()
 
 # WebSocket: 최대 40개 동시 구독
 tickets = []
 for symbol in symbols[:40]:
-    ticket = kis.stock(symbol).on("price", callback)
+    ticket = hub.stock(symbol).on("price", callback)
     tickets.append(ticket)
 ```
 
@@ -865,7 +865,7 @@ for symbol in symbols[:40]:
 
 ```bash
 # 모드 가상 테스트 환경
-kis = VmKis("secret.json", "paper_secret.json")
+hub = VmKis("secret.json", "paper_secret.json")
 
 # 모의투자로 테스트 후 실전 전환
 ```
@@ -874,7 +874,7 @@ kis = VmKis("secret.json", "paper_secret.json")
 
 ```python
 # 응답 원본 확인
-response = kis.api(...)
+response = hub.api(...)
 print(response.__response__)  # 원본 HTTP 응답
 
 # 동적 속성 확인

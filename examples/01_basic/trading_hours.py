@@ -1,6 +1,6 @@
 """장운영 시간 조회 예제.
 
-`kis.trading_hours(market)` 입니다. `stock.trading_hours()` 는 없습니다.
+`hub.trading_hours(market)` 입니다. `stock.trading_hours()` 는 없습니다.
 """
 
 from vmkis import create_client
@@ -14,8 +14,8 @@ def main() -> None:
     parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
-    kis = create_client(args.config, account=args.account)
-    hours = kis.trading_hours("KR")
+    hub = create_client(args.config, account=args.account)
+    hours = hub.trading_hours("KR")
     print(hours.market, hours.open, hours.close)
 
 

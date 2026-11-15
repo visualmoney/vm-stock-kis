@@ -31,8 +31,8 @@ only a paper app, `create_client()` stops and tells you what to add.
 ```python
 from vmkis import create_client
 
-kis = create_client()          # reads configs/account_profiles.yaml
-print(kis.stock("005930").quote())
+hub = create_client()          # reads configs/account_profiles.yaml
+print(hub.stock("005930").quote())
 ```
 
 Quotes you receive are for **your own use only**. Redistributing them to third

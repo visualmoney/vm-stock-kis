@@ -2,7 +2,7 @@
 
 일반적인 `VmKis` 사용법 외에, 더 간단한 인터페이스를 원한다면 **`SimpleKIS`** 를
 쓰세요. 이것은 Tutorial 정본이 아닙니다. 정본은 `create_client` 와
-`kis.stock` / `kis.account` 입니다. `SimpleKIS` 는 그 위 선택이고
+`hub.stock` / `hub.account` 입니다. `SimpleKIS` 는 그 위 선택이고
 시세·잔고·매수·취소만 있습니다. 차트·호가·매도는 `stock` / `account` 를 보세요.
 구현은 [`src/vmkis/simple.py`](../src/vmkis/simple.py) 가 정본입니다.
 
@@ -15,8 +15,8 @@ from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
 # configs/account_profiles.yaml 에서 자동 로드하여 클라이언트 생성
-kis = create_client("configs/account_profiles.yaml")
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml")
+simple = SimpleKIS(hub)
 
 # 사용
 price = simple.get_price("005930")
@@ -37,8 +37,8 @@ auth = KisAuth(
     paper=True  # 모의투자 모드
 )
 
-kis = VmKis(None, auth)
-simple = SimpleKIS(kis)
+hub = VmKis(None, auth)
+simple = SimpleKIS(hub)
 ```
 
 ### 1.3 방법 3: 대화형 설정 저장 후 사용
@@ -50,8 +50,8 @@ from vmkis.simple import SimpleKIS
 # 처음 한 번만: 대화형으로 설정 저장
 config = save_config_interactive("configs/account_profiles.yaml")
 
-kis = create_client("configs/account_profiles.yaml")
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml")
+simple = SimpleKIS(hub)
 ```
 
 ---
@@ -62,12 +62,12 @@ simple = SimpleKIS(kis)
 
 | 메서드 | 하는 일 |
 |---|---|
-| `get_price(symbol)` | `kis.stock(symbol).quote()` |
-| `get_balance()` | `kis.account().balance()` |
+| `get_price(symbol)` | `hub.stock(symbol).quote()` |
+| `get_balance()` | `hub.account().balance()` |
 | `place_order(symbol, qty, price=None)` | 항상 **매수**. `price` 없으면 시장가 |
 | `cancel_order(order_obj)` | `order_obj.cancel()` — 주문 **객체**를 넘김 |
 
-매도·정정·차트·호가는 `SimpleKIS` 에 없습니다. `kis.stock(symbol).sell(...)` 등을 쓰세요.
+매도·정정·차트·호가는 `SimpleKIS` 에 없습니다. `hub.stock(symbol).sell(...)` 등을 쓰세요.
 
 ### 2.1 시세 조회
 
@@ -110,7 +110,7 @@ print(f"주문 번호: {order.number}")   # order_id 가 아님
 order = simple.place_order("005930", qty=1)
 
 # 매도 — SimpleKIS 밖
-# kis.stock("005930").sell(qty=1, price=70000)
+# hub.stock("005930").sell(qty=1, price=70000)
 ```
 
 ### 2.4 주문 취소
@@ -169,8 +169,8 @@ python your_script.py
 from vmkis.helpers import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("configs/account_profiles.yaml", keep_token=True)
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml", keep_token=True)
+simple = SimpleKIS(hub)
 ```
 
 ---
@@ -198,8 +198,8 @@ simple = SimpleKIS(kis)
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("configs/account_profiles.yaml")
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml")
+simple = SimpleKIS(hub)
 
 quote = simple.get_price("005930")
 print(f"{quote.name}: {quote.price:,}원 ({quote.rate:+.2f}%)")
@@ -215,8 +215,8 @@ print(f"예수금(KRW): {balance.deposits['KRW'].amount:,}원")
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("configs/account_profiles.yaml")
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml")
+simple = SimpleKIS(hub)
 
 quote = simple.get_price("005930")
 if quote.price <= 65000:
@@ -232,8 +232,8 @@ else:
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("configs/account_profiles.yaml")
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml")
+simple = SimpleKIS(hub)
 
 order = simple.place_order("005930", qty=1, price=65000)
 simple.cancel_order(order)
@@ -248,14 +248,14 @@ simple.cancel_order(order)
 ```python
 # paper=True (모의투자)
 auth = KisAuth(..., paper=True)
-kis = VmKis(None, auth)
-simple = SimpleKIS(kis)
+hub = VmKis(None, auth)
+simple = SimpleKIS(hub)
 order = simple.place_order("005930", qty=1)  # 모의
 
 # paper=False (실계좌) — 실제 주문
 auth = KisAuth(..., paper=False)
-kis = VmKis(auth)
-simple = SimpleKIS(kis)
+hub = VmKis(auth)
+simple = SimpleKIS(hub)
 order = simple.place_order("005930", qty=1)
 ```
 
@@ -272,7 +272,7 @@ order = simple.place_order("005930", qty=1)
 # 나쁜 예: 코드에 비밀키
 # 좋은 예: 파일에서 로드
 from vmkis.helpers import create_client
-kis = create_client("configs/account_profiles.yaml")
+hub = create_client("configs/account_profiles.yaml")
 
 # 더 나은 예: 대화형 저장
 from vmkis.helpers import save_config_interactive
@@ -286,8 +286,8 @@ from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
 try:
-    kis = create_client("configs/account_profiles.yaml")
-    simple = SimpleKIS(kis)
+    hub = create_client("configs/account_profiles.yaml")
+    simple = SimpleKIS(hub)
     price = simple.get_price("005930")
     print(f"현재가: {price.price:,}원")
 except FileNotFoundError:
@@ -300,7 +300,7 @@ except Exception as e:
 
 ## 7. 다음 단계
 
-- **VmKis로 업그레이드**: `kis.stock` / `kis.account` — 매도, 웹소켓, 차트, 호가
+- **VmKis로 업그레이드**: `hub.stock` / `hub.account` — 매도, 웹소켓, 차트, 호가
 - **없는 TR**: [`fetch()`](./user/EXTENDING_API.md)
 
 **예제:**
