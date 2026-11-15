@@ -66,8 +66,9 @@ raw: dict = res.raw()        # 순수 dict
 `hub.request(...)` 는 `requests.Response` 를 그대로 돌려줍니다. 응답 파싱까지
 직접 하고 싶을 때만 쓰세요.
 
-> 라이브러리 내부도 같은 패턴을 씁니다. `src/vmkis/api/stock/info.py` 가
-> `HHDFS00000300` 을 `response_type` 없이 호출합니다.
+> 라이브러리 내부도 같은 패턴을 씁니다. `src/vmkis/api/stock/info.py` 는
+> `FOREIGN_PRICE`(`HHDFS00000300`) 를 `self.call(...)` 로 부르고
+> `response_type` 을 생략합니다. 기본값은 `KisDynamicDict` 입니다.
 
 ---
 
