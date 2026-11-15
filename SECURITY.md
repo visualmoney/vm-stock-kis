@@ -53,7 +53,7 @@ GitHub의 비공개 취약점 신고를 이용해 주세요:
 |---|---|---|
 | `KisAuth.save()` | 사용자가 지정한 경로 | 평문 JSON (`id`, `appkey`, `secretkey`, `account`) |
 | 접속 토큰 (`keep_token=True`) | `~/.vmkis/` (기본값) | 평문 JSON |
-| `config.yaml` | 사용자가 지정한 경로 | 평문 YAML |
+| `configs/account_profiles.yaml` | 설정 파일 기본 경로 | 평문 YAML |
 
 의존성 목록에 있는 `cryptography`는 **한국투자증권 웹소켓 페이로드 복호화에만** 쓰입니다.
 디스크에 저장되는 자격증명과는 무관합니다.
@@ -62,9 +62,9 @@ GitHub의 비공개 취약점 신고를 이용해 주세요:
 
 - **신뢰할 수 없는 환경(공용 PC, 공유 서버, 남의 컨테이너)에서 `keep_token=True`를 쓰지 마세요.**
 - 자격증명 파일의 권한을 본인만 읽을 수 있게 제한하세요 (`chmod 600`).
-- 자격증명 파일을 절대 커밋하지 마세요. `.gitignore`가 `config.yaml`,
-  `real_secret.json`, `virtual_secret.json`을 막고 있지만 **다른 이름으로 저장하면
-  걸리지 않습니다.**
+- 자격증명 파일을 절대 커밋하지 마세요. `.gitignore`가 `configs/*`(템플릿 제외)와
+  루트의 `config.yaml`, `real_secret.json`, `virtual_secret.json`을 막고 있지만
+  **다른 이름으로 저장하면 걸리지 않습니다.**
 - 노출이 의심되면 [KIS Developers](https://apiportal.koreainvestment.com/)에서
   **AppKey를 즉시 재발급**하세요. 이 라이브러리는 키를 무효화할 수 없습니다.
 

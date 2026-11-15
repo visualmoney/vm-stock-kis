@@ -67,7 +67,10 @@ def generate_markdown(modules: dict[str, dict[str, Any]]) -> str:
                 if cls["methods"]:
                     md.append("**Methods:**\n\n")
                     for method in cls["methods"]:
-                        md.append(f"- `{method['name']}()`: {method['docstring']}\n")
+                        line = f"- `{method['name']}()`"
+                        if method["docstring"]:
+                            line += f": {method['docstring']}"
+                        md.append(line + "\n")
                     md.append("\n")
 
         if info["functions"]:
@@ -81,40 +84,47 @@ def generate_markdown(modules: dict[str, dict[str, Any]]) -> str:
     return "".join(md)
 
 
-def main():
-    """Main entry point for API reference generation."""
-    repo_root = Path(__file__).parent.parent
-    # src 레이아웃: 패키지는 repo_root/src/vmkis 에 있습니다.
-    vmkis_dir = repo_root / "src" / "vmkis"
+REPO_ROOT = Path(__file__).resolve().parent.parent
+VMKIS_DIR = REPO_ROOT / "src" / "vmkis"
+OUTPUT_PATH = REPO_ROOT / "docs" / "generated" / "API_REFERENCE.md"
 
-    # Target modules for API reference (public API only)
-    target_files = [
-        "kis.py",
-        "simple.py",
-        "helpers.py",
-        "public_types.py",
-        "client/auth.py",
-    ]
+#: 공개 API 만. 여기 없는 모듈은 레퍼런스에 안 나옵니다.
+TARGET_FILES = (
+    "kis.py",
+    "simple.py",
+    "helpers.py",
+    "public_types.py",
+    "client/auth.py",
+)
 
-    modules = {}
 
-    for file_path in target_files:
-        full_path = vmkis_dir / file_path
+def collect_modules() -> dict[str, dict[str, Any]]:
+    """소스에서 레퍼런스에 실을 모듈 정보를 모읍니다."""
+    modules: dict[str, dict[str, Any]] = {}
+
+    for file_path in TARGET_FILES:
+        full_path = VMKIS_DIR / file_path
         if full_path.exists():
             module_name = f"vmkis.{file_path.replace('.py', '').replace('/', '.')}"
             modules[module_name] = extract_module_info(full_path)
 
-    # Generate markdown
-    md_content = generate_markdown(modules)
+    return modules
 
-    # Write to file
-    output_path = repo_root / "docs" / "generated" / "API_REFERENCE.md"
-    output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    with open(output_path, "w", encoding="utf-8") as f:
-        f.write(md_content)
+def render() -> str:
+    """커밋된 파일과 같은 문자열을 만듭니다. 검사는 이 함수를 다시 부릅니다.
 
-    print(f"✅ API Reference generated: {output_path}")
+    끝의 빈 줄과 메서드 줄 뒤 공백은 pre-commit 훅이 지웁니다.
+    여기서 먼저 맞춰야 재생성이 훅과 싸우지 않습니다.
+    """
+    return generate_markdown(collect_modules()).rstrip() + "\n"
+
+
+def main() -> None:
+    """Main entry point for API reference generation."""
+    OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    OUTPUT_PATH.write_text(render(), encoding="utf-8")
+    print(f"✅ API Reference generated: {OUTPUT_PATH}")
 
 
 if __name__ == "__main__":

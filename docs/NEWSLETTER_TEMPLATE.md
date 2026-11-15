@@ -46,9 +46,9 @@ cp docs/NEWSLETTER_TEMPLATE.md archive/docs/YYYY-MM_NEWSLETTER.md
 **예제:**
 
 ```python
-from vmkis import VmKis
+from vmkis import create_client
 
-kis = VmKis("config.yaml")
+kis = create_client("configs/account_profiles.yaml")
 quote = kis.stock("005930").quote()
 ```
 

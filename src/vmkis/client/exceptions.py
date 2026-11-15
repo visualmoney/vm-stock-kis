@@ -1,4 +1,3 @@
-import warnings
 from collections import namedtuple
 from typing import Any
 from urllib.parse import parse_qs, urlparse
@@ -224,7 +223,8 @@ class KisHTTPNotFoundError(KisHTTPError):
     | 상위 | `KisHTTPError` | `KisException` |
     | 실제 발생 | 라이브러리가 아직 발생시키지 않음 | `responses/response.py` |
 
-    조회 결과가 없는 경우를 잡으려면 **`KisNotFoundError`** 를 쓰세요.
+    조회 결과가 없는 경우를 잡으려면 **`vmkis.exceptions.KisNotFoundError`** 를
+    쓰세요. `client.exceptions.KisNotFoundError` 별칭은 제거되었습니다 (#164).
 
     예전에는 이 클래스도 `KisNotFoundError` 라는 같은 이름이었습니다.
     그래서 `vmkis.exceptions` 가 이쪽(한 번도 발생하지 않는 쪽)을 내보냈고,
@@ -302,26 +302,3 @@ class KisRetryableError(Exception):
     max_retries: int = 3
     initial_delay: float = 1.0  # 초
     max_delay: float = 60.0  # 초
-
-
-def __getattr__(name: str):
-    # 이 모듈의 `KisNotFoundError` 는 `KisHTTPNotFoundError` 로 이름이 바뀌었습니다.
-    #
-    # 같은 이름이 `vmkis.responses.exceptions` 에도 있어서, 어느 쪽을
-    # import 했는지에 따라 `except` 가 다르게 동작했습니다. 게다가 공개 모듈
-    # `vmkis.exceptions` 가 이쪽(한 번도 발생하지 않는 쪽)을 내보내고 있었습니다.
-    #
-    # 조회 결과 없음을 잡으려던 것이라면 `KisNotFoundError` 를
-    # `vmkis.exceptions` 또는 `vmkis.responses.exceptions` 에서 가져오세요.
-    if name == "KisNotFoundError":
-        warnings.warn(
-            "`vmkis.client.exceptions.KisNotFoundError` 는 "
-            "`KisHTTPNotFoundError`(HTTP 404) 로 이름이 바뀌었습니다. "
-            "조회 결과 없음을 잡으려면 `vmkis.exceptions.KisNotFoundError` 를 쓰세요. "
-            "이 별칭은 1.0.0에서 제거됩니다.",
-            DeprecationWarning,
-            stacklevel=2,
-        )
-        return KisHTTPNotFoundError
-
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

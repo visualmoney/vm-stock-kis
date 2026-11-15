@@ -32,7 +32,7 @@ A: 한국투자증권 공식 웹사이트에서 다음 단계를 따르세요:
 4. 발급받은 AppKey와 AppSecret 확인
 
 ⚠️ **보안 주의**: API 키를 GitHub에 올리지 않도록 주의하세요.
-환경 변수나 `.gitignore`로 관리되는 `config.yaml`에 저장하세요.
+환경 변수나 `.gitignore`로 막히는 `configs/account_profiles.yaml`에 저장하세요.
 
 ### Q3: 모의 계좌(Virtual Trading)에서 테스트할 수 있나요?
 
@@ -341,13 +341,11 @@ from vmkis import VmKis
 
 kis = VmKis(...)
 
-# 장 시간 확인
-hours = kis.stock("005930").trading_hours()
+# 장 시간 확인. 메서드는 클라이언트에 있고 market 이 필요합니다.
+hours = kis.trading_hours("KR")
+print(hours.open, hours.close)
 
-if hours.is_open_now:
-    quote = kis.stock("005930").quote()
-else:
-    print(f"폐장 중. 다음 개장: {hours.next_open_time}")
+quote = kis.stock("005930").quote()
 ```
 
 ---
@@ -365,7 +363,7 @@ from vmkis import VmKis
 kis = VmKis(...)
 
 # 차트 데이터를 DataFrame으로
-charts = kis.stock("005930").chart("D")  # 일봉
+charts = kis.stock("005930").chart(period="day")  # 일봉
 df = pd.DataFrame([
     {
         "date": chart.date,
@@ -395,7 +393,7 @@ from vmkis import VmKis
 kis = VmKis(...)
 
 # 데이터 준비
-charts = kis.stock("005930").chart("D")
+charts = kis.stock("005930").chart(period="day")
 df = pd.DataFrame([...])  # 위 예제 참고
 
 # 이동평균 계산
@@ -510,7 +508,7 @@ import os
 os.environ['PYTHONIOENCODING'] = 'utf-8'
 
 # 파일 읽을 때 명시적으로 인코딩 지정
-with open('config.yaml', 'r', encoding='utf-8') as f:
+with open('configs/account_profiles.yaml', 'r', encoding='utf-8') as f:
     ...
 ```
 
@@ -537,10 +535,12 @@ CMD ["python", "main.py"]
 **requirements.txt:**
 
 ```text
-vm-stock-kis>=0.0.1,<1.0.0
+vm-stock-kis>=1.0.0,<2.0.0
 pyyaml>=6.0
 python-dotenv>=1.2.0
 ```
+
+> major 핀. ([API_STABILITY_POLICY](./guidelines/API_STABILITY_POLICY.md) §2.2 · §8.3)
 
 ### Q23: 성능을 최적화하려면?
 

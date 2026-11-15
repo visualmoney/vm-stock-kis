@@ -107,6 +107,15 @@ with VmKis("secret.json", keep_token=True) as kis:
 
 ## 인증 관리
 
+사용자가 알 면은 `create_client` 와 `kis.stock` / `kis.account` 입니다.
+`SimpleKIS` 는 그 위 선택입니다. 없는 TR 은
+[EXTENDING_API](EXTENDING_API.md) 의 `fetch()` 로 엽니다. 모듈 구조는
+[ARCHITECTURE](../architecture/ARCHITECTURE.md) §1 허브-스포크 하나입니다.
+
+JSON(`KisAuth` → `VmKis("secret.json")`)과 YAML(`create_client`) 둘 다
+유효합니다. `VmKis` 경로에는 JSON만 넘깁니다. YAML 설정은
+[QUICKSTART](../../QUICKSTART.md) 의 `create_client` 를 보세요.
+
 ### 1. 파일 기반 인증 (권장)
 
 #### Step 1: 인증 정보 파일 생성
@@ -223,6 +232,17 @@ kis = VmKis("secret.json", keep_token="~/.my_kis_tokens/")
 
 ## 시세 조회
 
+받은 시세는 **본인 업무 범위 안에서만** 쓰세요. 제3자에게 제공하거나 외부
+서비스로 재배포하면 오픈 API 이용 약관(고객) 제5조 ③에 어긋나고, 이용
+중지·해지 사유가 됩니다 (제9조 ①, 제10조 ①). 약관 전문은 여기 옮기지
+않습니다 — 개정되기 때문입니다. 원문은
+[KIS Developers](https://apiportal.koreainvestment.com/) 포털의 약관에서
+확인하세요.
+
+앱키·시크릿키 관리 책임도 고객에게 있습니다 (제5조 ②, 제17조 ②). 이
+저장소는 `configs/*` 를 무시하고 템플릿만 추적합니다. 유량 제어는
+라이브러리가 겁니다 (실전 19/s · 모의 2/s). 직접 루프를 돌릴 때는 본인 몫입니다.
+
 ### 1. 국내 주식 시세
 
 ```python
@@ -284,15 +304,15 @@ from datetime import date
 stock = kis.stock("000660")
 
 # 일봉
-daily_chart = stock.chart(period="D", end_date=date(2024, 12, 10))
+daily_chart = stock.chart(period="day", end=date(2024, 12, 10))
 for bar in daily_chart:
     print(f"{bar.date}: {bar.open} -> {bar.close}")
 
 # 주봉
-weekly_chart = stock.chart(period="W")
+weekly_chart = stock.chart(period="week")
 
 # 월봉
-monthly_chart = stock.chart(period="M")
+monthly_chart = stock.chart(period="month")
 ```
 
 ---
@@ -412,24 +432,24 @@ print(f"총 손익: {balance.profit} ({balance.profit_rate}%)")
 
 ```python
 account = kis.account()
+stock = kis.stock("000660")
 
-# 현금 매수 가능액
-orderable_amount = account.orderable_amount()
-print(f"매수 가능 금액: {orderable_amount.amount}")
+# 계좌에서 종목·시장을 지정
+orderable_amount = account.orderable_amount(market="KRX", symbol="000660")
+print(repr(orderable_amount))
 
-# 신용 이용
-orderable_amount = account.orderable_amount(include_credit=True)
+# 종목 스코프 (지정가)
+orderable_amount = stock.orderable_amount(price=40950)
+print(repr(orderable_amount))
 ```
 
 ### 3. 매도 가능 수량
 
 ```python
 stock = kis.stock("000660")
-account = kis.account()
 
 # 해당 종목 매도 가능 수량
-sellable = stock.sellable()
-print(f"매도 가능 수량: {sellable}")
+print(stock.orderable)
 ```
 
 ### 4. 일별 손익 조회
@@ -437,14 +457,10 @@ print(f"매도 가능 수량: {sellable}")
 ```python
 account = kis.account()
 
-# 기간 손익 조회
 from datetime import date
 
-profit = account.profit(
-    start_date=date(2024, 1, 1),
-    end_date=date(2024, 12, 10)
-)
-print(f"기간 손익: {profit}")
+profits = account.profits(start=date(2024, 1, 1))
+print(repr(profits))
 ```
 
 ### 5. 체결 내역 조회
@@ -452,12 +468,10 @@ print(f"기간 손익: {profit}")
 ```python
 account = kis.account()
 
-# 일별 체결 내역
 from datetime import date
 
-executions = account.daily_executions(date=date(2024, 12, 10))
-for execution in executions:
-    print(f"{execution.symbol}: {execution.qty}주 @ {execution.price}")
+orders = account.daily_orders(start=date(2024, 4, 2), end=date(2024, 6, 1))
+print(repr(orders))
 ```
 
 ---
@@ -467,7 +481,7 @@ for execution in executions:
 ### 1. 실시간 시세
 
 ```python
-from vmkis import KisSubscriptionEventArgs, KisRealtimePrice
+from vmkis.types import KisSubscriptionEventArgs, KisRealtimePrice
 
 stock = kis.stock("000660")
 
@@ -628,9 +642,9 @@ for symbol in symbols:
 from vmkis import VmKis
 kis = VmKis("secret.json")
 
-# 장 운영 시간 확인
-trading_hours = kis.trading_hours()
-print(trading_hours.is_market_open)  # True/False
+# 장 운영 시간 확인. market 은 필수입니다 (국가 코드도 됩니다).
+hours = kis.trading_hours("KR")
+print(hours.open, hours.close)
 ```
 
 ### Q2: 인증 에러가 발생합니다

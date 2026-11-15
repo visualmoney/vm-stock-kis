@@ -264,9 +264,12 @@ https://openapi.koreainvestment.com:9443
 먼저 걸립니다.
 
 ```text
-config.yaml 에 `version` 이 없습니다. 이 파일은 0.0.x 형식으로 보입니다 —
+<설정 파일 경로> 에 `version` 이 없습니다. 이 파일은 0.0.x 형식으로 보입니다 —
 지원하지 않습니다. template_account_profiles.yaml 을 참고해 다시 작성하세요.
 ```
+
+실제 메시지는 읽은 파일 경로를 앞에 붙입니다 (`src/vmkis/config.py` 의 R1).
+`config.yaml` 이라는 이름은 메시지에 없습니다.
 
 변환 스크립트를 만들지 않는 이유도 같습니다. 옛 형식은 계좌 1개·앱 1개를 평평하게
 적은 것이라 손으로 옮기는 편이 빠르고, 변환기는 그 자체로 유지보수 대상이 됩니다.

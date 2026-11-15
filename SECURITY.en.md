@@ -56,7 +56,7 @@ upstream as well — you do not need to file the report twice.
 |---|---|---|
 | `KisAuth.save()` | path you choose | plaintext JSON (`id`, `appkey`, `secretkey`, `account`) |
 | Access token (`keep_token=True`) | `~/.vmkis/` (default) | plaintext JSON |
-| `config.yaml` | path you choose | plaintext YAML |
+| `configs/account_profiles.yaml` | default config path | plaintext YAML |
 
 The `cryptography` dependency is used **only to decrypt KIS websocket payloads**. It has
 nothing to do with credentials written to disk.
@@ -66,8 +66,9 @@ Therefore:
 - **Do not use `keep_token=True` on machines you do not trust** (shared PCs, shared
   servers, someone else's container).
 - Restrict credential files to your own user (`chmod 600`).
-- Never commit credential files. `.gitignore` covers `config.yaml`, `real_secret.json`,
-  and `virtual_secret.json`, but **a file saved under any other name will not be caught.**
+- Never commit credential files. `.gitignore` covers `configs/*` (except the template)
+  and leftover root names (`config.yaml`, `real_secret.json`, `virtual_secret.json`),
+  but **a file saved under any other name will not be caught.**
 - If you suspect exposure, **reissue your AppKey immediately** at
   [KIS Developers](https://apiportal.koreainvestment.com/). This library cannot revoke a key.
 

@@ -61,6 +61,16 @@ archive/
 | [docs/reports/2025-12-17_TODO_LIST.md](./docs/reports/2025-12-17_TODO_LIST.md) | `docs/reports/TODO_LIST_2025_12_17.md` | 2025-12-17 | P0~P3 체계. 쓰지 않음 |
 | [docs/generated/2025-12-17_TODO_LIST.md](./docs/generated/2025-12-17_TODO_LIST.md) | `docs/generated/TODO_LIST.md` | 2025-12-17 | 본문은 "2024년 12월 · PyKIS 테스트 프로젝트"라고 적고 있음 |
 | [docs/generated/2025-12-17_todo.md](./docs/generated/2025-12-17_todo.md) | `docs/generated/todo.md` | 2025-12-17 | poetry 시절 임시 메모 |
+| [docs/generated/2025-12_COMPLETION_SUMMARY.md](./docs/generated/2025-12_COMPLETION_SUMMARY.md) | `docs/generated/COMPLETION_SUMMARY.md` | 2025-12 | 생성기가 만들지 않는 일회성 산출물 ([#94](https://github.com/visualmoney/vm-stock-kis/issues/94)) |
+| [docs/generated/2025-12_dev_log.md](./docs/generated/2025-12_dev_log.md) | `docs/generated/dev_log.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_dev_log_complete.md](./docs/generated/2025-12_dev_log_complete.md) | `docs/generated/dev_log_complete.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_prompts_guide.md](./docs/generated/2025-12_prompts_guide.md) | `docs/generated/prompts_guide.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_prompts_rules.md](./docs/generated/2025-12_prompts_rules.md) | `docs/generated/prompts_rules.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_report.md](./docs/generated/2025-12_report.md) | `docs/generated/report.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_report_final.md](./docs/generated/2025-12_report_final.md) | `docs/generated/report_final.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_VALIDATION_REPORT_WEBSOCKET_STRESS.md](./docs/generated/2025-12_VALIDATION_REPORT_WEBSOCKET_STRESS.md) | `docs/generated/VALIDATION_REPORT_WEBSOCKET_STRESS.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12_VALIDATION_REPORT_WEBSOCKET_STRESS_COMPLETE.md](./docs/generated/2025-12_VALIDATION_REPORT_WEBSOCKET_STRESS_COMPLETE.md) | `docs/generated/VALIDATION_REPORT_WEBSOCKET_STRESS_COMPLETE.md` | 2025-12 | 같음 |
+| [docs/generated/2025-12-17_test_run.md](./docs/generated/2025-12-17_test_run.md) | `docs/generated/test_run_2025-12-17.md` | 2025-12-17 | 같음 |
 
 ## To-Do 문서를 왜 전부 옮겼나
 
