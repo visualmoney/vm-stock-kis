@@ -1117,6 +1117,21 @@ print(p.price, p.rate)     # Decimal, Decimal
 
 2. **문서-코드 드리프트 수정** (§11의 7건)
 
+> **현황 (2026-11-15, [#178](https://github.com/visualmoney/vm-stock-kis/issues/178)).** 위 두 항목은 이미 반영되어 있다. §11 표의 문장과 줄 번호는 2026-08-27 발견 기록이다.
+
+| 항목 | 현황 |
+|---|---|
+| P0-1 Level 1 가이드 | 완료. [`docs/user/EXTENDING_API.md`](../user/EXTENDING_API.md) (#19). README, USER_GUIDE, INDEX, ARCHITECTURE.md 가 가리킨다 |
+| §11-1 하향 계층 다이어그램 | 완료. ARCHITECTURE.md 는 허브-스포크 (#20, #146, #171) |
+| §11-2 모의 초당 1개 | 완료. Rate Limiting 은 실전 19/s, 모의 2/s |
+| §11-3 `types.py` = 공개 타입 | 완료. `types.py` 는 고급 사용자용, 공개 별칭은 `public_types.py` |
+| §11-4 확장 4단계 요약 | 완료. EXTENDING_API Level 0–3, 확장성 절이 250–800 LOC |
+| §11-5 `ARCHITECTURE_QUALITY_KR.md` | 완료. `docs/reports/archive/` 로 옮기고 수치 인용 금지 경고 |
+| §11-6 없는 가이드 3개 | 완료. `CLAUDE.md` 없음. 살아 있는 문서는 그 세 파일을 가리키지 않음. 정본은 AGENTS.md |
+| §11-7 웹소켓 등록 누락 | 완료. 「새로운 WebSocket 이벤트 추가」 2단계가 조용한 드롭을 적음 |
+
+같은 날 측정에서 가이드 한 문장이 어긋났다. `info.py` 는 `fetch()` 가 아니라 `self.call(FOREIGN_PRICE)` 이고 `response_type` 을 생략한다. 가이드 문장을 그에 맞췄다.
+
 ### P1 — 구조 개선, 중비용
 
 1. **선언적 엔드포인트 스펙 + 범용 실행기**
