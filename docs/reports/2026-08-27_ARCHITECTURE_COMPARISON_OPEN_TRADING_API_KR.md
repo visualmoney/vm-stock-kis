@@ -1286,6 +1286,16 @@ def domestic_balance(self, account, page=None):
 3. **Protocol/Mixin 중복 축소 — Tier 문서화**
    신규 엔드포인트에 국내/해외 통합이 필요할 때만 Protocol을 요구하고, 단일 시장 TR은 "impl 클래스 + 모듈 함수"(Level 1 산출물)를 그대로 1급으로 승격. `adapter/websocket/price.py`의 4중 overload(331줄 중 ~280줄)는 **이벤트명 → 함수 레지스트리 dict**로 대체 가능(런타임은 이미 문자열 분기 `:221-244`).
 
+> **현황 (2026-11-16).** 위 항목의 정량과 줄 번호는 2026-08-27 발견 기록이다.
+
+| 항목 | 현황 |
+|---|---|
+| 선언적 스펙 + `call` | 완료 ([#43](https://github.com/visualmoney/vm-stock-kis/issues/43)). 스펙은 모듈에 둔다. `endpoints.py` 한 곳은 기각 |
+| `fetch_pages` | 계좌 연속조회 8곳 완료 ([#44](https://github.com/visualmoney/vm-stock-kis/issues/44)) |
+| 웹소켓 자기등록 | 완료 ([#17](https://github.com/visualmoney/vm-stock-kis/issues/17)) |
+| Protocol Tier / overload | Tier 문서화 완료. overload 를 dict 로 바꾸는 안은 기각 ([#45](https://github.com/visualmoney/vm-stock-kis/issues/45)) |
+| 차트 날짜 커서 | 일봉 두 루프만 `_collect_dated_bars` ([#180](https://github.com/visualmoney/vm-stock-kis/issues/180)). 당일 차트와 해외 `NMIN` 루프는 그대로. `fetch_pages` 에 넣지 않음 |
+
 ### P2 — 대규모, 고비용
 
 1. **KIS 스펙 → 응답 클래스 codegen**
