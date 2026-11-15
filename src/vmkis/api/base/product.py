@@ -79,6 +79,7 @@ class KisProductBase(KisMarketBase):
             KisNotFoundError: 조회 결과가 없는 경우
             ValueError: 종목 코드가 올바르지 않은 경우
         """
+        # 순환 방지: info → quote → 이 모듈. 파일 상단으로 올리면 KisProductBase 가 덜 초기화된다.
         from vmkis.api.stock.info import info as _info
 
         return _info(
@@ -90,6 +91,7 @@ class KisProductBase(KisMarketBase):
     @property
     def stock(self) -> "KisStock":
         """종목 Scope"""
+        # 순환 방지: scope.stock 이 이 모듈을 모듈 레벨에서 끌어온다. 종목 스코프 항해는 여기 둔다.
         from vmkis.scope.stock import stock
 
         return stock(

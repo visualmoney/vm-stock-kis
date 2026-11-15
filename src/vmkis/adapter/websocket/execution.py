@@ -80,6 +80,7 @@ class KisRealtimeOrderableAccountMixin:
             where (KisEventFilter[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]] | None, optional): 이벤트 필터. Defaults to None.
             once (bool, optional): 한번만 실행 여부. Defaults to False.
         """
+        # 순환 방지: order_execution → order 가 이 Mixin 을 상속한다. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.websocket.order_execution import on_account_execution
 
         if event == "execution":
@@ -108,6 +109,7 @@ class KisRealtimeOrderableAccountMixin:
             callback (Callable[[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]], None]): 콜백 함수
             where (KisEventFilter[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]] | None, optional): 이벤트 필터. Defaults to None.
         """
+        # 순환 방지: order_execution → order 가 이 Mixin 을 상속한다. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.websocket.order_execution import on_account_execution
 
         if event == "execution":
@@ -142,6 +144,7 @@ class KisRealtimeOrderableOrderMixin:
             where (KisEventFilter[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]] | None, optional): 이벤트 필터. Defaults to None.
             once (bool, optional): 한번만 실행 여부. Defaults to False.
         """
+        # 순환 방지: order_execution → order 가 이 Mixin 을 상속한다. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.websocket.order_execution import on_account_execution
 
         if event == "execution":
@@ -170,6 +173,7 @@ class KisRealtimeOrderableOrderMixin:
             callback (Callable[[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]], None]): 콜백 함수
             where (KisEventFilter[KisWebsocketClient, KisSubscriptionEventArgs[KisRealtimeExecution]] | None, optional): 이벤트 필터. Defaults to None.
         """
+        # 순환 방지: order_execution → order 가 이 Mixin 을 상속한다. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.websocket.order_execution import on_account_execution
 
         if event == "execution":

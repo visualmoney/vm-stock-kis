@@ -25,6 +25,12 @@ from vmkis.__env__ import (
     WEBSOCKET_PAPER_DOMAIN,
 )
 from vmkis.api.auth.token import KisAccessToken
+from vmkis.api.auth.websocket import (
+    KisWebsocketApprovalKey,
+)
+from vmkis.api.auth.websocket import (
+    websocket_approval_key as _issue_websocket_approval_key,
+)
 from vmkis.client.account import KisAccountNumber
 from vmkis.client.appkey import KisKey
 from vmkis.client.auth import KisAuth
@@ -1004,6 +1010,17 @@ class VmKis:
             raise ValueError("웹소켓 클라이언트가 초기화되지 않았습니다.")
 
         return self._websocket
+
+    def websocket_approval_key(
+        self, domain: Literal["live", "paper"] | None = None
+    ) -> KisWebsocketApprovalKey:
+        """웹소켓 접속 키를 발급합니다.
+
+        OAuth인증 -> 실시간 (웹소켓) 접속키 발급[실시간-000]
+
+        client 가 api 를 import 하지 않도록 허브가 발급을 맡습니다.
+        """
+        return _issue_websocket_approval_key(self, domain)
 
     def close(self) -> None:
         """API 세션을 종료합니다."""

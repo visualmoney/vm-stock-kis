@@ -139,6 +139,7 @@ Raises:
 - `discard()`: API 접속 토큰을 폐기합니다.
 - `primary()`: 기본 계좌 정보를 반환합니다.
 - `websocket()`: 웹소켓 클라이언트를 반환합니다.
+- `websocket_approval_key()`: 웹소켓 접속 키를 발급합니다.
 - `close()`: API 세션을 종료합니다.
 
 ### Functions
@@ -251,6 +252,14 @@ Raises:
 #### `websocket()`
 
 웹소켓 클라이언트를 반환합니다.
+
+#### `websocket_approval_key()`
+
+웹소켓 접속 키를 발급합니다.
+
+OAuth인증 -> 실시간 (웹소켓) 접속키 발급[실시간-000]
+
+client 가 api 를 import 하지 않도록 허브가 발급을 맡습니다.
 
 #### `close()`
 

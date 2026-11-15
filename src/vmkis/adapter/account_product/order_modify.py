@@ -77,6 +77,7 @@ class KisCancelableOrderMixin:
         국내주식주문 -> 주식주문(정정취소)[v1_국내주식-003]
         국내주식주문 -> 해외주식 정정취소주문[v1_해외주식-003]
         """
+        # 순환 방지: order_modify → order 가 이 Mixin 을 상속한다. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.account.order_modify import cancel_order
 
         return cancel_order(self.kis, order=self)
@@ -104,6 +105,7 @@ class KisModifyableOrderMixin:
             condition (ORDER_CONDITION, optional): 주문조건
             execution (ORDER_EXECUTION_CONDITION, optional): 체결조건
         """
+        # 순환 방지: order_modify → order 가 이 Mixin 을 상속한다. 파일 상단으로 올리면 로드가 깨진다.
         from vmkis.api.account.order_modify import modify_order
 
         return modify_order(
