@@ -76,6 +76,15 @@ def test_basic_example_missing_config_names_the_path(path: Path) -> None:
     assert MISSING_CONFIG.name in combined, f"{path.name} 가 없는 경로를 말하지 않습니다:\n{combined}"
 
 
+@pytest.mark.parametrize("path", _all_example_scripts(), ids=lambda p: str(p.relative_to(REPO_ROOT)))
+def test_example_names_the_client_hub(path: Path) -> None:
+    """허브-스포크에서 인스턴스 이름은 hub 이다. 클래스는 VmKis 그대로."""
+    text = path.read_text(encoding="utf-8")
+
+    assert "hub = create_client" in text, f"{path} 이 hub = create_client 를 쓰지 않습니다"
+    assert "kis = create_client" not in text, f"{path} 이 옛 변수 kis 를 씁니다"
+
+
 def test_hello_world_stub_fails_create_client_check() -> None:
     stub = 'print("Hello from VM-Stock-KIS example")\n'
 

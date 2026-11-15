@@ -29,9 +29,9 @@
 ```python
 from vmkis import VmKis
 
-kis = VmKis("vmkis_auth.json", keep_token=True)
+hub = VmKis("vmkis_auth.json", keep_token=True)
 
-res = kis.fetch(
+res = hub.fetch(
     "/uapi/overseas-price/v1/quotations/price",
     api="HHDFS00000300",                              # TR ID → headers["tr_id"]
     params={"AUTH": "", "EXCD": "NAS", "SYMB": "AAPL"},
@@ -63,7 +63,7 @@ raw: dict = res.raw()        # 순수 dict
 
 ### 더 낮은 층
 
-`kis.request(...)` 는 `requests.Response` 를 그대로 돌려줍니다. 응답 파싱까지
+`hub.request(...)` 는 `requests.Response` 를 그대로 돌려줍니다. 응답 파싱까지
 직접 하고 싶을 때만 쓰세요.
 
 > 라이브러리 내부도 같은 패턴을 씁니다. `src/vmkis/api/stock/info.py` 가
@@ -98,8 +98,8 @@ class ForeignPrice(KisAPIResponse):
     orderable: str | None = KisString["ordy", None]     # 기본값 지정
 
 
-def foreign_price(kis: VmKis, exchange: str, symbol: str) -> ForeignPrice:
-    return kis.fetch(
+def foreign_price(hub: VmKis, exchange: str, symbol: str) -> ForeignPrice:
+    return hub.fetch(
         "/uapi/overseas-price/v1/quotations/price",
         api="HHDFS00000300",
         params={"AUTH": "", "EXCD": exchange, "SYMB": symbol},
@@ -162,14 +162,14 @@ class RankResponse(KisAPIResponse):
 `response_type` 에 **클래스 대신 인스턴스**를 넘깁니다.
 
 ```python
-kis.fetch(..., response_type=MyResponse(symbol="005930"))
+hub.fetch(..., response_type=MyResponse(symbol="005930"))
 ```
 
 ---
 
 ## Level 2 — 라이브러리에 통합
 
-`kis.stock("005930").my_feature()` 처럼 1급 시민으로 만들려면 **250~800 LOC** 가
+`hub.stock("005930").my_feature()` 처럼 1급 시민으로 만들려면 **250~800 LOC** 가
 듭니다. 절반 이상이 Protocol / overload / docstring 중복입니다.
 
 절차는 [ARCHITECTURE.md 의 확장성 절](../architecture/ARCHITECTURE.md#새로운-rest-api-추가--6단계-250800-loc)에
@@ -189,9 +189,9 @@ kis.fetch(..., response_type=MyResponse(symbol="005930"))
 
 ```python
 def my_feature(self):
-    return self.kis.fetch(..., response_type=MyResponse)
+    return self.hub.fetch(..., response_type=MyResponse)
 
-# kis.stock(...) 이 돌려주는 클래스에 직접 붙입니다
+# hub.stock(...) 이 돌려주는 클래스에 직접 붙입니다
 from vmkis.scope.stock import KisStock
 KisStock.my_feature = my_feature
 ```
@@ -236,10 +236,10 @@ KisStock.my_feature = my_feature
    > 같은 dict 객체를 참조하므로 **항목 추가**는 반영됩니다. 다만
    > `WEBSOCKET_RESPONSES_MAP = {...}` 처럼 **재할당하면 반영되지 않습니다.**
 
-3. **구독** — `kis.websocket.on(...)` 으로 붙입니다.
+3. **구독** — `hub.websocket.on(...)` 으로 붙입니다.
 
    ```python
-   ticket = kis.websocket.on(id="H0STANC0", key="005930", callback=handler)
+   ticket = hub.websocket.on(id="H0STANC0", key="005930", callback=handler)
    # ⚠️ ticket 을 변수에 보관하세요. GC되면 구독이 해지됩니다.
    ```
 
@@ -251,15 +251,15 @@ KisStock.my_feature = my_feature
 
 | # | 함정 | 대응 |
 |---|---|---|
-| 1 | **도메인 라우팅 기본값** | `domain=None` 이면 `kis.paper` 를 따라갑니다. **시세 TR은 모의 서버에 없으므로** `domain="live"` 를 명시하세요. 빠뜨리면 모의 계정에서만 터집니다 |
+| 1 | **도메인 라우팅 기본값** | `domain=None` 이면 `hub.paper` 를 따라갑니다. **시세 TR은 모의 서버에 없으므로** `domain="live"` 를 명시하세요. 빠뜨리면 모의 계정에서만 터집니다 |
 | 2 | **모의 미지원 TR** | 기간손익 등 일부는 모의 변형이 없습니다. 반대로 잔고·주문류는 `"VT..." if paper else "TT..."` 분기가 필요합니다 |
 | 3 | **빈 값** | KIS는 값이 없으면 `""` 를 보냅니다. `KisInt`/`KisDecimal`/`KisDate` 는 이때 예외를 냅니다. 어노테이션을 `\| None` 로 두면 `None` 이 됩니다 |
 | 4 | **필드 자체 누락** | `KeyError`. `KisString["field", None]` 또는 `__ignore_missing__ = True` 로 대응합니다. 실제로 일부 종목에서 종목명 필드가 빠져 옵니다 |
 | 5 | **`KisDynamicDict` 는 `rt_cd` 를 검사하지 않음** | Level 0에서 업무 오류가 조용히 통과합니다 |
 | 6 | **페이지 커서 접미사** | `ctx_area_fk100` / `fk200` / `fk50` / 접미사 없음 네 가지가 있습니다. `KisPage` 가 넷 다 파싱하지만, 요청 폼을 직접 만든다면 API마다 다르다는 점을 기억하세요 |
 | 7 | **Rate limit 은 도메인 전역** | TR별 세분화가 없습니다. 실전 19/s, 모의 2/s 공유입니다 |
-| 8 | **캐시는 자동이 아님** | `kis.cache` 는 opt-in 입니다. 정적 데이터만 수동으로 캐시하세요 |
-| 9 | **`kis.stock()` 이 API를 2회 이상 호출** | scope 생성 시 종목 정보를 조회해 시장을 판별합니다. 신규 상품군(선물옵션 등)은 시장 코드 등록이 따로 필요합니다 — **숨은 비용** |
+| 8 | **캐시는 자동이 아님** | `hub.cache` 는 opt-in 입니다. 정적 데이터만 수동으로 캐시하세요 |
+| 9 | **`hub.stock()` 이 API를 2회 이상 호출** | scope 생성 시 종목 정보를 조회해 시장을 판별합니다. 신규 상품군(선물옵션 등)은 시장 코드 등록이 따로 필요합니다 — **숨은 비용** |
 | 10 | **WebSocket 티켓 GC** | 구독 티켓을 변수에 잡지 않으면 즉시 해지될 수 있습니다 |
 | 11 | **hashkey 미사용** | KIS의 선택적 hashkey 헤더는 이 라이브러리가 쓰지 않습니다. 신규 주문 TR에도 불필요합니다 |
 

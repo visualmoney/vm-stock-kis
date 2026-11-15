@@ -14,8 +14,8 @@ def main() -> None:
     parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
-    kis = create_client(args.config, account=args.account)
-    stock = kis.stock("005930")
+    hub = create_client(args.config, account=args.account)
+    stock = hub.stock("005930")
 
     def on_orderbook(sender, e):
         print(e.response)

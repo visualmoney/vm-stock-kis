@@ -46,8 +46,8 @@ def test_guides_call_the_real_names() -> None:
     assert "account.profits(" in user_guide
     assert "account.daily_orders(" in user_guide
     assert "stock.orderable" in user_guide
-    assert 'kis.trading_hours("KR")' in user_guide
-    assert 'kis.trading_hours("KR")' in faq
+    assert 'hub.trading_hours("KR")' in user_guide
+    assert 'hub.trading_hours("KR")' in faq
 
 
 def test_stale_guide_names_are_caught() -> None:

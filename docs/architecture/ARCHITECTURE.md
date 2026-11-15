@@ -144,7 +144,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 ### 1.0 사용자 면과 확장점
 
 모듈 구조는 위 허브-스포크 **하나**입니다. 사용자가 알아야 할 면은 얇은
-파사드입니다 — `create_client`, `kis.stock` / `kis.account`. `SimpleKIS` 는
+파사드입니다 — `create_client`, `hub.stock` / `hub.account`. `SimpleKIS` 는
 그 위 선택이지 파사드 자체가 아닙니다. 없는 TR 은 파사드를 두껍게 하지
 않고 [`fetch()`](../user/EXTENDING_API.md) 로 엽니다.
 
@@ -155,7 +155,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 아래는 **암묵적으로만 지켜지던 규칙**입니다. 어기면 패키지가 import 단계에서
 깨지거나, 이벤트가 조용히 사라집니다.
 
-1. **`vmkis.kis` 를 모듈 레벨에서 import 하지 않습니다.**
+1. **`vmkis.hub` 를 모듈 레벨에서 import 하지 않습니다.**
    `if TYPE_CHECKING:` 블록 안에서만 허용합니다. 전체 패키지가 정상 로드되는
    **유일한 이유**입니다.
 
@@ -187,7 +187,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 
    계약을 넣으면서 **세 번째 역방향 간선이 드러났습니다.** `utils/diagnosis.py` 가
    `import vmkis` 로 루트 파사드를 모듈 레벨에서 끌어오고 있었습니다. 루트는
-   `kis` · `api` · `client` · `scope` 를 전부 import 하므로 `utils` 가 패키지 전체에
+   `hub` · `api` · `client` · `scope` 를 전부 import 하므로 `utils` 가 패키지 전체에
    의존한 셈입니다. 필요한 값은 버전과 배포명 둘뿐이어서 `vmkis.__env__` 를 직접
    보도록 바꿨습니다. **`import <루트패키지>` 한 줄은 간선 하나처럼 보이지만
    그래프에서는 상위 전체입니다.** 그룹 단위로만 보는 눈(그리고 사람이 쓴 AST
@@ -292,9 +292,9 @@ JSON(`KisAuth` → `VmKis("secret.json")`)과 YAML(`create_client`) 둘 다
 ```text
                          ┌──────────────────────────┐
                          │   사용자 코드              │
-                         │  kis = VmKis("secret.json")│
+                         │  hub = VmKis("secret.json")│
                          │  또는 create_client(...)   │
-                         │  stock = kis.stock(...)    │
+                         │  stock = hub.stock(...)    │
                          │  stock.quote()             │
                          │  stock.on("price", ...)    │
                          └───────────┬────────────────┘
@@ -345,7 +345,7 @@ src/vmkis/
 │       ├── order_execution.py  # 실시간 체결
 │       └── order_book.py # 실시간 호가
 │
-├── scope/                # 사용자 진입. kis.stock / kis.account
+├── scope/                # 사용자 진입. hub.stock / hub.account
 │   ├── base.py          # Scope 베이스 클래스
 │   ├── account.py       # 계좌 Scope
 │   └── stock.py         # 주식 Scope
@@ -448,10 +448,10 @@ class VmKis:
 
 ```python
 # 사용 예
-account = kis.account()           # KisAccountScope
+account = hub.account()           # KisAccountScope
 balance = account.balance()       # KisBalance
 
-stock = kis.stock("000660")       # KisStockScope
+stock = hub.stock("000660")       # KisStockScope
 quote = stock.quote()             # KisQuote
 ```
 
@@ -524,7 +524,7 @@ ticket = stock.on("price", on_price)
 ```text
 User Code
     ↓
-kis.stock("000660").quote()
+hub.stock("000660").quote()
     ↓
 KisStockScope + KisQuotableProductMixin
     ↓
@@ -538,7 +538,7 @@ Response JSON
     ↓
 KisObject.transform_(data, KisQuote)
     ↓
-KisObjectBase.__kis_init__(kis)  (권한 주입)
+KisObjectBase.__kis_init__(hub)  (권한 주입)
     ↓
 KisQuote Object 반환
     ↓

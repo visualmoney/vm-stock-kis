@@ -131,12 +131,12 @@ colorlog>=6.8.2
     from vmkis import VmKis, KisAuth
 
     # 실전투자용 VmKis 객체를 생성합니다.
-    kis = VmKis("secret.json", keep_token=True)
-    kis = VmKis(KisAuth.load("secret.json"), keep_token=True)
+    hub = VmKis("secret.json", keep_token=True)
+    hub = VmKis(KisAuth.load("secret.json"), keep_token=True)
 
     # 모의투자용 VmKis 객체를 생성합니다.
-    kis = VmKis("secret.json", "paper_secret.json", keep_token=True)
-    kis = VmKis(KisAuth.load("secret.json"), KisAuth.load("paper_secret.json"), keep_token=True)
+    hub = VmKis("secret.json", "paper_secret.json", keep_token=True)
+    hub = VmKis(KisAuth.load("secret.json"), KisAuth.load("paper_secret.json"), keep_token=True)
     ```
 
 2. 시크릿 키를 직접 입력하는 방법
@@ -145,7 +145,7 @@ colorlog>=6.8.2
     from vmkis import VmKis
 
     # 실전투자용 한국투자증권 API를 생성합니다.
-    kis = VmKis(
+    hub = VmKis(
         id="soju06",  # HTS 로그인 ID
         account="00000000-01",  # 계좌번호
         appkey="PSED321z...",  # AppKey 36자리
@@ -154,7 +154,7 @@ colorlog>=6.8.2
     )
 
     # 모의투자용 한국투자증권 API를 생성합니다.
-    kis = VmKis(
+    hub = VmKis(
         id="soju06",  # HTS 로그인 ID
         account="00000000-01",  # 모의투자 계좌번호
         appkey="PSED321z...",  # 실전투자 AppKey 36자리
@@ -174,7 +174,7 @@ colorlog>=6.8.2
 from vmkis import Quote
 
 # 엔비디아의 상품 객체를 가져옵니다.
-stock = kis.stock("NVDA")
+stock = hub.stock("NVDA")
 
 quote: Quote = stock.quote()
 quote: Quote = stock.quote(extended=True) # 주간거래 시세
@@ -224,7 +224,7 @@ KisForeignQuote(
 from vmkis import Balance
 
 # 주 계좌 객체를 가져옵니다.
-account = kis.account()
+account = hub.account()
 
 balance: Balance = account.balance()
 
@@ -256,8 +256,8 @@ KisIntegrationBalance(
 ```python
 from vmkis import Order
 
-hynix = kis.stock("000660")
-account = kis.account()
+hynix = hub.stock("000660")
+account = hub.account()
 
 # SK하이닉스 1주 시장가 매수 주문
 order: Order = hynix.buy(qty=1)
@@ -292,10 +292,10 @@ from vmkis.types import KisRealtimePrice, KisSubscriptionEventArgs, KisWebsocket
 def on_price(sender: KisWebsocketClient, e: KisSubscriptionEventArgs[KisRealtimePrice]):
     print(e.response)
 
-hynix = kis.stock("000660")
+hynix = hub.stock("000660")
 ticket = hynix.on("price", on_price)
 
-print(kis.websocket.subscriptions) # 현재 구독중인 이벤트 목록
+print(hub.websocket.subscriptions) # 현재 구독중인 이벤트 목록
 
 input("Press Enter to exit...")
 

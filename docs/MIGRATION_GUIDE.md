@@ -51,11 +51,11 @@ kis = PyKis("config.yaml")
 
 # vm-stock-kis — YAML 은 create_client. VmKis 경로는 JSON
 from vmkis import create_client
-kis = create_client("configs/account_profiles.yaml")
+hub = create_client("configs/account_profiles.yaml")
 
 # JSON
 from vmkis import VmKis
-kis = VmKis("secret.json")
+hub = VmKis("secret.json")
 ```
 
 일괄 치환:
@@ -81,7 +81,7 @@ git ls-files '*.py' | xargs sed -i -e 's/PyKis/VmKis/g' -e 's/\bpykis\b/vmkis/g'
 ```python
 import vmkis
 # vmkis.PyKis(...)  → AttributeError
-kis = vmkis.VmKis(...)
+hub = vmkis.VmKis(...)
 ```
 
 ### `pykis` 호환 패키지는 제공하지 않습니다
@@ -185,7 +185,7 @@ def analyze(quote: Quote, balance: Balance) -> None:
 ```python
 from vmkis import create_client, save_config_interactive
 
-kis = create_client("configs/account_profiles.yaml")
+hub = create_client("configs/account_profiles.yaml")
 save_config_interactive("configs/account_profiles.yaml")   # 대화형 설정 저장
 ```
 

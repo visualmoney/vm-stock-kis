@@ -198,7 +198,7 @@ def buy_stock(self, symbol: str, quantity: int, price: int) -> Order:
         ValueError: 잘못된 파라미터
 
     Example:
-        >>> order = kis.stock("005930").buy(qty=10, price=65000)
+        >>> order = hub.stock("005930").buy(qty=10, price=65000)
         >>> print(order.order_number)
     """
     ...
@@ -649,7 +649,7 @@ from vmkis.utils.retry import with_retry
 
 @with_retry(max_retries=5, initial_delay=2.0)
 def fetch_quote(symbol):
-    return kis.stock(symbol).quote()
+    return hub.stock(symbol).quote()
 ```
 
 ### Q7: JSON 로깅을 어떻게 활성화하나요?
@@ -676,7 +676,7 @@ from vmkis.exceptions import (
 )
 
 try:
-    quote = kis.stock("005930").quote()
+    quote = hub.stock("005930").quote()
 except KisRateLimitError:
     # 속도 제한 - 재시도 가능
     pass

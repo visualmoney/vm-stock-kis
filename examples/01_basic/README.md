@@ -48,7 +48,7 @@
 - `get_quote.py` — 시세 조회 예제 (삼성전자)
 - `get_chart.py` — `stock.chart()` 일봉
 - `get_orderbook.py` — `stock.orderbook()`
-- `trading_hours.py` — `kis.trading_hours(market)`
+- `trading_hours.py` — `hub.trading_hours(market)`
 - `get_balance.py` — 잔고 조회 예제
 - `account_lookups.py` — `profits` · `daily_orders` · `orderable_amount` · `orderable` · `pending_orders`
 - `place_order.py` — 시장가 매수 예제 (안전 장치 포함)

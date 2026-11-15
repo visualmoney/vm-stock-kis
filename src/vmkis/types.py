@@ -90,15 +90,15 @@ def analyze_quote(quote: Quote) -> None:
 from vmkis import create_client
 from vmkis.simple import SimpleKIS
 
-kis = create_client("configs/account_profiles.yaml")
-simple = SimpleKIS(kis)
+hub = create_client("configs/account_profiles.yaml")
+simple = SimpleKIS(hub)
 price = simple.get_price("005930")
 
 # 3. 고급: VmKis 직접 사용 (필요시)
 from vmkis import VmKis
 
-kis = VmKis(auth)
-quote = kis.stock("005930").quote()
+hub = VmKis(auth)
+quote = hub.stock("005930").quote()
 ```
 
 ### 🔬 고급 사용 (기여자용)
@@ -108,12 +108,12 @@ quote = kis.stock("005930").quote()
 from vmkis.types import KisObjectProtocol
 
 class MyCustomObject(KisObjectProtocol):
-    def __init__(self, kis):
-        self.kis = kis
+    def __init__(self, hub):
+        self.hub = hub
 
     def custom_method(self):
         # 내부 API 활용
-        return self.kis.fetch(...)
+        return self.hub.fetch(...)
 ```
 
 ==============================================================================
@@ -213,7 +213,7 @@ from vmkis.event.subscription import (
     KisSubscriptionEventArgs,
     KisUnsubscribedEventArgs,
 )
-from vmkis.kis import VmKis
+from vmkis.hub import VmKis
 from vmkis.responses.response import (
     KisAPIResponse,
     KisPaginationAPIResponse,

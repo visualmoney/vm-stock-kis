@@ -50,8 +50,8 @@ def test_readme_does_not_keep_virtual_secret_filename() -> None:
 
     assert "virtual_secret.json" not in text
     assert "paper_secret.json" in text
-    assert "hynix = kis.stock(" in text
-    assert "account = kis.account()" in text
+    assert "hynix = hub.stock(" in text
+    assert "account = hub.account()" in text
 
 
 def test_virtual_secret_filename_is_caught() -> None:

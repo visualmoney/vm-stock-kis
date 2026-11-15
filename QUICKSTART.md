@@ -55,8 +55,8 @@ default_account: "acc_paper1"   # 실수로 실전에 붙지 않도록 모의를
 ```python
 from vmkis import create_client
 
-kis = create_client()          # 기본 configs/account_profiles.yaml
-print(kis.stock("005930").quote())
+hub = create_client()          # 기본 configs/account_profiles.yaml
+print(hub.stock("005930").quote())
 ```
 
 토큰은 설정 파일 옆(`configs/token/`)에 앱 이름으로 저장됩니다. 경로를 직접 적을

@@ -17,9 +17,9 @@ def main() -> None:
     parser.add_argument("--account", help="쓸 계좌 이름. 생략하면 default_account")
     args = parser.parse_args()
 
-    kis = create_client(args.config, account=args.account)
-    account = kis.account()
-    stock = kis.stock("005930")
+    hub = create_client(args.config, account=args.account)
+    account = hub.account()
+    stock = hub.stock("005930")
     start = date.today() - timedelta(days=30)
 
     print(repr(account.daily_orders(start=start)))

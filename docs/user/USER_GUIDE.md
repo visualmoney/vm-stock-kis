@@ -47,7 +47,7 @@ pip install git+https://github.com/visualmoney/vm-stock-kis.git
 from vmkis import VmKis, KisAuth
 
 # 방법 1: 직접 입력
-kis = VmKis(
+hub = VmKis(
     id="YOUR_HTS_ID",           # HTS 로그인 ID
     account="00000000-01",       # 계좌번호
     appkey="YOUR_APP_KEY",       # App Key 36자
@@ -55,10 +55,10 @@ kis = VmKis(
 )
 
 # 테스트
-stock = kis.stock("000660")      # SK하이닉스
+stock = hub.stock("000660")      # SK하이닉스
 print(stock.quote())             # 시세 조회
 
-kis.close()  # 또는 with 문 사용
+hub.close()  # 또는 with 문 사용
 ```
 
 ---
@@ -71,15 +71,15 @@ kis.close()  # 또는 with 문 사용
 from vmkis import VmKis
 
 # 1. VmKis 객체 생성
-kis = VmKis("secret.json", keep_token=True)
+hub = VmKis("secret.json", keep_token=True)
 
 # 2. 주식 시세 조회
-stock = kis.stock("000660")      # SK하이닉스
+stock = hub.stock("000660")      # SK하이닉스
 quote = stock.quote()
 print(f"가격: {quote.price}, 변동: {quote.change}")
 
 # 3. 계좌 잔고 조회
-account = kis.account()
+account = hub.account()
 balance = account.balance()
 print(f"예수금: {balance.deposits['KRW'].amount}")
 
@@ -88,7 +88,7 @@ order = stock.buy(qty=1, price=100000)
 print(f"주문: {order.order_number}")
 
 # 5. 정리
-kis.close()
+hub.close()
 ```
 
 ### Context Manager 사용 (권장)
@@ -96,9 +96,9 @@ kis.close()
 ```python
 from vmkis import VmKis
 
-with VmKis("secret.json", keep_token=True) as kis:
+with VmKis("secret.json", keep_token=True) as hub:
     # 자동으로 정리됨
-    stock = kis.stock("000660")
+    stock = hub.stock("000660")
     quote = stock.quote()
     print(quote)
 ```
@@ -107,7 +107,7 @@ with VmKis("secret.json", keep_token=True) as kis:
 
 ## 인증 관리
 
-사용자가 알 면은 `create_client` 와 `kis.stock` / `kis.account` 입니다.
+사용자가 알 면은 `create_client` 와 `hub.stock` / `hub.account` 입니다.
 `SimpleKIS` 는 그 위 선택입니다. 없는 TR 은
 [EXTENDING_API](EXTENDING_API.md) 의 `fetch()` 로 엽니다. 모듈 구조는
 [ARCHITECTURE](../architecture/ARCHITECTURE.md) §1 허브-스포크 하나입니다.
@@ -141,12 +141,12 @@ auth.save("secret.json")
 from vmkis import VmKis
 
 # 저장된 파일 불러오기
-kis = VmKis("secret.json", keep_token=True)
+hub = VmKis("secret.json", keep_token=True)
 
 # 또는
 from vmkis import KisAuth
 auth = KisAuth.load("secret.json")
-kis = VmKis(auth)
+hub = VmKis(auth)
 ```
 
 ### 2. 환경 변수 사용
@@ -178,7 +178,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-kis = VmKis(
+hub = VmKis(
     id=os.getenv("KIS_ID"),
     appkey=os.getenv("KIS_APPKEY"),
     secretkey=os.getenv("KIS_SECRETKEY"),
@@ -192,25 +192,25 @@ kis = VmKis(
 from vmkis import VmKis
 
 # 실전 인증과 모의 인증을 함께 넘기면 **모의 클라이언트**가 됩니다.
-kis = VmKis(
+hub = VmKis(
     "live_secret.json",     # 실전 계정 (첫 번째 위치 인자)
     "paper_secret.json",    # 모의 계정 (두 번째 위치 인자)
     keep_token=True,
 )
 
-assert kis.paper is True    # 읽기 전용 프로퍼티입니다
+assert hub.paper is True    # 읽기 전용 프로퍼티입니다
 
-account = kis.account()
+account = hub.account()
 balance = account.balance()
 ```
 
-`kis.paper` 는 **대입할 수 없습니다.** 하나의 클라이언트를 실전과 모의 사이에서
+`hub.paper` 는 **대입할 수 없습니다.** 하나의 클라이언트를 실전과 모의 사이에서
 전환하는 방법은 없습니다 — 실전으로 호출하려면 실전 인증만 넘긴 별도의
 클라이언트를 만드세요.
 
 ```python
-live_kis = VmKis("live_secret.json", keep_token=True)
-assert live_kis.paper is False
+live_hub = VmKis("live_secret.json", keep_token=True)
+assert live_hub.paper is False
 ```
 
 ### 4. 토큰 관리
@@ -219,13 +219,13 @@ assert live_kis.paper is False
 from vmkis import VmKis
 
 # 토큰 자동 저장 (권장)
-kis = VmKis("secret.json", keep_token=True)
+hub = VmKis("secret.json", keep_token=True)
 
 # 토큰 자동 저장 비활성화
-kis = VmKis("secret.json", keep_token=False)
+hub = VmKis("secret.json", keep_token=False)
 
 # 커스텀 저장 경로
-kis = VmKis("secret.json", keep_token="~/.my_kis_tokens/")
+hub = VmKis("secret.json", keep_token="~/.my_kis_tokens/")
 ```
 
 ---
@@ -248,8 +248,8 @@ kis = VmKis("secret.json", keep_token="~/.my_kis_tokens/")
 ```python
 from vmkis import VmKis
 
-kis = VmKis("secret.json")
-stock = kis.stock("000660")  # SK하이닉스
+hub = VmKis("secret.json")
+stock = hub.stock("000660")  # SK하이닉스
 
 # 현재 시세
 quote = stock.quote()
@@ -271,22 +271,22 @@ print(f"주간 시세: {quote_ext}")
 
 ```python
 # 미국 나스닥
-apple = kis.stock("AAPL", market="NASDAQ")
+apple = hub.stock("AAPL", market="NASDAQ")
 quote = apple.quote()
 
 # 미국 뉴욕
-msft = kis.stock("MSFT", market="NYSE")
+msft = hub.stock("MSFT", market="NYSE")
 quote = msft.quote()
 
 # 베이징 거래소
-baidu = kis.stock("9618", market="BEIJING")
+baidu = hub.stock("9618", market="BEIJING")
 quote = baidu.quote()
 ```
 
 ### 3. 호가 조회
 
 ```python
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 
 # 호가 조회
 orderbook = stock.orderbook()
@@ -301,7 +301,7 @@ print(f"매수량: {orderbook.bid_volume}")
 ```python
 from datetime import date
 
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 
 # 일봉
 daily_chart = stock.chart(period="day", end=date(2024, 12, 10))
@@ -324,7 +324,7 @@ monthly_chart = stock.chart(period="month")
 ```python
 from decimal import Decimal
 
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 
 # 시장가 매수 (1주)
 order = stock.buy(qty=1)
@@ -341,7 +341,7 @@ print(f"미체결수량: {order.pending_qty if order.pending else 0}")
 ### 2. 매도 주문
 
 ```python
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 
 # 시장가 매도 (전량)
 order = stock.sell()
@@ -377,7 +377,7 @@ order = stock.buy(qty=10)
 order.cancel()
 
 # 또는
-account = kis.account()
+account = hub.account()
 for pending_order in account.pending_orders():
     pending_order.cancel()
 ```
@@ -385,7 +385,7 @@ for pending_order in account.pending_orders():
 ### 5. 주문 현황 조회
 
 ```python
-account = kis.account()
+account = hub.account()
 
 # 미체결 주문 조회
 pending_orders = account.pending_orders()
@@ -404,7 +404,7 @@ order_660 = next((o for o in orders if o.symbol == "000660"), None)
 ### 1. 잔고 조회
 
 ```python
-account = kis.account()
+account = hub.account()
 
 # 통합 잔고 조회
 balance = account.balance()
@@ -431,8 +431,8 @@ print(f"총 손익: {balance.profit} ({balance.profit_rate}%)")
 ### 2. 매수 가능 금액
 
 ```python
-account = kis.account()
-stock = kis.stock("000660")
+account = hub.account()
+stock = hub.stock("000660")
 
 # 계좌에서 종목·시장을 지정
 orderable_amount = account.orderable_amount(market="KRX", symbol="000660")
@@ -446,7 +446,7 @@ print(repr(orderable_amount))
 ### 3. 매도 가능 수량
 
 ```python
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 
 # 해당 종목 매도 가능 수량
 print(stock.orderable)
@@ -455,7 +455,7 @@ print(stock.orderable)
 ### 4. 일별 손익 조회
 
 ```python
-account = kis.account()
+account = hub.account()
 
 from datetime import date
 
@@ -466,7 +466,7 @@ print(repr(profits))
 ### 5. 체결 내역 조회
 
 ```python
-account = kis.account()
+account = hub.account()
 
 from datetime import date
 
@@ -483,7 +483,7 @@ print(repr(orders))
 ```python
 from vmkis.types import KisSubscriptionEventArgs, KisRealtimePrice
 
-stock = kis.stock("000660")
+stock = hub.stock("000660")
 
 def on_price(sender, e: KisSubscriptionEventArgs[KisRealtimePrice]):
     """시세 업데이트"""
@@ -520,7 +520,7 @@ ticket = stock.on("orderbook", on_orderbook)
 ### 3. 실시간 체결
 
 ```python
-account = kis.account()
+account = hub.account()
 
 def on_execution(sender, e):
     """체결 알림"""
@@ -549,7 +549,7 @@ def on_price(sender, e):
 # 최대 40개까지 동시 구독 가능
 tickets = []
 for symbol in symbols:
-    stock = kis.stock(symbol)
+    stock = hub.stock(symbol)
     ticket = stock.on("price", on_price)
     tickets.append(ticket)
 
@@ -585,7 +585,7 @@ from vmkis.client.exceptions import KisAPIError, KisHTTPError
 from vmkis.responses.exceptions import KisMarketNotOpenedError
 
 try:
-    stock = kis.stock("000660")
+    stock = hub.stock("000660")
     quote = stock.quote()
 except KisMarketNotOpenedError:
     print("시장이 미개장입니다")
@@ -597,7 +597,7 @@ except KisHTTPError as e:
 except Exception as e:
     print(f"기타 에러: {e}")
 finally:
-    kis.close()
+    hub.close()
 ```
 
 ### 3. 배치 처리
@@ -609,7 +609,7 @@ from time import sleep
 symbols = ["000660", "005930", "035420"]
 
 for symbol in symbols:
-    stock = kis.stock(symbol)
+    stock = hub.stock(symbol)
     quote = stock.quote()
     print(f"{symbol}: {quote.price}")
     # Rate limiting이 자동으로 처리됨
@@ -619,11 +619,11 @@ for symbol in symbols:
 
 ```python
 # 동일한 VmKis 인스턴스 재사용
-kis = VmKis("secret.json")
+hub = VmKis("secret.json")
 
 # 여러 요청에서 재사용
 for symbol in symbols:
-    stock = kis.stock(symbol)
+    stock = hub.stock(symbol)
     quote = stock.quote()  # 같은 세션 재사용
 ```
 
@@ -640,10 +640,10 @@ for symbol in symbols:
 
 ```python
 from vmkis import VmKis
-kis = VmKis("secret.json")
+hub = VmKis("secret.json")
 
 # 장 운영 시간 확인. market 은 필수입니다 (국가 코드도 됩니다).
-hours = kis.trading_hours("KR")
+hours = hub.trading_hours("KR")
 print(hours.open, hours.close)
 ```
 
@@ -662,7 +662,7 @@ auth = KisAuth.load("secret.json")
 print(auth)  # id, account 확인
 
 # 3. 직접 입력
-kis = VmKis(
+hub = VmKis(
     id="your_id",           # 확인
     appkey="..." * 2 + "...",  # 36자 확인
     secretkey="..." * 6,    # 180자 확인
@@ -682,7 +682,7 @@ logging.setLevel("DEBUG")  # 대기 시간 확인
 # 대량 요청은 시간 간격을 두고
 from time import sleep
 for symbol in symbols:
-    quote = kis.stock(symbol).quote()
+    quote = hub.stock(symbol).quote()
     # sleep(0.5)  # 필요시 추가 대기
 ```
 
@@ -743,10 +743,10 @@ if os.path.exists(token_dir):
 
 ```python
 # WebSocket 비활성화로 테스트
-kis = VmKis("secret.json", use_websocket=False)
+hub = VmKis("secret.json", use_websocket=False)
 
 # 또는 나중에 웹소켓 사용
-websocket = kis.websocket  # 필요시만
+websocket = hub.websocket  # 필요시만
 ```
 
 ### 4. 로그 파일 위치
@@ -769,7 +769,7 @@ ticket = stock.on("price", callback)  # 연속 수신
 
 # 3. 배치 처리로 rate limit 활용
 for symbol in symbols:
-    quote = kis.stock(symbol).quote()  # 자동 대기
+    quote = hub.stock(symbol).quote()  # 자동 대기
 ```
 
 ---

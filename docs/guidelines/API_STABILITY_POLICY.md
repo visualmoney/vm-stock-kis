@@ -182,8 +182,8 @@ vm-stock-kis 1.0.0      SemVer major 라인 선언 (태그). 폴백을 다시 �
 # ✅ 공개 표면
 from vmkis import VmKis, Quote, Balance, Order
 
-kis = VmKis(id="...", account="...", appkey="...", secretkey="...")
-quote = kis.stock("005930").quote()
+hub = VmKis(id="...", account="...", appkey="...", secretkey="...")
+quote = hub.stock("005930").quote()
 ```
 
 **보장 범위**:
@@ -214,15 +214,15 @@ quote = kis.stock("005930").quote()
 
 ```python
 # 0.0.1
-quote = kis.stock("005930").quote()
+quote = hub.stock("005930").quote()
 # {'price': 60000, 'volume': 1000000}
 
 # 0.0.2 (호환성 유지)
-quote = kis.stock("005930").quote(include_extended=True)
+quote = hub.stock("005930").quote(include_extended=True)
 # {'price': 60000, 'volume': 1000000, 'extended': {...}}
 
 # ✅ 0.0.1 코드도 0.0.2에서 계속 작동
-quote = kis.stock("005930").quote()
+quote = hub.stock("005930").quote()
 ```
 
 ---
@@ -349,11 +349,11 @@ kis = PyKis("config.yaml")
 
 # vm-stock-kis — YAML 은 create_client. VmKis 경로는 JSON
 from vmkis import create_client
-kis = create_client("configs/account_profiles.yaml")
+hub = create_client("configs/account_profiles.yaml")
 
 # JSON
 from vmkis import VmKis
-kis = VmKis("secret.json")
+hub = VmKis("secret.json")
 ```
 
 전체 대조표와 호환 폴백 목록은
