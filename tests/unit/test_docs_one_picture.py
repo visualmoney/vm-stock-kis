@@ -1,4 +1,4 @@
-"""살아 있는 문서가 허브-스포크와 다른 그림을 가르치지 않는지 봅니다. (#146)
+"""살아 있는 문서가 허브-스포크와 다른 그림을 가르치지 않는지 봅니다. (#146, #171)
 
 동결 문서(reports · dev_logs · prompts · archive)는 당시 서술입니다.
 SECURITY 의 virtual_secret.json 은 막는 옛 이름이라 허용합니다.
@@ -26,6 +26,11 @@ _LIES = (
     "Adapter Layer",
     "from vmkis.hub",
     "vmkis.hub",
+    "통신 계층",
+    "하위 계층",
+    "느슨한 상하 순서",
+    "계층화 아키텍처",
+    "Layered Architecture",
 )
 
 
@@ -89,6 +94,13 @@ def test_architecture_flow_is_hub_and_spoke() -> None:
     assert 'stock.on("price"' in text
     assert "create_client" in text
     assert "MarketType" in text
+    assert "허브-스포크" in text
+    assert "이 그림은 계층이 아닙니다" in text
+    assert "하향으로 쌓은 층도 아닙니다" in text
+    assert "2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md" in text
+    assert "느슨한 상하 순서" not in text
+    assert "통신 계층" not in text
+    assert "하위 계층" not in text
 
 
 def test_old_picture_lies_are_caught() -> None:
@@ -105,6 +117,11 @@ def test_old_picture_lies_are_caught() -> None:
         "│  Adapter Layer (기능 추가)   │\n"
         "from vmkis.hub import VmKis\n"
         "vmkis.hub\n"
+        "├── client/             # 통신 계층\n"
+        "하위 계층으로 내려가는 경우입니다.\n"
+        "느슨한 상하 순서: scope → adapter/api\n"
+        "계층화 아키텍처의 명확한 분리\n"
+        "Layered Architecture\n"
     )
 
     assert set(_hits(stale, _LIES)) == set(_LIES)

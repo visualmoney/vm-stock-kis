@@ -34,3 +34,6 @@
 - 커밋 메시지 컨벤션 준수: `type(scope): subject`
 - PR 체크리스트: 테스트/문서/CHANGELOG 반영
 - Deprecation은 2 릴리스 이상 경고 유지 후 제거
+- 스쿼시 머지 뒤 로컬 토픽 브랜치를 지운다 (`git fetch --prune`, `git checkout main`,
+  `git pull`, `git branch -D <topic>`). `main` 은 지우지 않는다. 정본은
+  [AGENTS.md](../../AGENTS.md) 작업 종료 절.

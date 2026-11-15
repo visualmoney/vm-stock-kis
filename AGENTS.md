@@ -53,6 +53,20 @@ Do not rename older files.
 - PR body: `Closes #NN`.
 - If the issue stays half-done, comment: done-vs-criteria table, remaining `file:line`, traps, log link.
 - Drop `blocked` when the predecessor is gone.
+- After the PR is squash-merged, delete the **local** topic branch. Origin heads
+  are already dropped by `delete_branch_on_merge` ([#125](https://github.com/visualmoney/vm-stock-kis/issues/125)).
+  Squash means `git branch --merged main` will not list the topic branch.
+
+```bash
+git fetch --prune
+git checkout main
+git pull
+git branch -D <topic>
+```
+
+Also delete other local names that are a merged PR `headRefName`, or whose
+upstream is `[gone]` after prune. Never delete `main`. Leave unmerged unique
+work until the user says otherwise.
 
 ## Release
 

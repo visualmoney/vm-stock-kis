@@ -131,7 +131,18 @@ git checkout -b docs/update-quickstart
 2. 변경사항 커밋
 3. Push 후 Pull Request 생성
 4. 리뷰 및 테스트 통과
-5. `main`에 병합
+5. `main`에 병합 (이 저장소는 스쿼시 머지)
+6. 로컬 토픽 브랜치를 지운다. 스쿼시라 `git branch -d` 는 거절한다.
+
+```bash
+git fetch --prune
+git checkout main
+git pull
+git branch -D <topic>
+```
+
+`origin` 헤드는 GitHub `delete_branch_on_merge` 가 지운다. 로컬 `[gone]`
+잔여와, 머지된 PR 과 같은 이름의 로컬 브랜치도 지운다. `main` 은 남긴다.
 
 ---
 
@@ -334,7 +345,7 @@ tests/
 │   ├── test_public_api_imports.py
 │   └── ...
 │
-├── integration/             # 통합 테스트 — 실제 API 호출 또는 여러 계층 결합
+├── integration/             # 통합 테스트 — 실제 API 호출 또는 여러 그룹을 함께
 │   ├── conftest.py          # 이 아래 전부에 `integration` 마커를 붙입니다
 │   ├── test_account_balance.py   # requires_api
 │   ├── test_product_quote.py     # requires_api

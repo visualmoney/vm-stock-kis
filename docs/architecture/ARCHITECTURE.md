@@ -131,15 +131,21 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
                                                  │  utils/  │
                                                  └──────────┘
 
-   느슨한 상하 순서: scope → adapter/api → event → responses → client → utils
+   역할 그룹: scope, adapter/api, event, responses, client, utils
    순환 2쌍은 의도적: api ↔ adapter, api ↔ event  (불변식 2번 표 참고)
 ```
 
-> **이 그림은 "계층"이 아닙니다.** 예전 문서는 `API → Client → Response Transform
-> → Utility` 하향 단방향 계층으로 서술했으나 **코드와 일치하지 않습니다.**
-> AST 전수 분석 결과 런타임 모듈레벨 역방향 import 가 **12건(간선 종류로는 7종)**
-> 존재합니다. `import vmkis` 가 정상 동작하는 것은 순환이 없어서가 아니라,
-> 아래 불변식이 로드 순서를 지켜 주기 때문입니다.
+> **이 그림은 계층이 아닙니다. 하향으로 쌓은 층도 아닙니다.**
+> 처음 검토는 layered(계층) 렌즈였다. 동결 기록
+> [`2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md`](../reports/2026-08-27_ARCHITECTURE_COMPARISON_OPEN_TRADING_API_KR.md)
+> 가 그 렌즈로 코드를 대조했고, 결론은 **허브-스포크**다. 그 보고서는 갱신하지
+> 않는다. 살아 있는 문서는 이 절의 그림만 그린다.
+>
+> 예전 스케치는 `API → Client → Response Transform → Utility` 하향 단방향
+> 층이었다. **코드와 일치하지 않는다.** AST 전수 분석 결과 런타임 모듈레벨
+> 역방향 import 가 **12건(간선 종류로는 7종)** 존재한다. `import vmkis` 가
+> 정상 동작하는 것은 순환이 없어서가 아니라, 아래 불변식이 로드 순서를
+> 지켜 주기 때문이다.
 
 ### 1.0 사용자 면과 확장점
 
@@ -176,7 +182,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
    `utils/retry.py` 는 재시도 대상 예외 **목록**을 들고 있느라 `client` 를
    참조했습니다. 목록을 옮기는 대신 **판단 근거를 예외 자신에게 넘겼습니다** —
    `KisException.retryable` 표식을 보고 `getattr` 로 확인하므로 유틸은 아무것도
-   import 하지 않습니다. 하위 계층이 상위 지식을 필요로 할 때의 일반적인 해법입니다.
+   import 하지 않습니다. 한 그룹이 다른 그룹의 이름을 필요로 할 때의 일반적인 해법입니다.
 
    **이 불변식은 기계가 지킵니다** ([#50](https://github.com/visualmoney/vm-stock-kis/issues/50)).
    `pyproject.toml` 의 `[tool.importlinter]` 에 계약 2개가 있고 CI 의 `lint` 잡이
@@ -230,7 +236,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
      해석을 버리는 거래입니다.
 
    > **이 판정을 뒤집을 수 있는 유일한 조건**: `MARKET_TYPE`(`Literal` 문자열
-   > 유니온)이 `api/stock/market.py` 를 떠나 하위 계층으로 내려가는 경우입니다.
+   > 유니온)이 `api/stock/market.py` 를 떠나 공용 모듈로 옮기는 경우입니다.
    > 이것은 `adapter` · `api` · `event` · `scope` 26개 파일이 쓰는 **공용 어휘**인데
    > `KisType` 기계가 함께 든 api 모듈에 얹혀 있습니다. 옮기면 `event → api` 는
    > `KisProductProtocol` 1건만 남습니다. 다만 새 공개 모듈 신설이라
@@ -284,7 +290,8 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 
 ### 전체 데이터 흐름도
 
-§1 허브-스포크와 같은 그림입니다. 하향 계층이 아닙니다.
+§1 허브-스포크와 같은 그림입니다. 요청이 허브를 지나 스포크로 퍼지는
+호출 순서이지, 모듈을 위에서 아래로 쌓은 층이 아닙니다.
 
 JSON(`KisAuth` → `VmKis("secret.json")`)과 YAML(`create_client`) 둘 다
 유효합니다. `VmKis` 경로에는 JSON만 넘깁니다.
@@ -714,7 +721,9 @@ class RateLimiter:
 
 ## 에러 처리 전략
 
-### 예외 계층구조
+### 예외 클래스 상속
+
+클래스 상속 트리입니다. 모듈을 쌓은 층이 아닙니다.
 
 ```text
 Exception

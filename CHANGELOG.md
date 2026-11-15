@@ -193,7 +193,7 @@ codegen 전량 이관은 이 버전에 없습니다 (#100).
   변형**했습니다. 인자를 준 데코레이터를 한 번 쓰면 이후 인자 없는
   `@with_retry()` 까지 그 값을 물려받았습니다.
 
-- `utils/retry.py` 가 `client.exceptions` 를 참조하던 계층 위반을 해소했습니다.
+- `utils/retry.py` 가 `client.exceptions` 를 참조하던 간선을 끊었습니다.
   재시도 판단이 예외의 `retryable` 표식으로 바뀌었습니다.
   사용자 정의 예외에 `retryable = True` 를 선언하면 재시도 대상이 됩니다.
 
@@ -224,7 +224,7 @@ codegen 전량 이관은 이 버전에 없습니다 (#100).
 - [`docs/guidelines/CONFIG_SCHEMA.md`](./docs/guidelines/CONFIG_SCHEMA.md) —
   설정 파일 사양. 규칙 R1~R10 과 따옴표 함정을 담습니다
 
-- `vmkis.config` — 설정 읽기·검증 계층. `load_kis_config()` 가 `KisConfig` 를
+- `vmkis.config` — 설정 읽기·검증. `load_kis_config()` 가 `KisConfig` 를
   돌려주고, 모르는 키를 **오류로 거부**합니다
 
 ### 제거
