@@ -64,6 +64,4 @@ def test_living_docs_do_not_teach_rate_limiter_wait() -> None:
         for path in _living_markdown()
         for needle in _hits(path.read_text(encoding="utf-8"))
     ]
-    assert not problems, "살아 있는 문서가 없는 RateLimiter API 를 적습니다:\n  " + "\n  ".join(
-        problems
-    )
+    assert not problems, "살아 있는 문서가 없는 RateLimiter API 를 적습니다:\n  " + "\n  ".join(problems)
