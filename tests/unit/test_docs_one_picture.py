@@ -24,6 +24,8 @@ _LIES = (
     "VmKis('config.yaml')",
     "Scope Layer",
     "Adapter Layer",
+    "from vmkis.hub",
+    "vmkis.hub",
 )
 
 
@@ -83,6 +85,7 @@ def test_architecture_flow_is_hub_and_spoke() -> None:
     text = (REPO_ROOT / "docs" / "architecture" / "ARCHITECTURE.md").read_text(encoding="utf-8")
 
     assert "VmKis (kis.py)" in text
+    assert "`vmkis.kis` 를 모듈 레벨에서 import 하지 않습니다." in text
     assert 'stock.on("price"' in text
     assert "create_client" in text
     assert "MarketType" in text
@@ -100,6 +103,8 @@ def test_old_picture_lies_are_caught() -> None:
         "kis = VmKis('config.yaml')\n"
         "│  Scope Layer (API 진입점) │\n"
         "│  Adapter Layer (기능 추가)   │\n"
+        "from vmkis.hub import VmKis\n"
+        "vmkis.hub\n"
     )
 
     assert set(_hits(stale, _LIES)) == set(_LIES)

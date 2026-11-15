@@ -213,7 +213,7 @@ from vmkis.event.subscription import (
     KisSubscriptionEventArgs,
     KisUnsubscribedEventArgs,
 )
-from vmkis.hub import VmKis
+from vmkis.kis import VmKis
 from vmkis.responses.response import (
     KisAPIResponse,
     KisPaginationAPIResponse,

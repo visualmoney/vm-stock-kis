@@ -401,7 +401,7 @@ class KisMyData(KisResponse):
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from vmkis.hub import VmKis
+    from vmkis.kis import VmKis
 
 def get_my_data(
     hub: "VmKis",
@@ -733,7 +733,7 @@ from pathlib import Path
 from requests import Response   # 서드파티
 from typing_extensions import Protocol
 
-from vmkis.hub import VmKis     # 로컬 모듈
+from vmkis.kis import VmKis     # 로컬 모듈
 ```
 
 ---

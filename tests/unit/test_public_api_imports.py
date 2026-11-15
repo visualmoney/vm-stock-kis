@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def test_public_types_and_core_imports():
@@ -29,6 +33,14 @@ def test_types_module_still_exports_protocols():
     from vmkis.types import KisObjectProtocol
 
     assert KisObjectProtocol is not None
+
+
+def test_types_imports_vmkis_kis_not_hub() -> None:
+    """허브 인스턴스 이름과 모듈 경로 vmkis.kis 를 섞지 않는다."""
+    text = (REPO_ROOT / "src" / "vmkis" / "types.py").read_text(encoding="utf-8")
+
+    assert "from vmkis.kis import VmKis" in text
+    assert "from vmkis.hub import" not in text
 
 
 def test_pykis_root_alias_is_gone():

@@ -155,7 +155,7 @@ from vmkis.adapter.product.quote import KisQuotableProductMixin
 아래는 **암묵적으로만 지켜지던 규칙**입니다. 어기면 패키지가 import 단계에서
 깨지거나, 이벤트가 조용히 사라집니다.
 
-1. **`vmkis.hub` 를 모듈 레벨에서 import 하지 않습니다.**
+1. **`vmkis.kis` 를 모듈 레벨에서 import 하지 않습니다.**
    `if TYPE_CHECKING:` 블록 안에서만 허용합니다. 전체 패키지가 정상 로드되는
    **유일한 이유**입니다.
 
