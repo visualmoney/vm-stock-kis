@@ -533,7 +533,7 @@ KisStockScope + KisQuotableProductMixin
     ↓
 VmKis.api("usdh1") / VmKis.request()
     ↓
-RateLimiter.wait()  (rate limit check)
+RateLimiter.acquire()  (request() 가 단건 포함 항상 호출)
     ↓
 HTTP GET to KIS Server
     ↓
@@ -702,12 +702,16 @@ Event System
 
 ### 구현
 
+공개 메서드는 `acquire()` 하나입니다. `wait` / `on_success` / `on_error` 는 없습니다.
+
 ```python
 class RateLimiter:
-    def wait()          # 요청 전 대기
-    def on_success()    # 성공 시 처리
-    def on_error()      # 에러 시 처리
+    def acquire(self, blocking: bool = True, blocking_callback=None) -> bool: ...
 ```
+
+`VmKis.request()` 가 도메인(`live` / `paper`)별 limiter 에서 재시도 루프마다
+`acquire()` 합니다. 시세 단건도 이 경로입니다. 정본은
+`src/vmkis/utils/rate_limit.py` 와 `src/vmkis/kis.py` 의 `request()` 입니다.
 
 ---
 
