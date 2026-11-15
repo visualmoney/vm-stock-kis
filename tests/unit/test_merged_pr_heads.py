@@ -157,6 +157,26 @@ def test_main_is_never_reported() -> None:
     assert found == set()
 
 
+def test_local_names_use_the_same_merged_head_checker() -> None:
+    """#172. 로컬도 origin 과 같은 교집합이다. 스쿼시라 --merged 로는 안 잡힌다."""
+    local = {"main", "docs/issue-169-hub-variable", "wip-unique"}
+    merged = {"docs/issue-169-hub-variable"}
+
+    found = leftover_merged_heads(local, merged)
+
+    assert found == {"docs/issue-169-hub-variable"}
+    assert "wip-unique" not in found
+    assert "main" not in found
+
+
+def test_agents_require_deleting_merged_local_branches() -> None:
+    text = (REPO_ROOT / "AGENTS.md").read_text(encoding="utf-8")
+
+    assert "git fetch --prune" in text
+    assert "git branch -D" in text
+    assert "Never delete `main`" in text
+
+
 def test_origin_heads_come_from_ls_remote() -> None:
     """#119 함정: 로컬 추적 목록은 쓰지 않습니다."""
     source = inspect.getsource(_origin_heads)

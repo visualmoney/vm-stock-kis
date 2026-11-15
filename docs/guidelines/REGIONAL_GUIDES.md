@@ -225,7 +225,7 @@ for o in orders:
 > `server: mock` 설정과 `vmkis.mock.MockKisClient` 를 안내했는데 **둘 다 존재한
 > 적이 없습니다.** 설정 스키마는 `mock` 키를 오류로 거부합니다.
 
-계정 없이 개발하려면 **HTTP 계층에서 대역을 세웁니다.** 이 저장소의 테스트가
+계정 없이 개발하려면 **HTTP 호출을 가로채 대역을 세웁니다.** 이 저장소의 테스트가
 그렇게 합니다 — `requests-mock` 이 `[dependency-groups] test` 에 있습니다.
 
 ```python

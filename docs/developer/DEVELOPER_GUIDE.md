@@ -89,7 +89,7 @@ src/vmkis/
 │   ├── account_product/# 계좌-상품 기능
 │   └── websocket/      # 실시간 기능
 │
-├── client/             # 통신 계층
+├── client/             # HTTP · WebSocket · 토큰
 │   ├── websocket.py    # WebSocket 클라이언트 (450+ 줄)
 │   ├── auth.py         # 인증 정보
 │   ├── account.py      # 계좌번호

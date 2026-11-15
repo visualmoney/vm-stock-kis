@@ -12,5 +12,8 @@ Not a summary of the day's logs. Write what showed up **more than once**.
 3. Open a `needs-decision` issue for any unresolved debate. Do not leave “decide later” only in the log.
 4. Do not write a markdown To-Do list.
 5. If a predecessor closed, remove `blocked` from dependents.
+6. `git fetch --prune`. Delete local topic branches whose name is a merged PR
+   head, or whose upstream is `[gone]`. Use `git branch -D` after squash.
+   Never delete `main`.
 
 Do not commit unless the user asked. Do not invent issue counts in the log; `gh issue list` if a number is needed.
