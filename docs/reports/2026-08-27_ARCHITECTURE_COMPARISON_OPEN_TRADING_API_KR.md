@@ -11,7 +11,7 @@
 > **검증 원칙**: 본 보고서의 모든 수치와 구조 주장은 기존 문서를 인용하지 않고 **실제 소스 코드를 직접 읽어 검증**했습니다.
 > 기존 문서(`docs/architecture/ARCHITECTURE.md`, `docs/reports/ARCHITECTURE_*_KR.md`)와 코드가 불일치하는 항목은 §11에 별도 정리했습니다.
 >
-> **측정과 판정**: 줄 번호·LOC·TR 개수 등 정량 서술은 2026-08-27 측정이다. §5의 판정 문장(무엇을 고치고 무엇을 남기는가)은 2026-11-15 코드에 맞춘다.
+> **측정과 판정**: 줄 번호·LOC·TR 개수 등 정량 서술은 2026-08-27 측정이다. §5의 판정 문장(무엇을 고치고 무엇을 남기는가)은 2026-11-15 코드에 맞춘다. §12 P0·P1·P2 와 §13 전략 B 의 현황 표는 그 이후 이슈를 적는다.
 
 ---
 
@@ -1322,6 +1322,14 @@ def domestic_balance(self, account, page=None):
    - `kis.py:560-599` `while True`에 재시도 상한/백오프 추가
    - `KisNotFoundError` 이름 충돌 해소 (`responses/exceptions.py:13` → `KisResultNotFoundError` 등으로 개명 + deprecation alias)
 
+> **현황 (2026-11-16).** 위 문장과 줄 번호는 2026-08-27 권고다. 세 항목 모두 이슈로 닫혀 있다.
+
+| 항목 | 이슈 | 현황 |
+|---|---|---|
+| codegen | [#21](https://github.com/visualmoney/vm-stock-kis/issues/21), [#100](https://github.com/visualmoney/vm-stock-kis/issues/100) | 파일럿 8개는 `scripts/codegen/pilot/`. 생성기는 `scripts/extract_kis_specs.py`, `scripts/generate_endpoint.py`. 전량 이관은 하지 않는다. 요청된 TR 만 이슈 한 건(`TR: <id>`)으로 [`src/vmkis/api/`](../../src/vmkis/api/) 에 넣는다. 이 절이 적은 `api/generated/` 와 §13 의 `src/vmkis/endpoints/` 는 만들지 않았다 |
+| 재시도 상한 | [#14](https://github.com/visualmoney/vm-stock-kis/issues/14) | `API_RETRY_MAX_ATTEMPTS = 5`, 지수 백오프. 토큰 재발급은 `API_TOKEN_REISSUE_LIMIT = 1` 다음 `KisAuthenticationError`. `while True` 는 남았다 |
+| 이름 충돌 | [#15](https://github.com/visualmoney/vm-stock-kis/issues/15), [#164](https://github.com/visualmoney/vm-stock-kis/issues/164) | HTTP 404 는 `KisHTTPNotFoundError`. 조회 결과 없음은 `KisNotFoundError` 로 남겼다. 이 절이 적은 `KisResultNotFoundError` 개명은 하지 않았다 |
+
 ---
 
 ## 13. 검토: 공식 샘플 함수를 하부 레이어로 흡수할 수 있는가
@@ -1576,6 +1584,17 @@ class KisDomesticStock:
 
 파싱률 98.9% 실증, 타입 갭은 안전한 기본값(`KisString`)+휴리스틱으로 관리 가능, vmkis의 `fetch()`/응답 디스크립터가 **이미 이상적인 타깃 런타임**입니다.
 
+> **현황 (2026-11-16, [#21](https://github.com/visualmoney/vm-stock-kis/issues/21), [#100](https://github.com/visualmoney/vm-stock-kis/issues/100)).** B-1~B-6 의 수치·생성 예시·견적은 2026-08-27 실측과 설계다. codegen(이 절의 전략 B)은 유지하고, 벤더링(전략 A)은 기각인 채로 둔다. 전량 생성은 그 뒤에 하지 않기로 했다.
+
+| 절 | 현황 |
+|---|---|
+| B-1 파싱 | 위 표의 98.9% 는 그날 측정이다. `news_title` 을 고친 뒤 #21 은 REST 272/272 로 닫았다. 파서는 `scripts/extract_kis_specs.py` 다. 이 절이 적은 `parse_llm.py` 와 `ir.json` 은 저장소에 없다 |
+| B-2 타입 | 접미사 표는 그날의 54% 다. #100 은 이후 접미사 커버리지를 59.9% 로 적었다. 미확정 필드는 `KisString` 이다 |
+| B-3~B-5 레이아웃 | `src/vmkis/endpoints/` , 파사드, 272개 전량 생성은 하지 않았다. 파일럿 산출물은 `scripts/codegen/pilot/` 의 8개 파일이고 휠 밖이다. 받아들일 TR 은 [ARCHITECTURE 의 REST 추가 절차](../architecture/ARCHITECTURE.md) 로 `src/vmkis/api/` 에 둔다. 생성기는 초안이다. 손으로 고친 파일을 다음 생성이 덮지 않는다 |
+| B-6 견적 | 25–30K LOC 와 사람 리뷰 40–60시간은 전량 이관 견적이다. 그 작업은 시작하지 않았다 |
+| B-7 채택 | codegen 은 유지한다. 범위는 요청된 TR 뿐이다. 이슈 한 건의 첫 줄은 `TR: <id>` |
+| 아래 13.3 | 1단계 파일럿만 끝났다. 세그먼트 확대, 파사드, 웹소켓 60개는 시작하지 않았다. 주문 POST 18개는 마지막에 사람이 본다 |
+
 ### 13.3 최종 권고: **B 단독 채택** (A는 코드가 아닌 "동작 참조"로만)
 
 하이브리드라 해봐야 A의 역할은 "생성물 검증 시 공식 함수를 로컬에서 돌려 응답을 비교"하는 **개발자 로컬 절차** 정도이며, 저장소에는 공식 코드가 한 줄도 들어가지 않아야 합니다.
@@ -1604,6 +1623,8 @@ class KisDomesticStock:
 2. **세그먼트 확대 (2~4주)** — domestic_stock 잔여 → etfetn/elw → overseas_stock → bond/futureoption. 각 단계에서 read-only 스모크 + IR diff CI 가동
 3. **파사드·Scope 통합** — 네임스페이스 공개, scope 바인딩 변형 생성, 수기 74개 제외맵 정리
 4. **(선택) 웹소켓 60개** — 별도 emitter로 vmkis websocket 계층에 생성 접합
+
+> **현황 (2026-11-16).** 1단계 여덟 엔드포인트만 `scripts/codegen/pilot/` 에 있다. 2~4단계는 시작하지 않았다. 근거는 위 B-7 현황과 [#100](https://github.com/visualmoney/vm-stock-kis/issues/100) 이다.
 
 ---
 
