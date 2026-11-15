@@ -1011,9 +1011,7 @@ class VmKis:
 
         return self._websocket
 
-    def websocket_approval_key(
-        self, domain: Literal["live", "paper"] | None = None
-    ) -> KisWebsocketApprovalKey:
+    def websocket_approval_key(self, domain: Literal["live", "paper"] | None = None) -> KisWebsocketApprovalKey:
         """웹소켓 접속 키를 발급합니다.
 
         OAuth인증 -> 실시간 (웹소켓) 접속키 발급[실시간-000]
