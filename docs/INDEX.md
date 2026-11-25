@@ -1,6 +1,6 @@
 # 문서 인덱스
 
-**최종 업데이트**: 2026-09-05
+**최종 업데이트**: 2026-11-25
 
 이 저장소의 문서 목록입니다. **여기 적힌 경로는 전부 실재합니다** —
 새 문서를 만들거나 옮기면 이 파일도 함께 고쳐 주세요.
@@ -50,6 +50,8 @@
 | 문서 | 내용 |
 |---|---|
 | [architecture/ARCHITECTURE](architecture/ARCHITECTURE.md) | 허브-스포크 **만** 모듈 구조. 얇은 파사드 · `fetch()`. **불변식** |
+| [architecture/BALANCE_CLASSES](architecture/BALANCE_CLASSES.md) | 잔고 반환 표 · 모의투자 종목 교체 |
+| [architecture/BALANCE_CLASS_DIAGRAM](architecture/BALANCE_CLASS_DIAGRAM.md) | 잔고 상속 Mermaid (참고) |
 | [generated/API_REFERENCE](generated/API_REFERENCE.md) | 공개 모듈 docstring 덤프. 손으로 고치지 말고 `uv run python scripts/generate_api_reference.py` |
 | [developer/DEVELOPER_GUIDE](developer/DEVELOPER_GUIDE.md) | 개발 환경, 코드 구조 |
 | [developer/VERSIONING](developer/VERSIONING.md) | git 태그 기반 버저닝, **태그 표기 규칙** |
