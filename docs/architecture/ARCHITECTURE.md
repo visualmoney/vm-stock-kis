@@ -463,6 +463,8 @@ stock = hub.stock("000660")       # KisStockScope
 quote = stock.quote()             # KisQuote
 ```
 
+잔고가 무엇을 반환하는지는 [BALANCE_CLASSES.md](BALANCE_CLASSES.md), 상속 그림은 [BALANCE_CLASS_DIAGRAM.md](BALANCE_CLASS_DIAGRAM.md) 에 있습니다.
+
 ### 3. Adapter (Mixin)
 
 **목적**: Scope에 기능을 동적으로 추가

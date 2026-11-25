@@ -81,7 +81,7 @@ docs/
 ├── INDEX.md
 ├── guidelines/          # API_STABILITY_POLICY, PYPI_RELEASE, DEVELOPER_SETUP,
 │                        # GUIDELINES_001_TEST_WRITING, AGENT_WORKFLOW_RULES, …
-├── architecture/       # ARCHITECTURE.md
+├── architecture/       # ARCHITECTURE.md, BALANCE_CLASSES.md, BALANCE_CLASS_DIAGRAM.md
 ├── dev_logs/            # frozen YYYY-MM-DD_nn_*.md
 ├── reports/             # frozen; archive/
 ├── prompts/             # frozen YYYY-MM-DD_nn_*.md
